@@ -48,7 +48,7 @@ Built as a single static `index.html` (vanilla JS, no build step) on top of Supa
 
 ## Security model
 
-Row Level Security scopes every row to families owned by the authenticated user (`auth.uid()`). A logged-in parent can only ever read or write their own family's data. The in-app PIN is a convenience separator between profiles on a shared device, not a database boundary — the real boundary is the parent's account. The WallBoard is exposed without a PIN because it is strictly read-only.
+Row Level Security scopes every row to families owned by the authenticated user (`auth.uid()`). A logged-in parent can only ever read or write their own family's data. The in-app PIN is a convenience separator between profiles on a shared device, not a database boundary — the real boundary is the parent's account; PINs are salted + SHA-256 hashed (per-profile random salt). The WallBoard is exposed without a PIN because it is strictly read-only. See [PRIVACY.md](PRIVACY.md) for what's stored and retained.
 
 This is a **household-account** model (like Netflix/Disney+ profiles), appropriate for a chore tracker with no money or location data. A per-user-account model (Apple Family Sharing / Greenlight style) would be the right upgrade if real allowance money is ever added.
 
@@ -68,6 +68,8 @@ This is a **household-account** model (like Netflix/Disney+ profiles), appropria
 - `migration-01-goals-and-proposed-rewards.sql` — adds goal pinning + proposed-reward columns to an existing project
 - `migration-02-history-retention.sql` — adds monthly summaries + the 13-month retention job to an existing project
 - `migration-03-photo-proof.sql` — adds photo-proof columns + the private Storage bucket and policies to an existing project
+- `migration-04-salt-pins.sql` — adds the per-profile PIN salt column to an existing project
+- `PRIVACY.md` — plain-language privacy note (what's stored, retention, deletion)
 - `seed.sql` — optional demo data (see below)
 
 ## Demo data (optional)
