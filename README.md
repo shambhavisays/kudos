@@ -51,6 +51,8 @@ Row Level Security scopes every row to families owned by the authenticated user 
 
 This is a **household-account** model (like Netflix/Disney+ profiles), appropriate for a chore tracker with no money or location data. A per-user-account model (Apple Family Sharing / Greenlight style) would be the right upgrade if real allowance money is ever added.
 
+**Data retention.** Raw daily completions are kept ~13 months (enough for a full year + "vs. last year"), then rolled into tiny per-kid monthly summaries and trimmed — data-minimization by design for children's activity. A monthly `pg_cron` job (`kudos_maintain_history`) handles the rollup and trim; star balances and streaks live on the profile, so trimming never changes them. The History view shows daily detail for ~3 months and monthly summaries beyond.
+
 ## Roadmap / not built yet
 
 - No per-kid login or "join code" device pairing — every device logs in with the one family account (fine for a household; a v2 would add per-member accounts)
@@ -63,6 +65,7 @@ This is a **household-account** model (like Netflix/Disney+ profiles), appropria
 - `index.html` — the entire app
 - `schema.sql` — full consolidated schema + RLS (run once on a fresh project)
 - `migration-01-goals-and-proposed-rewards.sql` — adds goal pinning + proposed-reward columns to an existing project
+- `migration-02-history-retention.sql` — adds monthly summaries + the 13-month retention job to an existing project
 - `seed.sql` — optional demo data (see below)
 
 ## Demo data (optional)

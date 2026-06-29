@@ -128,6 +128,18 @@ create table devices (
   paired_at timestamptz not null default now()
 );
 
+-- Per-kid monthly rollup. Raw completions are kept ~13 months (see retention
+-- section below); older activity lives on here as tiny summaries.
+create table monthly_summaries (
+  id uuid primary key default gen_random_uuid(),
+  family_id uuid not null references families(id) on delete cascade,
+  profile_id uuid not null references profiles(id) on delete cascade,
+  month date not null,                 -- first day of the month
+  stars int not null default 0,
+  chores int not null default 0,
+  unique (profile_id, month)
+);
+
 -- ── Row Level Security ───────────────────────────────────────────────────────
 -- Every table is scoped to families owned by the authenticated user. A request
 -- can only see/modify rows whose family_id belongs to a family it owns; the
@@ -141,6 +153,7 @@ alter table rewards enable row level security;
 alter table redemptions enable row level security;
 alter table reward_credits enable row level security;
 alter table devices enable row level security;
+alter table monthly_summaries enable row level security;
 
 -- Helper: the set of family ids the current user owns.
 create or replace function owned_family_ids()
@@ -184,3 +197,40 @@ create policy "own reward_credits" on reward_credits
 create policy "own devices" on devices
   for all using (family_id in (select owned_family_ids()))
   with check (family_id in (select owned_family_ids()));
+
+create policy "own monthly_summaries" on monthly_summaries
+  for all using (family_id in (select owned_family_ids()))
+  with check (family_id in (select owned_family_ids()));
+
+-- ── History retention (13 months) ───────────────────────────────────────────
+-- Keep ~13 months of raw daily completions; roll older activity into
+-- monthly_summaries and trim raw rows on whole-month boundaries. A monthly
+-- pg_cron job does both. Balances/streaks live on profiles, so trimming raw
+-- completions never changes a kid's stars or streak.
+
+create or replace function kudos_rollup_summaries()
+returns void language sql security definer set search_path = public as $$
+  insert into monthly_summaries (family_id, profile_id, month, stars, chores)
+  select family_id, profile_id, date_trunc('month', completed_on)::date,
+         sum(points), count(*) filter (where points >= 0)
+  from completions
+  group by family_id, profile_id, date_trunc('month', completed_on)::date
+  on conflict (profile_id, month)
+  do update set stars = excluded.stars, chores = excluded.chores;
+$$;
+
+create or replace function kudos_trim_completions()
+returns void language sql security definer set search_path = public as $$
+  delete from completions
+  where completed_on < date_trunc('month', current_date - interval '13 months')::date;
+$$;
+
+create or replace function kudos_maintain_history()
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  perform kudos_rollup_summaries();
+  perform kudos_trim_completions();
+end; $$;
+
+create extension if not exists pg_cron;
+select cron.schedule('kudos-history-maintenance', '0 3 1 * *', 'select kudos_maintain_history();');
