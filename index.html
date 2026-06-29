@@ -242,6 +242,19 @@ async function sha256(text){
   return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
+// PINs are salted: a per-profile random salt makes a short PIN's hash
+// non-trivial to reverse with a rainbow table.
+function genSalt(){
+  const a=new Uint8Array(16);crypto.getRandomValues(a);
+  return [...a].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+const hashPin=(pin,salt)=>sha256(salt+':'+pin);
+// Verify a PIN, supporting legacy unsalted hashes (sha256(pin) with no salt).
+async function pinMatches(profile,pin){
+  if(profile.pin_salt)return (await hashPin(pin,profile.pin_salt))===profile.pin_hash;
+  return (await sha256(pin))===profile.pin_hash;
+}
+
 // Photo proof: open the camera/file picker, return the chosen File (or null).
 function capturePhoto(){
   return new Promise(resolve=>{
@@ -369,6 +382,7 @@ function renderLanding(){
       <p class="tagline">Give kids the kudos they deserve. Track chores, earn stars, cash them in for rewards.</p>
       <button class="bigbtn" id="startBtn">Get started — free</button>
       <button class="linkbtn" id="toLogin">I already have an account · Log in</button>
+      <p class="note" style="max-width:300px;margin-top:14px">Your family's data is private to your account. We only store what's needed to run your board — no ads, no trackers. <a href="https://github.com/shambhavisays/kudos/blob/main/PRIVACY.md" target="_blank" rel="noopener" style="color:var(--accent-deep)">Privacy note</a></p>
     </div>`;
   $('#startBtn').onclick=()=>startOnboarding();
   $('#toLogin').onclick=renderLogin;
@@ -413,7 +427,7 @@ function startOnboarding(){
 }
 function blankKid(){
   const b=bandByKey('7-9');
-  return {name:'',age:8,emoji:'🦄',bandKey:'7-9',daily_goal:DEFAULT_GOAL_BY_BAND['7-9'],pinHash:null,wantsPin:false,
+  return {name:'',age:8,emoji:'🦄',bandKey:'7-9',daily_goal:DEFAULT_GOAL_BY_BAND['7-9'],pinHash:null,pinSalt:null,wantsPin:false,
           chores:b.chores.map(c=>({...c}))};
 }
 
@@ -508,8 +522,8 @@ function renderWizKidDetails(){
     if(kid.wantsPin){
       const pin=$('#kPin').value.trim();
       if(pin && pin.length!==4)return toast('Kid PIN must be 4 digits (or untick to skip)');
-      kid.pinHash=pin?await sha256(pin):null;
-    }else kid.pinHash=null;
+      if(pin){kid.pinSalt=genSalt();kid.pinHash=await hashPin(pin,kid.pinSalt);}else{kid.pinHash=null;kid.pinSalt=null;}
+    }else{kid.pinHash=null;kid.pinSalt=null;}
     renderWizAddMore();
   };
 }
@@ -564,7 +578,8 @@ function renderWizParent(){
     if(pass.length<6)return toast('Password needs at least 6 characters');
     if(pin.length!==6)return toast('Parent PIN must be 6 digits');
 
-    onboard.parent={name,emoji:'🧑',pinHash:await sha256(pin)};
+    const parentSalt=genSalt();
+    onboard.parent={name,emoji:'🧑',pinHash:await hashPin(pin,parentSalt),pinSalt:parentSalt};
     onboard.familyName=name.endsWith('s')?`${name}' Family`:`${name}'s Family`;
     // Stash everything (PINs are pre-hashed; no plaintext, no password stored) so
     // setup can complete on first authenticated load — covers email-confirm-on too.
@@ -605,7 +620,7 @@ async function createFamilyFromPayload(p){
   // Parent profile
   await sb.from('profiles').insert({
     family_id:familyId,name:p.parent.name,emoji:p.parent.emoji||'🧑',role:'parent',
-    daily_goal:0,pin_hash:p.parent.pinHash
+    daily_goal:0,pin_hash:p.parent.pinHash,pin_salt:p.parent.pinSalt
   });
 
   // Kids + their chosen chores
@@ -614,7 +629,7 @@ async function createFamilyFromPayload(p){
     if(!kid.name)continue;
     const {data:kp,error:ke}=await sb.from('profiles').insert({
       family_id:familyId,name:kid.name,emoji:kid.emoji||'🦄',role:'kid',
-      age:kid.age||null,daily_goal:kid.daily_goal||50,pin_hash:kid.pinHash||null,
+      age:kid.age||null,daily_goal:kid.daily_goal||50,pin_hash:kid.pinHash||null,pin_salt:kid.pinSalt||null,
       color:colorForKidIndex(kidIndex++)
     }).select().single();
     if(ke)throw ke;
@@ -746,14 +761,19 @@ function askPin(p){
     }
     const v=$('#pin').value.trim();
     if(v.length!==expLen)return toast('PIN is '+expLen+' digits');
-    const hash=await sha256(v);
-    if(hash!==p.pin_hash){
+    if(!(await pinMatches(p,v))){
       const a=pinAttempts[p.id]||{count:0,until:0};
       a.count++;
       if(a.count>=5){a.until=Date.now()+30000;a.count=0;toast('Too many tries — wait 30s');}
       else toast('Wrong PIN');
       pinAttempts[p.id]=a;
       return;
+    }
+    // Quietly upgrade a legacy unsalted PIN to a salted hash on successful entry.
+    if(!p.pin_salt){
+      const salt=genSalt();const h=await hashPin(v,salt);
+      await sb.from('profiles').update({pin_hash:h,pin_salt:salt}).eq('id',p.id);
+      p.pin_hash=h;p.pin_salt=salt;
     }
     pinAttempts[p.id]={count:0,until:0};
     me=p;await loadKidData();
@@ -1422,9 +1442,10 @@ async function openAdmin(k){
     const pin=$('#fkPin').value.trim();
     if(pin && pin.length!==4)return toast('Kid PIN must be 4 digits (or leave blank)');
     const band=age?bandForAge(age).key:'7-9';
+    const kSalt=pin?genSalt():null;
     const {data,error}=await sb.from('profiles').insert({
       family_id:familyId,name:nm,emoji:$('#fkEmo').value.trim()||'🦄',role:'kid',
-      age,daily_goal:DEFAULT_GOAL_BY_BAND[band],pin_hash:pin?await sha256(pin):null,
+      age,daily_goal:DEFAULT_GOAL_BY_BAND[band],pin_hash:pin?await hashPin(pin,kSalt):null,pin_salt:kSalt,
       color:colorForKidIndex(profiles.filter(p=>p.role==='kid').length)
     }).select().single();
     if(error)return toast('Could not add child');
@@ -1434,9 +1455,10 @@ async function openAdmin(k){
     const nm=$('#fpName').value.trim();if(!nm)return toast('Type the parent\'s name');
     const pin=$('#fpPin').value.trim();
     if(pin.length!==6)return toast('Parent PIN must be 6 digits');
+    const pSalt=genSalt();
     const {data,error}=await sb.from('profiles').insert({
       family_id:familyId,name:nm,emoji:$('#fpEmo').value.trim()||'🧑',role:'parent',
-      daily_goal:0,pin_hash:await sha256(pin)
+      daily_goal:0,pin_hash:await hashPin(pin,pSalt),pin_salt:pSalt
     }).select().single();
     if(error)return toast('Could not add parent');
     profiles.push(data);$('#modal').remove();openAdmin(focusKid);renderMain();toast(`${nm} added`);
@@ -1458,13 +1480,13 @@ async function openAdmin(k){
     const len=prof.role==='parent'?6:4;
     if(v===''){ // blank = remove PIN, but parents must keep one
       if(prof.role==='parent')return toast('Parents must keep a PIN');
-      await sb.from('profiles').update({pin_hash:null}).eq('id',id);
-      prof.pin_hash=null;input.value='';return toast('PIN removed');
+      await sb.from('profiles').update({pin_hash:null,pin_salt:null}).eq('id',id);
+      prof.pin_hash=null;prof.pin_salt=null;input.value='';return toast('PIN removed');
     }
     if(v.length!==len)return toast(`PIN must be ${len} digits`);
-    const hash=await sha256(v);
-    await sb.from('profiles').update({pin_hash:hash}).eq('id',id);
-    prof.pin_hash=hash;
+    const salt=genSalt();const hash=await hashPin(v,salt);
+    await sb.from('profiles').update({pin_hash:hash,pin_salt:salt}).eq('id',id);
+    prof.pin_hash=hash;prof.pin_salt=salt;
     input.value='';toast('PIN updated');
   });
 }

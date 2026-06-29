@@ -28,7 +28,9 @@ create table profiles (
   daily_goal int not null default 50,
   -- Nullable: parents always have a PIN, kids may not (optional separator).
   -- A null pin_hash means "no PIN" — tapping the profile goes straight in.
+  -- pin_salt is the per-profile random salt hashed with the PIN.
   pin_hash text,
+  pin_salt text,
   total_points int not null default 0,
   streak int not null default 0,
   freezes int not null default 1,
