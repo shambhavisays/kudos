@@ -88,9 +88,16 @@ create table rewards (
   requires_chore_names text[],
   requires_full_points_excluding text[],
   allowed_weekdays int[],
+  -- Kid-proposed rewards wait for parent approval (parent sets the real cost).
+  pending boolean not null default false,
+  proposed_by uuid references profiles(id),
   archived boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+-- A kid can pin one reward as their savings goal; surfaced on their board.
+-- Added after rewards exists so the FK resolves; clears if the reward is removed.
+alter table profiles add column goal_reward_id uuid references rewards(id) on delete set null;
 
 create table redemptions (
   id uuid primary key default gen_random_uuid(),

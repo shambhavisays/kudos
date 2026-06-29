@@ -95,6 +95,18 @@
   .recap .spark .col{display:flex;flex-direction:column;align-items:center;gap:3px}
   .recap .spark .bar{width:16px;border-radius:4px 4px 2px 2px;min-height:3px}
   .recap .spark .d{font-size:9px;font-weight:800;color:var(--muted)}
+  .goalstrip{background:#fff;border:2px solid var(--line);border-radius:18px;padding:13px 16px;margin-top:12px;cursor:default}
+  .goalstrip.ready{cursor:pointer}
+  .goalstrip .gtop{display:flex;align-items:center;gap:9px;font-family:'Fredoka';font-weight:600;font-size:15px}
+  .goalstrip .gtop .emo{font-size:22px}
+  .goalstrip .gtop .lab{flex:1}
+  .goalstrip .gtop .lab small{display:block;font-family:'Nunito';font-weight:800;font-size:11px;color:var(--muted)}
+  .goalstrip .gbar{height:12px;border-radius:999px;background:var(--bg);overflow:hidden;margin-top:10px}
+  .goalstrip .gfill{height:100%;border-radius:999px;transition:width .5s}
+  .goalstrip .gnum{font-weight:800;font-size:11px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between}
+  .reward .pin{position:absolute;top:8px;right:8px;border:none;background:transparent;font-size:15px;cursor:pointer;opacity:.35;line-height:1;padding:2px}
+  .reward .pin.on{opacity:1}
+  .reward{position:relative}
   .sectionhd{display:flex;align-items:center;justify-content:space-between;margin:20px 4px 10px}
   .sectionhd h2{font-family:'Fredoka';font-weight:600;font-size:17px;margin:0}
   .sectionhd .hint{font-size:12px;font-weight:700;color:var(--muted)}
@@ -694,7 +706,7 @@ function visibleChores(profileId){
   return choresForDow(profileId,todayDow());
 }
 function visibleRewards(profileId){
-  return rewards.filter(r=>r.owner==='both' || r.owner_profile_id===profileId);
+  return rewards.filter(r=>!r.pending && (r.owner==='both' || r.owner_profile_id===profileId));
 }
 function todayPoints(profileId){
   return visibleChores(profileId).reduce((s,c)=>s+(doneToday.has(c.id)?c.points:0),0);
@@ -804,6 +816,32 @@ function recapHtml(k,accent){
   </div>`;
 }
 
+// A kid's pinned savings goal — a prominent progress strip toward one reward.
+function goalHtml(k,accent){
+  if(!k.goal_reward_id)return '';
+  const r=rewards.find(x=>x.id===k.goal_reward_id && !x.archived && !x.pending);
+  if(!r)return '';
+  const have=k.total_points,cost=r.cost;
+  const pct=Math.max(0,Math.min(100,cost?(have/cost)*100:100));
+  const ready=have>=cost;
+  const togo=Math.max(0,cost-have);
+  return `<div class="goalstrip ${ready?'ready':''}" ${ready?`data-goalclaim="${r.id}"`:''}>
+    <div class="gtop"><span class="emo">${r.emoji}</span>
+      <span class="lab">Saving up for ${esc(r.name)}<small>${ready?'Ready to claim! 🎉':togo+' ⭐ to go'}</small></span>
+      <button class="pin on" data-goalunpin="1" title="Remove goal">📌</button>
+    </div>
+    <div class="gbar"><div class="gfill" style="width:${pct}%;background:${accent}"></div></div>
+    <div class="gnum"><span>${have} ⭐ saved</span><span>${cost} ⭐ goal</span></div>
+  </div>`;
+}
+async function setGoal(k,rewardId){
+  k.goal_reward_id=rewardId;
+  const prof=profiles.find(p=>p.id===k.id);if(prof)prof.goal_reward_id=rewardId;
+  await sb.from('profiles').update({goal_reward_id:rewardId}).eq('id',k.id);
+  toast(rewardId?'Goal set! 🎯':'Goal removed');
+  renderMain();
+}
+
 function renderMain(){
   const isParent=me.role==='parent';
   const switchable=isParent?profiles.filter(p=>p.role==='kid'):[me];
@@ -865,6 +903,7 @@ function renderMain(){
         <div class="lab"><span style="color:${accent}">${goalMsg}</span><span>${corePts}/${k.daily_goal} ⭐ ${corePts>=k.daily_goal?'🎉':''}</span></div>
       </div>
     </div>
+    ${goalHtml(k,accent)}
     ${recapHtml(k,accent)}
     <div class="sectionhd"><h2>🎯 Today's chores</h2><span class="hint">Tap to complete</span></div>
     <div id="grid"></div>
@@ -916,12 +955,23 @@ function renderMain(){
         btnLabel=eligible?'Redeem':'Need '+shortBy;
       }
       return `<div class="reward">
+        <button class="pin ${k.goal_reward_id===r.id?'on':''}" data-pin="${r.id}" title="Set as goal">📌</button>
         <div class="emo">${r.emoji}</div><div class="nm">${esc(r.name)}</div><div class="cost">${costLabel}</div>
         <button data-r="${r.id}" ${eligible?'':'disabled'}>${btnLabel}</button>
       </div>`;
     }).join('')}</div>`;
   }).join('');
   document.querySelectorAll('[data-r]').forEach(el=>el.onclick=()=>redeem(k,el.dataset.r));
+  document.querySelectorAll('[data-pin]').forEach(el=>el.onclick=()=>{const rid=el.dataset.pin;setGoal(k,k.goal_reward_id===rid?null:rid);});
+
+  // Goal strip: tap-to-claim when ready, and the pin to remove it.
+  const claimEl=$('[data-goalclaim]');if(claimEl)claimEl.onclick=()=>redeem(k,claimEl.dataset.goalclaim);
+  const unpinEl=$('[data-goalunpin]');if(unpinEl)unpinEl.onclick=e=>{e.stopPropagation();setGoal(k,null);};
+
+  if(!isParent){
+    $('#rewardsRow').insertAdjacentHTML('afterend','<button class="proposeBtn" id="proposeRewardBtn">🎁 Propose a reward (needs parent approval)</button>');
+    $('#proposeRewardBtn').onclick=()=>proposeReward(k);
+  }
 
   $('#logoutBtn').onclick=()=>{me=null;window._activeKid=null;renderProfilePicker();};
   $('#historyBtn').onclick=()=>openHistory(k);
@@ -1011,6 +1061,12 @@ async function redeem(k,rewardId){
     await sb.from('reward_credits').update({credits:newCredits}).eq('reward_id',r.id).eq('profile_id',k.id);
     if(row)row.credits=newCredits;
   }
+  // Claiming the pinned goal completes it — clear so a new goal can be set.
+  if(k.goal_reward_id===r.id){
+    k.goal_reward_id=null;
+    const prof=profiles.find(p=>p.id===k.id);if(prof)prof.goal_reward_id=null;
+    await sb.from('profiles').update({goal_reward_id:null}).eq('id',k.id);
+  }
   toast(`${k.name} redeemed ${r.name}! ${r.emoji}`);
   await sb.from('redemptions').insert({family_id:familyId,profile_id:k.id,reward_id:r.id,cost:r.cost});
   renderMain();
@@ -1023,6 +1079,17 @@ async function proposeChore(k){
   const pts=parseInt(prompt("How many points should it be worth?","5"),10)||5;
   const {error}=await sb.from('chores').insert({family_id:familyId,profile_id:k.id,emoji:emo,name:nm.trim(),points:pts,cadence:'daily',pending:true,proposed_by:k.id});
   if(error){toast('Could not send that — try again');return;}
+  toast('Sent to parent for approval! 💌');
+}
+
+async function proposeReward(k){
+  const nm=prompt("What reward do you wish for?");
+  if(!nm||!nm.trim())return;
+  const emo=prompt("Pick an emoji for it (optional):","🎁")||'🎁';
+  // Cost is left at 0 — the parent sets the real price when they approve it.
+  const {data,error}=await sb.from('rewards').insert({family_id:familyId,owner:'profile',owner_profile_id:k.id,emoji:emo,name:nm.trim(),cost:0,tier:'weekly',pending:true,proposed_by:k.id}).select().single();
+  if(error){toast('Could not send that — try again');return;}
+  rewards.push(data);
   toast('Sent to parent for approval! 💌');
 }
 
@@ -1043,6 +1110,8 @@ async function openAdmin(k){
     notes=(notesData||[]).map(n=>({...n,choreName:(chores.find(c=>c.id===n.chore_id)||{}).name||'—'}));
   }
   const kidLabel=focusKid?esc(focusKid.name):'—';
+  const pendingRewards=rewards.filter(r=>r.pending); // family-wide, any kid
+  const approvalCount=pendingChores.length+pendingRewards.length;
 
   app.insertAdjacentHTML('beforeend',`
     <div class="modal open" id="modal">
@@ -1052,7 +1121,7 @@ async function openAdmin(k){
           <button data-tab="chores" class="on">Chores</button>
           <button data-tab="rewards">Rewards</button>
           <button data-tab="family">Family</button>
-          <button data-tab="approvals">Approvals${pendingChores.length?' ('+pendingChores.length+')':''}</button>
+          <button data-tab="approvals">Approvals${approvalCount?' ('+approvalCount+')':''}</button>
           <button data-tab="notes">Notes</button>
           <button data-tab="pins">PINs</button>
         </div>
@@ -1070,11 +1139,19 @@ async function openAdmin(k){
           <div class="rowbtns"><button class="danger" id="resetTodayBtn">↺ Reset ${kidLabel}'s today</button></div>`:''}
         </div>
         <div class="panel" id="panel-approvals">
-          <div class="note">Chores ${kidLabel} proposed herself — approve to add them for real, reject to dismiss.</div>
+          <div class="note" style="color:var(--ink);font-weight:800">Proposed chores</div>
           <div id="pendingList">${pendingChores.length?pendingChores.map(c=>`
             <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${c.points} pts proposed</small></span>
             <button class="del" style="background:var(--good-bg);color:var(--good)" data-approve="${c.id}">✓</button>
-            <button class="del" data-reject="${c.id}">✕</button></div>`).join(''):'<div class="empty">No pending proposals.</div>'}</div>
+            <button class="del" data-reject="${c.id}">✕</button></div>`).join(''):'<div class="empty">No pending chores.</div>'}</div>
+          <div class="note" style="color:var(--ink);font-weight:800;margin-top:12px">Proposed rewards <span style="font-weight:700;color:var(--muted)">— set a cost, then approve</span></div>
+          <div id="pendingRewardList">${pendingRewards.length?pendingRewards.map(r=>{
+            const by=(profiles.find(p=>p.id===r.proposed_by)||{}).name||'a kid';
+            return `<div class="item"><span class="e">${r.emoji}</span><span class="t">${esc(r.name)}<small>wished by ${esc(by)}</small></span>
+            <input data-rcost="${r.id}" placeholder="Cost ⭐" inputmode="numeric" maxlength="5" style="width:74px;border:2px solid var(--line);border-radius:10px;padding:8px;font-weight:700">
+            <button class="del" style="background:var(--good-bg);color:var(--good)" data-approver="${r.id}">✓</button>
+            <button class="del" data-rejectr="${r.id}">✕</button></div>`;
+          }).join(''):'<div class="empty">No pending rewards.</div>'}</div>
         </div>
         <div class="panel" id="panel-notes">
           <div class="note">${kidLabel}'s reading log and any other notes, newest first.</div>
@@ -1157,13 +1234,28 @@ async function openAdmin(k){
     };
   }
 
-  $('#rewardList').innerHTML=rewards.length?rewards.map(r=>{
+  const liveRewards=rewards.filter(r=>!r.pending);
+  $('#rewardList').innerHTML=liveRewards.length?liveRewards.map(r=>{
     const ownerLabel=r.owner==='profile'?((profiles.find(p=>p.id===r.owner_profile_id)||{}).name||'one kid')+' only':'shared';
     return `<div class="item"><span class="e">${r.emoji}</span><span class="t">${esc(r.name)}<small>${r.cost} pts · ${r.tier} · ${esc(ownerLabel)}</small></span><button class="del" data-delr="${r.id}">🗑️</button></div>`;
   }).join(''):'<div class="empty">No rewards yet.</div>';
   document.querySelectorAll('[data-delr]').forEach(el=>el.onclick=async()=>{
     await sb.from('rewards').update({archived:true}).eq('id',el.dataset.delr);
     rewards=rewards.filter(r=>r.id!==el.dataset.delr);$('#modal').remove();openAdmin(focusKid);
+  });
+  // Approve / reject kid-proposed rewards
+  document.querySelectorAll('[data-approver]').forEach(el=>el.onclick=async()=>{
+    const id=el.dataset.approver;
+    let c=parseInt((document.querySelector(`[data-rcost="${id}"]`)||{}).value,10);if(isNaN(c)||c<0)c=50;
+    await sb.from('rewards').update({pending:false,cost:c}).eq('id',id);
+    const r=rewards.find(x=>x.id===id);if(r){r.pending=false;r.cost=c;}
+    toast('Reward approved! 🎁');$('#modal').remove();openAdmin(focusKid);renderMain();
+  });
+  document.querySelectorAll('[data-rejectr]').forEach(el=>el.onclick=async()=>{
+    const id=el.dataset.rejectr;
+    await sb.from('rewards').update({archived:true}).eq('id',id);
+    rewards=rewards.filter(r=>r.id!==id);
+    toast('Reward declined');$('#modal').remove();openAdmin(focusKid);
   });
   $('#addReward').onclick=async()=>{
     const nm=$('#rName').value.trim();if(!nm)return toast('Type a reward name');
