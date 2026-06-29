@@ -107,6 +107,21 @@
   .reward .pin{position:absolute;top:8px;right:8px;border:none;background:transparent;font-size:15px;cursor:pointer;opacity:.35;line-height:1;padding:2px}
   .reward .pin.on{opacity:1}
   .reward{position:relative}
+  .wallhead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 4px 14px}
+  .wallhead h2{font-family:'Fredoka';font-weight:600;font-size:20px;margin:0}
+  .wallhead .sub{font-size:11px;font-weight:800;color:var(--muted)}
+  .wallgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+  .wallcard{background:#fff;border:2px solid var(--line);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:7px}
+  .wallcard .wname{font-family:'Fredoka';font-weight:600;font-size:18px;display:flex;align-items:center;gap:8px}
+  .wallcard .wmeta{display:flex;gap:12px;font-weight:800;font-size:12px;color:var(--muted)}
+  .wallcard .wbar{height:12px;border-radius:999px;background:var(--bg);overflow:hidden;margin-top:3px}
+  .wallcard .wfill{height:100%;border-radius:999px;transition:width .5s}
+  .wallcard .wmsg{font-family:'Fredoka';font-weight:600;font-size:13px}
+  .wallcard .wdots{display:flex;flex-wrap:wrap;gap:6px;margin-top:3px}
+  .wallcard .wdot{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:18px;background:var(--bg);border:2px solid var(--line);opacity:.4}
+  .wallcard .wdot.done{opacity:1}
+  .wallcard .wgoal{font-size:11px;font-weight:800;color:var(--muted);margin-top:2px}
+  .wallcard .whint{color:var(--muted);font-weight:700;font-size:12px;margin-top:2px}
   .sectionhd{display:flex;align-items:center;justify-content:space-between;margin:20px 4px 10px}
   .sectionhd h2{font-family:'Fredoka';font-weight:600;font-size:17px;margin:0}
   .sectionhd .hint{font-size:12px;font-weight:700;color:var(--muted)}
@@ -611,12 +626,67 @@ function renderProfilePicker(){
       <span style="font-size:40px">⭐</span>
       <h2>Who's this?</h2>
       <div class="profiles" id="plist"></div>
-      <button class="linkbtn" id="signOut" style="margin-top:8px">Sign out of this account</button>
+      <button class="ghostbtn" id="wallBtn" style="margin-top:6px">📺 Family board</button>
+      <button class="linkbtn" id="signOut" style="margin-top:4px">Sign out of this account</button>
     </div>`;
   $('#plist').innerHTML=profiles.map(p=>`
     <div class="profile" data-p="${p.id}"><span class="av">${p.emoji}</span><span class="nm">${esc(p.name)}</span></div>`).join('');
   document.querySelectorAll('.profile').forEach(el=>el.onclick=()=>enterProfile(profiles.find(p=>p.id===el.dataset.p)));
+  $('#wallBtn').onclick=renderWallboard;
   $('#signOut').onclick=async()=>{await sb.auth.signOut();currentUser=null;familyId=null;me=null;renderLanding();};
+}
+
+// Read-only family display — all kids at once, no PIN (safe: it can't change
+// anything). Built to live on a shared always-on screen (the fridge tablet).
+async function loadFamilyBoardData(){
+  await loadProfiles();
+  const [{data:ch},{data:comp},{data:rw}]=await Promise.all([
+    sb.from('chores').select('*').eq('family_id',familyId).eq('archived',false),
+    sb.from('completions').select('*').eq('family_id',familyId).eq('completed_on',today()),
+    sb.from('rewards').select('*').eq('family_id',familyId).eq('archived',false)
+  ]);
+  chores=ch||[];rewards=rw||[];
+  doneToday=new Set((comp||[]).map(c=>c.chore_id));
+}
+async function renderWallboard(){
+  await loadFamilyBoardData();
+  const kids=profiles.filter(p=>p.role==='kid');
+  const dateline=new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'});
+  app.innerHTML=`
+    <div class="wallhead">
+      <div><h2>📺 Family board</h2><div class="sub">${dateline}</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="gear" id="wallRefresh" title="Refresh">🔄</button>
+        <button class="logout" id="wallBack" title="Back">↩️</button>
+      </div>
+    </div>
+    ${kids.length?`<div class="wallgrid">${kids.map(k=>wallCard(k)).join('')}</div>`
+      :`<div class="empty" style="padding:50px 20px">👨‍👩‍👧 No kids yet.<br>Add your kids in Parent settings to see them here.</div>`}`;
+  $('#wallBack').onclick=renderProfilePicker;
+  $('#wallRefresh').onclick=renderWallboard;
+}
+function wallCard(k){
+  const accent=k.color||'#378ADD';
+  const todays=visibleChores(k.id);
+  const coreUndone=todays.filter(c=>c.category!=='stretch' && c.points>0 && !doneToday.has(c.id)).length;
+  const corePts=todayCorePoints(k.id);
+  const pct=Math.max(0,Math.min(100,k.daily_goal?(corePts/k.daily_goal)*100:0));
+  const msg=todays.length===0?'No chores today'
+    :(coreUndone===0?'All done — superstar! 🌟':`${coreUndone} chore${coreUndone===1?'':'s'} to go!`);
+  const dots=todays.length?todays.map(c=>{
+    const done=doneToday.has(c.id);
+    return `<div class="wdot ${done?'done':''}" ${done?`style="background:${accent}22;border-color:${accent};opacity:1"`:''} title="${esc(c.name)}">${c.emoji}</div>`;
+  }).join(''):'<div class="whint">No chores yet — add some in Parent settings</div>';
+  const goalR=k.goal_reward_id?rewards.find(r=>r.id===k.goal_reward_id && !r.archived && !r.pending):null;
+  const togo=goalR?Math.max(0,goalR.cost-k.total_points):0;
+  return `<div class="wallcard">
+    <div class="wname" style="color:${accent}">${k.emoji} ${esc(k.name)}</div>
+    <div class="wmeta"><span>${k.total_points} ⭐</span><span>🔥 ${k.streak||0} day${(k.streak||0)===1?'':'s'}</span></div>
+    <div class="wbar"><div class="wfill" style="width:${pct}%;background:${accent}"></div></div>
+    <div class="wmsg" style="color:${accent}">${msg}</div>
+    <div class="wdots">${dots}</div>
+    ${goalR?`<div class="wgoal">🎯 Saving for ${esc(goalR.name)} · ${togo>0?togo+' ⭐ to go':'ready! 🎉'}</div>`:''}
+  </div>`;
 }
 
 async function enterProfile(p){
