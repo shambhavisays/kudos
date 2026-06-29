@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kudos">
+<meta name="theme-color" content="#F4F6FB">
+<title>Kudos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4F6FB; --card:#ffffff; --ink:#1d2b3a; --muted:#7c8aa0;
+    --accent:#378ADD; --accent-deep:#185FA5; --good:#3b6d11; --good-bg:#EAF3DE;
+    --bad:#A32D2D; --bad-bg:#FCEBEB; --line:#E6EAF2; --gold:#BA7517;
+    --k1:#378ADD;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{font-family:'Nunito',system-ui,sans-serif;color:var(--ink);background:var(--bg);min-height:100%}
+  .wrap{max-width:720px;margin:0 auto;padding:14px 14px 120px}
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 4px 12px}
+  .brand{display:flex;align-items:center;gap:9px;color:var(--ink)}
+  .brand .logo{font-size:24px}
+  .brand h1{font-family:'Fredoka';font-weight:600;font-size:20px;margin:0}
+  .brand .dateline{font-size:11px;font-weight:800;color:var(--muted);margin-top:1px}
+  .gear,.logout{appearance:none;border:none;background:#fff;border:1px solid var(--line);color:var(--ink);width:40px;height:40px;border-radius:13px;font-size:18px;cursor:pointer}
+  .gear:active,.logout:active{transform:scale(.92)}
+  .center{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;text-align:center}
+  .center h2{font-family:'Fredoka';font-size:22px;margin:0}
+  .center input{border:2px solid var(--line);border-radius:14px;padding:14px;font-size:18px;text-align:center;width:240px;font-family:'Nunito';font-weight:700;letter-spacing:2px}
+  .center input:focus{outline:none;border-color:var(--accent)}
+  .bigbtn{appearance:none;border:none;background:var(--accent);color:#fff;border-radius:14px;padding:13px 22px;font-family:'Fredoka';font-weight:600;font-size:16px;cursor:pointer}
+  .bigbtn:active{transform:scale(.97)}
+  .bigbtn:disabled{background:var(--line);color:var(--muted)}
+  .ghostbtn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--accent-deep);border-radius:14px;padding:12px 20px;font-family:'Fredoka';font-weight:600;font-size:15px;cursor:pointer}
+  .linkbtn{appearance:none;border:none;background:transparent;color:var(--accent-deep);font-family:'Nunito';font-weight:800;font-size:13px;cursor:pointer;text-decoration:underline}
+  .profiles{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:420px}
+  .profile{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer}
+  .profile .av{font-size:38px}
+  .profile .nm{font-family:'Fredoka';font-weight:600;font-size:16px}
+  /* ── Auth + onboarding ── */
+  .authcard{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px;width:100%;max-width:360px;text-align:left;display:flex;flex-direction:column;gap:11px}
+  .authcard label{font-weight:800;font-size:12px;color:var(--muted);margin-bottom:-5px}
+  .authcard input{border:2px solid var(--line);border-radius:12px;padding:12px;font-size:15px;font-family:'Nunito';font-weight:700;text-align:left;letter-spacing:normal;width:100%}
+  .authcard input:focus{outline:none;border-color:var(--accent)}
+  .tagline{color:var(--muted);font-weight:700;font-size:14px;max-width:320px}
+  .wizard{width:100%;max-width:460px;text-align:left}
+  .wizard .steplab{font-weight:800;font-size:12px;letter-spacing:1px;color:var(--accent-deep);text-transform:uppercase}
+  .wizard h2{font-family:'Fredoka';font-size:21px;margin:4px 0 2px}
+  .wizard .sub{color:var(--muted);font-weight:700;font-size:13px;margin-bottom:12px}
+  .agepills{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
+  .agepill{border:2px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-family:'Fredoka';font-weight:600;font-size:13px;cursor:pointer;color:var(--ink)}
+  .agepill.on{border-color:var(--accent);background:#eaf2fc;color:var(--accent-deep)}
+  .choregrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:8px}
+  .choreToggle{position:relative;border:2px solid var(--line);background:#fff;border-radius:16px;padding:12px;cursor:pointer;min-height:84px;display:flex;flex-direction:column;justify-content:space-between}
+  .choreToggle .emo{font-size:24px}
+  .choreToggle .nm{font-family:'Fredoka';font-weight:600;font-size:13px;margin-top:4px}
+  .choreToggle .pp{font-weight:800;font-size:11px;color:var(--good)}
+  .choreToggle.sel{border-color:var(--good);background:var(--good-bg)}
+  .choreToggle .tk{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;border:2px solid var(--line);background:#fff;display:grid;place-items:center;font-size:11px;color:#fff}
+  .choreToggle.sel .tk{background:var(--good);border-color:var(--good)}
+  .wizrow{display:flex;gap:9px;margin-top:14px}
+  .wizrow .bigbtn,.wizrow .ghostbtn{flex:1}
+  .miniform{display:grid;grid-template-columns:54px 1fr;gap:8px;margin:4px 0}
+  .miniform.three{grid-template-columns:54px 1fr 80px}
+  .miniform input{border:2px solid var(--line);border-radius:12px;padding:11px;font-weight:700;font-size:14px;width:100%;font-family:'Nunito'}
+  .miniform input:focus{outline:none;border-color:var(--accent)}
+  .toggle{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px;color:var(--ink);margin:8px 0}
+  .kidpill{display:inline-flex;align-items:center;gap:6px;background:#eaf2fc;color:var(--accent-deep);border-radius:999px;padding:6px 12px;font-weight:800;font-size:13px;margin:0 6px 6px 0}
+  .kids{display:flex;gap:10px;margin-bottom:14px}
+  .kidtab{flex:1;border:none;cursor:pointer;border-radius:16px;padding:11px 10px;display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);color:var(--ink);font-family:'Fredoka';font-weight:600;font-size:15px}
+  .kidtab .av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:17px;background:var(--bg);flex:none}
+  .kidtab.active{background:var(--k1);border-color:var(--k1);color:#fff}
+  .hero{background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px 20px}
+  .hero .row1{display:flex;align-items:flex-start;justify-content:space-between}
+  .hero .who{font-family:'Fredoka';font-weight:600;font-size:20px;display:flex;align-items:center;gap:8px}
+  .hero .pts{text-align:right;line-height:1}
+  .hero .pts b{font-family:'Fredoka';font-size:32px;display:block;color:var(--accent-deep)}
+  .hero .pts span{font-size:11px;font-weight:800;letter-spacing:1px;color:var(--muted)}
+  .meta{display:flex;gap:10px;margin-top:10px;font-weight:800;font-size:12px;flex-wrap:wrap}
+  .meta .chip{background:var(--bg);padding:5px 11px;border-radius:999px}
+  .power{margin-top:14px}
+  .power .bar{height:14px;border-radius:999px;background:var(--bg);overflow:hidden}
+  .power .fill{height:100%;border-radius:999px;background:var(--accent);width:0;transition:width .5s}
+  .power .lab{display:flex;justify-content:space-between;font-size:11px;font-weight:800;margin-top:6px;color:var(--muted)}
+  .sectionhd{display:flex;align-items:center;justify-content:space-between;margin:20px 4px 10px}
+  .sectionhd h2{font-family:'Fredoka';font-weight:600;font-size:17px;margin:0}
+  .sectionhd .hint{font-size:12px;font-weight:700;color:var(--muted)}
+  .periodgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;margin-bottom:4px}
+  @media(min-width:560px){.periodgrid{grid-template-columns:repeat(3,1fr)}}
+  .periodlab{display:flex;align-items:center;gap:8px;font-family:'Fredoka';font-weight:600;font-size:14px;color:var(--ink);margin:14px 4px 8px}
+  .periodlab::after{content:'';flex:1;height:1px;background:var(--line)}
+  .periodlab:first-child{margin-top:0}
+  .chore{background:#fff;border-radius:18px;padding:14px 13px;box-shadow:none;border:2px solid var(--line);cursor:pointer;position:relative;min-height:96px;display:flex;flex-direction:column;justify-content:space-between}
+  .chore:active{transform:scale(.96)}
+  .chore .emo{font-size:26px}
+  .chore .nm{font-family:'Fredoka';font-weight:600;font-size:14px;margin-top:6px}
+  .chore .pp{font-weight:800;font-size:12px;color:var(--good);margin-top:2px}
+  .chore.neg .pp{color:var(--bad)}
+  .chore.care .pp{color:var(--muted)}
+  .stretchtag{display:inline-block;font-size:10px;font-weight:700;color:#7c5cff;background:#7c5cff1a;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:middle}
+  .proposeBtn{appearance:none;border:1px dashed var(--accent);background:#fff;color:var(--accent-deep);border-radius:13px;padding:10px;font-family:'Fredoka';font-weight:600;font-size:13px;cursor:pointer;width:100%;margin:6px 0 0}
+  .chore .tick{position:absolute;top:9px;right:9px;width:24px;height:24px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:13px;color:#fff;background:#fff}
+  .chore.done{border-color:var(--good);background:var(--good-bg)}
+  .chore.done .tick{background:var(--good);border-color:var(--good)}
+  .chore.neg.done{border-color:var(--bad);background:var(--bad-bg)}
+  .chore.neg.done .tick{background:var(--bad);border-color:var(--bad)}
+  .tierlab{color:var(--muted);font-weight:800;font-size:12px;margin:10px 4px 4px}
+  .rewards{display:flex;gap:11px;overflow-x:auto;padding:4px 2px 6px}
+  .reward{flex:none;width:148px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:6px}
+  .reward .emo{font-size:26px}
+  .reward .nm{font-family:'Fredoka';font-weight:600;font-size:14px;line-height:1.15}
+  .reward .cost{font-weight:800;font-size:12px;color:var(--gold)}
+  .reward button{margin-top:auto;border:none;border-radius:11px;padding:9px;font-family:'Fredoka';font-weight:600;font-size:13px;cursor:pointer;background:var(--accent);color:#fff}
+  .reward button:disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(40px);background:var(--ink);color:#fff;padding:13px 20px;border-radius:14px;font-family:'Fredoka';font-weight:600;opacity:0;transition:.3s;z-index:70;max-width:90%;text-align:center}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .modal{position:fixed;inset:0;background:rgba(20,30,45,.45);z-index:80;display:none;align-items:flex-end;justify-content:center}
+  .modal.open{display:flex}
+  .sheet{background:#fff;width:100%;max-width:720px;max-height:88vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:18px 16px 30px}
+  .sheet h3{font-family:'Fredoka';font-size:19px;margin:4px 4px 14px;display:flex;align-items:center;justify-content:space-between}
+  .sheet h3 .x{border:none;background:var(--bg);border-radius:10px;width:32px;height:32px;font-size:16px;cursor:pointer}
+  .tabbar{display:flex;gap:6px;background:var(--bg);padding:5px;border-radius:13px;margin:0 4px 14px;flex-wrap:wrap}
+  .tabbar button{flex:1;border:none;background:transparent;padding:9px;border-radius:9px;font-family:'Fredoka';font-weight:600;font-size:13px;cursor:pointer;color:var(--muted);min-width:72px}
+  .tabbar button.on{background:#fff;color:var(--ink)}
+  .panel{display:none}.panel.on{display:block}
+  .item{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:13px;padding:10px 12px;margin:0 4px 9px}
+  .item .e{font-size:20px}
+  .item .t{flex:1;font-weight:700;font-size:14px}
+  .item .t small{display:block;color:var(--muted);font-weight:700;font-size:11px}
+  .item .del{border:none;background:var(--bad-bg);color:var(--bad);border-radius:8px;width:30px;height:30px;font-size:14px;cursor:pointer}
+  .addform{display:grid;grid-template-columns:50px 1fr 65px;gap:7px;margin:6px 4px 4px}
+  .addform input{border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;width:100%}
+  .addform.four{grid-template-columns:50px 1fr 56px 64px}
+  .addbtn{grid-column:1/-1;border:none;background:var(--accent);color:#fff;border-radius:12px;padding:11px;font-family:'Fredoka';font-weight:600;font-size:14px;cursor:pointer;margin-top:2px}
+  .rowbtns{display:flex;gap:8px;margin:10px 4px 0;flex-wrap:wrap}
+  .rowbtns button{flex:1;min-width:130px;border:none;border-radius:13px;padding:11px;font-family:'Fredoka';font-weight:600;font-size:13px;cursor:pointer;background:var(--bg);color:var(--ink)}
+  .rowbtns button.danger{background:var(--bad-bg);color:var(--bad)}
+  .note{color:var(--muted);font-size:12px;font-weight:700;margin:2px 6px 12px;line-height:1.4}
+  .empty{color:var(--muted);text-align:center;padding:20px;font-weight:700}
+  #fx{position:fixed;inset:0;pointer-events:none;z-index:90;overflow:hidden}
+  .fxpiece{position:absolute;font-size:26px;animation:fly .9s ease-out forwards}
+  @keyframes fly{0%{opacity:1;transform:translateY(0) scale(.6) rotate(0deg)}100%{opacity:0;transform:translateY(-150px) scale(1.3) rotate(45deg)}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div id="fx"></div>
+<div id="toast"></div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const SUPABASE_URL = 'https://pzfuqrbrbplnbabggsyr.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_5qUfnJlKZYVrjOgS5y4XpQ_OYJjV-ME';
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const $=s=>document.querySelector(s);
+const app=$('#app');
+const todayDow=()=>new Date().getDay();
+// Local calendar date (NOT toISOString, which is UTC and rolls over ~7pm Central,
+// stamping evening completions with tomorrow's date).
+const localDateStr=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const today=()=>localDateStr(new Date());
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let currentUser = null;   // Supabase Auth user (the parent who owns the family)
+let familyId = null;
+let me = null;
+let profiles = [];
+let chores = [];
+let rewards = [];
+let doneToday = new Set();
+
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1900);}
+
+function burst(x,y,emojis=['⭐'],n=12){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const fx=$('#fx');
+  for(let i=0;i<n;i++){
+    const piece=document.createElement('div');
+    piece.className='fxpiece';
+    piece.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+    piece.style.left=(x-13+(Math.random()*70-35))+'px';
+    piece.style.top=(y-13)+'px';
+    piece.style.animationDelay=(Math.random()*.15)+'s';
+    fx.appendChild(piece);
+    setTimeout(()=>piece.remove(),1100);
+  }
+}
+
+async function sha256(text){
+  const buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Starter content for new families
+// ─────────────────────────────────────────────────────────────────────────────
+// Age bands are cumulative — each adds to the one below it.
+const BAND_4_6=[
+  {emoji:'🛏️',name:'Make bed',points:5},
+  {emoji:'🪥',name:'Brush teeth',points:5},
+  {emoji:'🧸',name:'Put toys away',points:5},
+  {emoji:'👕',name:'Get dressed',points:5},
+  {emoji:'🥦',name:'Eat veggies',points:5},
+];
+const BAND_7_9=[...BAND_4_6,
+  {emoji:'📚',name:'Homework',points:10},
+  {emoji:'🍽️',name:'Set / clear table',points:5},
+  {emoji:'🛁',name:'Shower routine',points:5},
+  {emoji:'📖',name:'Read 20 min',points:10},
+];
+const BAND_10_12=[...BAND_7_9,
+  {emoji:'🧺',name:'Own laundry',points:10},
+  {emoji:'🧹',name:'Tidy own space',points:10},
+  {emoji:'🐕',name:'Pet care',points:5},
+  {emoji:'🎒',name:'Pack own bag',points:5},
+];
+const BAND_TEEN=[...BAND_10_12,
+  {emoji:'🍳',name:'Cook a meal',points:15},
+  {emoji:'🗑️',name:'Take out trash',points:5},
+  {emoji:'💵',name:'Budget allowance',points:10},
+  {emoji:'🚗',name:'Help with errands',points:10},
+];
+const BANDS=[
+  {key:'4-6',label:'4–6',lo:0,hi:6,chores:BAND_4_6},
+  {key:'7-9',label:'7–9',lo:7,hi:9,chores:BAND_7_9},
+  {key:'10-12',label:'10–12',lo:10,hi:12,chores:BAND_10_12},
+  {key:'teen',label:'Teen',lo:13,hi:99,chores:BAND_TEEN},
+];
+const bandForAge=age=>BANDS.find(b=>age>=b.lo&&age<=b.hi)||BANDS[1];
+const bandByKey=key=>BANDS.find(b=>b.key===key)||BANDS[1];
+const DEFAULT_GOAL_BY_BAND={'4-6':30,'7-9':50,'10-12':70,'teen':90};
+
+const STARTER_REWARDS=[
+  {emoji:'📺',name:'30 min screen time',cost:50,tier:'instant'},
+  {emoji:'🌙',name:'Stay up 15 min',cost:60,tier:'instant'},
+  {emoji:'🍕',name:'Pick dinner menu',cost:80,tier:'weekly'},
+  {emoji:'🎬',name:'Movie night',cost:120,tier:'weekly'},
+  {emoji:'🧸',name:'Small toy',cost:200,tier:'monthly'},
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Boot / auth
+// ─────────────────────────────────────────────────────────────────────────────
+async function boot(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){renderLanding();return;}
+  currentUser=session.user;
+
+  let fam=await loadOwnedFamily();
+  if(!fam){
+    // First authenticated load after signup (or email confirmation): if the
+    // onboarding wizard stashed a payload, build the family now.
+    const stash=localStorage.getItem('kudos:onboard');
+    if(stash){
+      try{ await createFamilyFromPayload(JSON.parse(stash)); }
+      catch(e){ console.error(e); toast('Setup hit a snag — try again'); }
+      localStorage.removeItem('kudos:onboard');
+      fam=await loadOwnedFamily();
+    }
+  }
+  if(!fam){renderEmptyFamilySetup();return;}
+  familyId=fam.id;
+  await loadProfiles();
+  if(!profiles.length){renderEmptyFamilySetup();return;}
+  renderProfilePicker();
+}
+
+async function loadOwnedFamily(){
+  const {data}=await sb.from('families').select('*').eq('owner_user_id',currentUser.id).order('created_at').limit(1);
+  return (data&&data[0])||null;
+}
+async function loadProfiles(){
+  const {data}=await sb.from('profiles').select('*').eq('family_id',familyId).order('role').order('name');
+  profiles=data||[];
+}
+
+// ── Landing (signed out) ──────────────────────────────────────────────────────
+function renderLanding(){
+  app.innerHTML=`
+    <div class="center">
+      <span style="font-size:48px">⭐</span>
+      <h2>Kudos</h2>
+      <p class="tagline">Give kids the kudos they deserve. Track chores, earn stars, cash them in for rewards.</p>
+      <button class="bigbtn" id="startBtn">Get started — free</button>
+      <button class="linkbtn" id="toLogin">I already have an account · Log in</button>
+    </div>`;
+  $('#startBtn').onclick=()=>startOnboarding();
+  $('#toLogin').onclick=renderLogin;
+}
+
+function renderLogin(){
+  app.innerHTML=`
+    <div class="center">
+      <span style="font-size:40px">⭐</span>
+      <h2>Welcome back</h2>
+      <div class="authcard">
+        <label>Email</label>
+        <input id="logEmail" type="email" inputmode="email" placeholder="you@example.com" autocomplete="email">
+        <label>Password</label>
+        <input id="logPass" type="password" placeholder="••••••••" autocomplete="current-password">
+        <button class="bigbtn" id="logBtn" style="margin-top:6px">Log in</button>
+      </div>
+      <button class="linkbtn" id="toStart">New here? Get started</button>
+    </div>`;
+  $('#toStart').onclick=renderLanding;
+  const submit=async()=>{
+    const email=$('#logEmail').value.trim(), pass=$('#logPass').value;
+    if(!email||!pass)return toast('Enter your email and password');
+    $('#logBtn').disabled=true;$('#logBtn').textContent='Logging in…';
+    const {error}=await sb.auth.signInWithPassword({email,password:pass});
+    if(error){$('#logBtn').disabled=false;$('#logBtn').textContent='Log in';return toast(error.message||'Could not log in');}
+    boot();
+  };
+  $('#logBtn').onclick=submit;
+  $('#logPass').addEventListener('keydown',e=>{if(e.key==='Enter')submit();});
+}
+
+// ── Onboarding wizard (value-first: see chores before sign-up) ────────────────
+// onboard.kids: [{name, age, emoji, bandKey, daily_goal, pinHash|null, chores:[{emoji,name,points}]}]
+let onboard=null;
+let wizActiveKid=0;
+
+function startOnboarding(){
+  onboard={familyName:'',kids:[blankKid()],parent:null};
+  wizActiveKid=0;
+  renderWizChores();
+}
+function blankKid(){
+  const b=bandByKey('7-9');
+  return {name:'',age:8,emoji:'🦄',bandKey:'7-9',daily_goal:DEFAULT_GOAL_BY_BAND['7-9'],pinHash:null,wantsPin:false,
+          chores:b.chores.map(c=>({...c}))};
+}
+
+// Step 1 + 2 combined: starter chores shown immediately, refine by age inline.
+function renderWizChores(){
+  const kid=onboard.kids[wizActiveKid];
+  const band=bandForAge(kid.age);
+  // The available pool follows the chosen age band; selection state persists by name.
+  const selected=new Set(kid.chores.map(c=>c.name));
+  const pool=band.chores;
+  app.innerHTML=`
+    <div class="center" style="justify-content:flex-start;padding-top:28px">
+      <div class="wizard">
+        <div class="steplab">Step 1 of 2 · Kid ${wizActiveKid+1}</div>
+        <h2>Here are starter chores</h2>
+        <div class="sub">Tap to pick the ones that fit. Set the age and the list adjusts.</div>
+        <div class="agepills" id="agePills">
+          ${BANDS.map(b=>`<button class="agepill ${b.key===band.key?'on':''}" data-band="${b.key}">${b.label} yrs</button>`).join('')}
+        </div>
+        <div class="choregrid" id="choreGrid">
+          ${pool.map(c=>`
+            <div class="choreToggle ${selected.has(c.name)?'sel':''}" data-name="${esc(c.name)}">
+              <div class="tk">${selected.has(c.name)?'✓':''}</div>
+              <div><div class="emo">${c.emoji}</div><div class="nm">${esc(c.name)}</div></div>
+              <div class="pp">+${c.points} ⭐</div>
+            </div>`).join('')}
+        </div>
+        <div class="wizrow">
+          <button class="ghostbtn" id="wizBack">Back</button>
+          <button class="bigbtn" id="wizNext">Next: name & PIN</button>
+        </div>
+      </div>
+    </div>`;
+  document.querySelectorAll('#agePills .agepill').forEach(el=>el.onclick=()=>{
+    const b=bandByKey(el.dataset.band);
+    kid.bandKey=b.key;kid.age=Math.round((b.lo+Math.min(b.hi,18))/2);
+    kid.daily_goal=DEFAULT_GOAL_BY_BAND[b.key];
+    // keep any still-valid picks, add the newly relevant defaults
+    const keep=kid.chores.filter(c=>b.chores.some(x=>x.name===c.name));
+    const have=new Set(keep.map(c=>c.name));
+    kid.chores=[...keep,...b.chores.filter(c=>!have.has(c.name))];
+    renderWizChores();
+  });
+  document.querySelectorAll('#choreGrid .choreToggle').forEach(el=>el.onclick=()=>{
+    const nm=el.dataset.name;
+    const i=kid.chores.findIndex(c=>c.name===nm);
+    if(i>=0)kid.chores.splice(i,1);
+    else{const c=pool.find(x=>x.name===nm);if(c)kid.chores.push({...c});}
+    renderWizChores();
+  });
+  $('#wizBack').onclick=()=>{ if(wizActiveKid>0){wizActiveKid--;renderWizChores();} else renderLanding(); };
+  $('#wizNext').onclick=()=>{
+    if(!kid.chores.length)return toast('Pick at least one chore');
+    renderWizKidDetails();
+  };
+}
+
+// Step 2: name, emoji, optional PIN for this kid.
+function renderWizKidDetails(){
+  const kid=onboard.kids[wizActiveKid];
+  app.innerHTML=`
+    <div class="center" style="justify-content:flex-start;padding-top:28px">
+      <div class="wizard">
+        <div class="steplab">Step 2 of 2 · Kid ${wizActiveKid+1}</div>
+        <h2>Who is this for?</h2>
+        <div class="sub">${kid.chores.length} chore${kid.chores.length===1?'':'s'} picked. Just a name to finish.</div>
+        <div class="miniform three">
+          <input id="kEmoji" maxlength="2" value="${esc(kid.emoji)}" placeholder="🦄">
+          <input id="kName" value="${esc(kid.name)}" placeholder="Child's name">
+          <input id="kAge" type="number" min="1" max="18" value="${kid.age}" placeholder="Age">
+        </div>
+        <label class="toggle"><input type="checkbox" id="kWantsPin" ${kid.wantsPin?'checked':''}> Protect this board with a 4-digit PIN (good for older kids on a shared device)</label>
+        <div id="kPinWrap" style="${kid.wantsPin?'':'display:none'}">
+          <div class="miniform"><span></span><input id="kPin" inputmode="numeric" maxlength="4" placeholder="4-digit PIN" value=""></div>
+        </div>
+        <div class="wizrow">
+          <button class="ghostbtn" id="wizBack2">Back</button>
+          <button class="bigbtn" id="wizNext2">Continue</button>
+        </div>
+        <div style="margin-top:10px">${onboard.kids.map((kk,i)=>kk.name?`<span class="kidpill">${kk.emoji} ${esc(kk.name)}</span>`:'').join('')}</div>
+      </div>
+    </div>`;
+  $('#kWantsPin').onchange=e=>{kid.wantsPin=e.target.checked;$('#kPinWrap').style.display=kid.wantsPin?'':'none';};
+  $('#wizBack2').onclick=renderWizChores;
+  $('#wizNext2').onclick=async()=>{
+    const name=$('#kName').value.trim();
+    if(!name)return toast("Add the child's name");
+    kid.name=name;
+    kid.emoji=$('#kEmoji').value.trim()||'🦄';
+    kid.age=parseInt($('#kAge').value,10)||kid.age;
+    kid.bandKey=bandForAge(kid.age).key;
+    if(kid.wantsPin){
+      const pin=$('#kPin').value.trim();
+      if(pin && pin.length!==4)return toast('Kid PIN must be 4 digits (or untick to skip)');
+      kid.pinHash=pin?await sha256(pin):null;
+    }else kid.pinHash=null;
+    renderWizAddMore();
+  };
+}
+
+function renderWizAddMore(){
+  app.innerHTML=`
+    <div class="center" style="justify-content:flex-start;padding-top:36px">
+      <div class="wizard" style="text-align:center">
+        <h2>Got more kids?</h2>
+        <div class="sub" style="text-align:center">You can always add or edit kids later in Parent settings.</div>
+        <div style="margin:8px 0 4px">${onboard.kids.map(k=>`<span class="kidpill">${k.emoji} ${esc(k.name)}</span>`).join('')}</div>
+        <div class="wizrow">
+          <button class="ghostbtn" id="addKid">＋ Add another child</button>
+          <button class="bigbtn" id="toParent">Done — next</button>
+        </div>
+      </div>
+    </div>`;
+  $('#addKid').onclick=()=>{onboard.kids.push(blankKid());wizActiveKid=onboard.kids.length-1;renderWizChores();};
+  $('#toParent').onclick=renderWizParent;
+}
+
+// Final step: create the parent account. This is where sign-up actually happens.
+function renderWizParent(){
+  app.innerHTML=`
+    <div class="center" style="justify-content:flex-start;padding-top:28px">
+      <div class="wizard">
+        <div class="steplab">Last step</div>
+        <h2>Save your board</h2>
+        <div class="sub">Create your parent account. You'll log in with this on any device.</div>
+        <div class="authcard" style="max-width:none">
+          <label>Your name</label>
+          <input id="pName" placeholder="e.g. Mom, Dad, Priya">
+          <label>Email</label>
+          <input id="pEmail" type="email" inputmode="email" placeholder="you@example.com" autocomplete="email">
+          <label>Password</label>
+          <input id="pPass" type="password" placeholder="At least 6 characters" autocomplete="new-password">
+          <label>Parent PIN (6 digits) — locks Parent settings</label>
+          <input id="pPin" inputmode="numeric" maxlength="6" placeholder="6-digit PIN">
+          <button class="bigbtn" id="createBtn" style="margin-top:8px">Create account & save</button>
+        </div>
+        <button class="linkbtn" id="wizBack3">← Back</button>
+      </div>
+    </div>`;
+  $('#wizBack3').onclick=renderWizAddMore;
+  $('#createBtn').onclick=async()=>{
+    const name=$('#pName').value.trim();
+    const email=$('#pEmail').value.trim();
+    const pass=$('#pPass').value;
+    const pin=$('#pPin').value.trim();
+    if(!name)return toast('Add your name');
+    if(!email||!pass)return toast('Email and password are required');
+    if(pass.length<6)return toast('Password needs at least 6 characters');
+    if(pin.length!==6)return toast('Parent PIN must be 6 digits');
+
+    onboard.parent={name,emoji:'🧑',pinHash:await sha256(pin)};
+    onboard.familyName=name.endsWith('s')?`${name}' Family`:`${name}'s Family`;
+    // Stash everything (PINs are pre-hashed; no plaintext, no password stored) so
+    // setup can complete on first authenticated load — covers email-confirm-on too.
+    localStorage.setItem('kudos:onboard',JSON.stringify(onboard));
+
+    $('#createBtn').disabled=true;$('#createBtn').textContent='Creating…';
+    const {data,error}=await sb.auth.signUp({email,password:pass});
+    if(error){$('#createBtn').disabled=false;$('#createBtn').textContent='Create account & save';return toast(error.message||'Sign-up failed');}
+
+    if(data.session){
+      // Email confirmation is off — we're logged in, finish immediately.
+      boot();
+    }else{
+      // Email confirmation is on — finish after they confirm and return.
+      renderConfirmEmail(email);
+    }
+  };
+}
+
+function renderConfirmEmail(email){
+  app.innerHTML=`
+    <div class="center">
+      <span style="font-size:44px">📩</span>
+      <h2>Check your email</h2>
+      <p class="tagline">We sent a confirmation link to <b>${esc(email)}</b>. Tap it, then come back and log in — your board will be waiting.</p>
+      <button class="bigbtn" id="toLogin2">I've confirmed — log in</button>
+    </div>`;
+  $('#toLogin2').onclick=renderLogin;
+}
+
+// Build the family from a wizard payload (runs authenticated, RLS-scoped to us).
+async function createFamilyFromPayload(p){
+  const {data:fam,error:fe}=await sb.from('families')
+    .insert({owner_user_id:currentUser.id,name:p.familyName||'My Family'}).select().single();
+  if(fe)throw fe;
+  familyId=fam.id;
+
+  // Parent profile
+  await sb.from('profiles').insert({
+    family_id:familyId,name:p.parent.name,emoji:p.parent.emoji||'🧑',role:'parent',
+    daily_goal:0,pin_hash:p.parent.pinHash
+  });
+
+  // Kids + their chosen chores
+  for(const kid of (p.kids||[])){
+    if(!kid.name)continue;
+    const {data:kp,error:ke}=await sb.from('profiles').insert({
+      family_id:familyId,name:kid.name,emoji:kid.emoji||'🦄',role:'kid',
+      age:kid.age||null,daily_goal:kid.daily_goal||50,pin_hash:kid.pinHash||null
+    }).select().single();
+    if(ke)throw ke;
+    if(kid.chores&&kid.chores.length){
+      await sb.from('chores').insert(kid.chores.map(c=>({
+        family_id:familyId,profile_id:kp.id,emoji:c.emoji,name:c.name,points:c.points,cadence:'daily'
+      })));
+    }
+  }
+
+  // Shared starter rewards
+  await sb.from('rewards').insert(STARTER_REWARDS.map(r=>({
+    family_id:familyId,owner:'both',emoji:r.emoji,name:r.name,cost:r.cost,tier:r.tier
+  })));
+}
+
+// Fallback for an authenticated user whose family/profiles never got built.
+function renderEmptyFamilySetup(){
+  app.innerHTML=`
+    <div class="center">
+      <span style="font-size:42px">🛠️</span>
+      <h2>Let's set up your family</h2>
+      <p class="tagline">Your account is ready but there's no family yet. Start the quick setup to add your kids and chores.</p>
+      <button class="bigbtn" id="setupBtn">Set up my family</button>
+      <button class="linkbtn" id="signOut">Sign out</button>
+    </div>`;
+  $('#setupBtn').onclick=()=>startOnboarding();
+  $('#signOut').onclick=async()=>{await sb.auth.signOut();currentUser=null;familyId=null;renderLanding();};
+}
+
+// ── Profile picker + PIN ──────────────────────────────────────────────────────
+function renderProfilePicker(){
+  app.innerHTML=`
+    <div class="center">
+      <span style="font-size:40px">⭐</span>
+      <h2>Who's this?</h2>
+      <div class="profiles" id="plist"></div>
+      <button class="linkbtn" id="signOut" style="margin-top:8px">Sign out of this account</button>
+    </div>`;
+  $('#plist').innerHTML=profiles.map(p=>`
+    <div class="profile" data-p="${p.id}"><span class="av">${p.emoji}</span><span class="nm">${esc(p.name)}</span></div>`).join('');
+  document.querySelectorAll('.profile').forEach(el=>el.onclick=()=>enterProfile(profiles.find(p=>p.id===el.dataset.p)));
+  $('#signOut').onclick=async()=>{await sb.auth.signOut();currentUser=null;familyId=null;me=null;renderLanding();};
+}
+
+async function enterProfile(p){
+  // No PIN set (optional for kids) → straight in.
+  if(!p.pin_hash){
+    me=p;await loadKidData();
+    for(const kid of profiles.filter(pr=>pr.role==='kid'))await reconcileCredits(kid);
+    renderMain();
+    return;
+  }
+  askPin(p);
+}
+
+const pinAttempts={};
+function askPin(p){
+  const expLen=p.role==='parent'?6:4;
+  app.innerHTML=`
+    <div class="center">
+      <span style="font-size:38px">${p.emoji}</span>
+      <h2>${esc(p.name)}'s PIN</h2>
+      <input id="pin" type="password" inputmode="numeric" maxlength="${expLen}" placeholder="${'-'.repeat(expLen)}">
+      <button class="bigbtn" id="pinBtn">Unlock</button>
+      <button class="logout" id="backBtn" style="width:auto;padding:0 16px">← Back</button>
+    </div>`;
+  $('#backBtn').onclick=renderProfilePicker;
+  $('#pinBtn').onclick=async()=>{
+    const lock=pinAttempts[p.id];
+    if(lock && lock.until>Date.now()){
+      toast('Too many tries — wait '+Math.ceil((lock.until-Date.now())/1000)+'s');
+      return;
+    }
+    const v=$('#pin').value.trim();
+    if(v.length!==expLen)return toast('PIN is '+expLen+' digits');
+    const hash=await sha256(v);
+    if(hash!==p.pin_hash){
+      const a=pinAttempts[p.id]||{count:0,until:0};
+      a.count++;
+      if(a.count>=5){a.until=Date.now()+30000;a.count=0;toast('Too many tries — wait 30s');}
+      else toast('Wrong PIN');
+      pinAttempts[p.id]=a;
+      return;
+    }
+    pinAttempts[p.id]={count:0,until:0};
+    me=p;await loadKidData();
+    for(const kid of profiles.filter(pr=>pr.role==='kid'))await reconcileCredits(kid);
+    renderMain();
+  };
+  $('#pin').addEventListener('keydown',e=>{if(e.key==='Enter')$('#pinBtn').click();});
+}
+
+function mondayOfThisWeek(){
+  const d=new Date();const day=d.getDay();const diff=(day===0?-6:1-day);d.setDate(d.getDate()+diff);return d;
+}
+function thisWeekDates(){
+  const monday=mondayOfThisWeek();
+  return [0,1,2,3,4].map(i=>{const d=new Date(monday);d.setDate(d.getDate()+i);return localDateStr(d);});
+}
+
+let weekDates=[];
+let weekCompletions=[];
+let rewardCredits={};
+const creditKey=(rewardId,profileId)=>rewardId+'_'+profileId;
+
+async function loadKidData(){
+  const dates=thisWeekDates();
+  const [{data:ch},{data:rw},{data:comp},{data:week},{data:credits}]=await Promise.all([
+    sb.from('chores').select('*').eq('family_id',familyId).eq('archived',false),
+    sb.from('rewards').select('*').eq('family_id',familyId).eq('archived',false),
+    sb.from('completions').select('*').eq('family_id',familyId).eq('completed_on',today()),
+    sb.from('completions').select('*').eq('family_id',familyId).gte('completed_on',dates[0]).lte('completed_on',dates[4]),
+    sb.from('reward_credits').select('*').eq('family_id',familyId)
+  ]);
+  chores=ch||[];rewards=rw||[];
+  // chore_id is unique per kid (each chore row belongs to exactly one profile), so a
+  // family-wide completions fetch is safe to key purely off chore_id — this also fixes
+  // a parent viewing a kid's board: scoping by me.id (the parent) showed everything as
+  // undone, since the parent never completes chores themselves.
+  doneToday=new Set((comp||[]).map(c=>c.chore_id));
+  weekDates=dates;weekCompletions=week||[];
+  rewardCredits={};(credits||[]).forEach(c=>rewardCredits[creditKey(c.reward_id,c.profile_id)]=c);
+}
+
+function choresForDow(profileId,dow){
+  return chores.filter(c=>c.profile_id===profileId && !c.pending && (c.cadence==='daily' || (c.cadence==='weekday' && (c.weekdays||[]).includes(dow))));
+}
+function visibleChores(profileId){
+  return choresForDow(profileId,todayDow());
+}
+function visibleRewards(profileId){
+  return rewards.filter(r=>r.owner==='both' || r.owner_profile_id===profileId);
+}
+function todayPoints(profileId){
+  return visibleChores(profileId).reduce((s,c)=>s+(doneToday.has(c.id)?c.points:0),0);
+}
+// Goal progress only counts must-have/nice-to-have chores — stretch tasks are
+// bonus and excluded from TV/permission unlock math too, so the goal bar
+// shouldn't look "done" off stretch points alone while real chores sit undone.
+function todayCorePoints(profileId){
+  return visibleChores(profileId).filter(c=>c.category!=='stretch').reduce((s,c)=>s+(doneToday.has(c.id)?c.points:0),0);
+}
+function todayStretchPoints(profileId){
+  return visibleChores(profileId).filter(c=>c.category==='stretch').reduce((s,c)=>s+(doneToday.has(c.id)?c.points:0),0);
+}
+function weekMissCount(profileId){
+  let misses=0;
+  for(let i=0;i<5;i++){
+    const dateStr=weekDates[i];
+    if(dateStr>today())continue;
+    const dow=i+1;
+    const dayChores=choresForDow(profileId,dow);
+    const possible=dayChores.filter(c=>c.points>0).reduce((s,c)=>s+c.points,0);
+    const earned=weekCompletions.filter(cm=>cm.completed_on===dateStr && dayChores.some(dc=>dc.id===cm.chore_id)).reduce((s,cm)=>s+cm.points,0);
+    if(earned<possible)misses++;
+  }
+  return misses;
+}
+function isGated(r){
+  return !!(r.requires_all_today||r.requires_perfect_week||r.requires_full_points_excluding||(r.requires_chore_names&&r.requires_chore_names.length));
+}
+function getCredits(r,k){
+  return (rewardCredits[creditKey(r.id,k.id)]||{credits:0}).credits;
+}
+function periodKeyFor(r){
+  return r.requires_perfect_week?weekDates[0]:today();
+}
+async function maybeAwardCredit(r,k){
+  if(!isGated(r))return;
+  const key=creditKey(r.id,k.id);
+  const row=rewardCredits[key]||{credits:0,last_period_credited:null};
+  const pk=periodKeyFor(r);
+  if(row.last_period_credited===pk)return;
+  const todays=visibleChores(k.id);
+  let met=true,usedFreeze=false;
+  if(met && r.requires_all_today){
+    if(!(todays.length>0 && todays.every(c=>doneToday.has(c.id))))met=false;
+  }
+  if(met && r.requires_chore_names && r.requires_chore_names.length){
+    const doneNames=new Set(todays.filter(c=>doneToday.has(c.id)).map(c=>c.name));
+    if(!r.requires_chore_names.every(n=>doneNames.has(n)))met=false;
+  }
+  if(met && r.requires_full_points_excluding){
+    const excl=new Set(r.requires_full_points_excluding);
+    const eligible=todays.filter(c=>!excl.has(c.name));
+    const possible=eligible.filter(c=>c.points>0).reduce((s,c)=>s+c.points,0);
+    const earned=eligible.filter(c=>doneToday.has(c.id)).reduce((s,c)=>s+c.points,0);
+    if(earned<possible)met=false;
+  }
+  if(met && r.requires_perfect_week){
+    const misses=weekMissCount(k.id);
+    if(misses>1)met=false;
+    else if(misses===1){if(!(k.freezes||0))met=false;else usedFreeze=true;}
+  }
+  if(!met)return;
+  const newCredits=row.credits+1;
+  const {data,error}=await sb.from('reward_credits')
+    .upsert({family_id:familyId,reward_id:r.id,profile_id:k.id,credits:newCredits,last_period_credited:pk},{onConflict:'reward_id,profile_id'})
+    .select().single();
+  if(!error)rewardCredits[key]=data;
+  if(usedFreeze){
+    k.freezes=Math.max(0,(k.freezes||0)-1);
+    await sb.from('profiles').update({freezes:k.freezes}).eq('id',k.id);
+  }
+}
+async function reconcileCredits(k){
+  for(const r of rewards.filter(isGated))await maybeAwardCredit(r,k);
+}
+function canClaim(r,k){
+  if(isGated(r)){
+    if(getCredits(r,k)<=0)return false;
+    if(r.allowed_weekdays && r.allowed_weekdays.length && !r.allowed_weekdays.includes(todayDow()))return false;
+    return k.total_points>=r.cost;
+  }
+  return k.total_points>=r.cost;
+}
+
+function renderMain(){
+  const isParent=me.role==='parent';
+  const switchable=isParent?profiles.filter(p=>p.role==='kid'):[me];
+  if(!switchable.length){ // a parent with no kids yet
+    app.innerHTML=`
+      <header class="top">
+        <div class="brand"><span class="logo">⭐</span><div><h1>Kudos</h1></div></div>
+        <div style="display:flex;gap:8px">
+          <button class="gear" id="gear" title="Parent settings">⚙️</button>
+          <button class="logout" id="logoutBtn" title="Switch profile">↩️</button>
+        </div>
+      </header>
+      <div class="center"><span style="font-size:38px">🙂</span><h2>No kids yet</h2>
+      <p class="tagline">Open Parent settings → Family to add your first child.</p>
+      <button class="bigbtn" id="openFam">Add a child</button></div>`;
+    $('#gear').onclick=()=>openAdmin(me);
+    $('#openFam').onclick=()=>openAdmin(me);
+    $('#logoutBtn').onclick=()=>{me=null;window._activeKid=null;renderProfilePicker();};
+    return;
+  }
+  const activeKid=switchable.find(p=>window._activeKid && p.id===window._activeKid.id)||switchable[0];
+  window._activeKid=activeKid;
+  const k=activeKid;
+  const tp=todayPoints(k.id);
+  const corePts=todayCorePoints(k.id);
+  const stretchPts=todayStretchPoints(k.id);
+  const pct=Math.max(0,Math.min(100,k.daily_goal?(corePts/k.daily_goal)*100:0));
+  const tiers=[['instant','⚡ Same-day'],['weekly','📆 Weekly'],['monthly','🏆 Monthly / Saver']];
+  const mine=visibleRewards(k.id);
+
+  app.innerHTML=`
+    <header class="top">
+      <div class="brand"><span class="logo">⭐</span><div><h1>Kudos</h1><div class="dateline">${new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div></div></div>
+      <div style="display:flex;gap:8px">
+        <button class="gear" id="historyBtn" title="History">📜</button>
+        ${isParent?'<button class="gear" id="gear" title="Parent settings">⚙️</button>':''}
+        <button class="logout" id="logoutBtn" title="Switch profile">↩️</button>
+      </div>
+    </header>
+    <div class="kids" id="kidTabs"></div>
+    <div class="hero">
+      <div class="row1">
+        <div class="who">${k.emoji} ${esc(k.name)}</div>
+        <div class="pts"><b>${k.total_points}</b><span>STARS</span></div>
+      </div>
+      <div class="meta">
+        <span class="chip">🔥 ${k.streak||0} day streak</span>
+        <span class="chip">🧊 ${k.freezes||0} freeze${(k.freezes||0)===1?'':'s'}</span>
+        <span class="chip">📅 today ${tp>=0?'+':''}${tp}</span>
+        ${stretchPts>0?`<span class="chip">✨ +${stretchPts} bonus</span>`:''}
+      </div>
+      <div class="power">
+        <div class="bar"><div class="fill" style="width:${pct}%"></div></div>
+        <div class="lab"><span>${corePts} of goal</span><span>Goal ${k.daily_goal} ⭐ ${corePts>=k.daily_goal?'🎉':''}</span></div>
+      </div>
+    </div>
+    <div class="sectionhd"><h2>🎯 Today's chores</h2><span class="hint">Tap to complete</span></div>
+    <div id="grid"></div>
+    <div id="rewardsRow"></div>
+  `;
+
+  $('#kidTabs').innerHTML=switchable.length>1?switchable.map(p=>`
+    <button class="kidtab ${p.id===k.id?'active':''}" data-k="${p.id}"><span class="av">${p.emoji}</span>${esc(p.name)}</button>`).join(''):'';
+  document.querySelectorAll('.kidtab').forEach(el=>el.onclick=()=>{window._activeKid=switchable.find(p=>p.id===el.dataset.k);renderMain();});
+
+  const periodOrder=[['morning','🌅 Morning'],['afternoon','☀️ Afternoon'],['evening','🌙 Evening'],[null,'📌 Anytime']];
+  const todays=visibleChores(k.id);
+  $('#grid').innerHTML=periodOrder.map(([period,label])=>{
+    const items=todays.filter(c=>(c.period||null)===period);
+    if(!items.length)return '';
+    return `<div class="periodlab">${label}</div><div class="periodgrid">${items.map(c=>`
+      <div class="chore ${c.points<0?'neg':''} ${c.points===0?'care':''} ${doneToday.has(c.id)?'done':''}" data-c="${c.id}">
+        <div><div class="emo">${c.emoji}</div><div class="nm">${esc(c.name)}${c.category==='stretch'?' <span class="stretchtag">✨ Bonus</span>':''}</div><div class="pp">${c.points===0?'Daily care':(c.points>0?'+':'')+c.points+' ⭐'}${c.category==='stretch'?' (bonus)':''}</div></div>
+        <div class="tick">${doneToday.has(c.id)?'✓':''}</div>
+      </div>`).join('')}</div>`;
+  }).join('');
+  if(!isParent){
+    $('#grid').insertAdjacentHTML('afterend','<button class="proposeBtn" id="proposeBtn">💡 Propose a chore (needs parent approval)</button>');
+    $('#proposeBtn').onclick=()=>proposeChore(k);
+  }
+  document.querySelectorAll('.chore').forEach(el=>el.onclick=async()=>{
+    const willComplete=!doneToday.has(el.dataset.c);
+    const rect=el.getBoundingClientRect();
+    const ok=await toggleChore(k,el.dataset.c);
+    if(willComplete && ok)burst(rect.left+rect.width/2,rect.top+rect.height/2,['⭐','✨',k.emoji,'🎉']);
+  });
+
+  $('#rewardsRow').innerHTML=tiers.map(([tier,label])=>{
+    const items=mine.filter(r=>r.tier===tier);
+    if(!items.length)return '';
+    return `<div class="tierlab">${label}</div><div class="rewards">${items.map(r=>{
+      const gated=isGated(r);
+      const eligible=canClaim(r,k);
+      const credits=gated?getCredits(r,k):0;
+      const shortBy=Math.max(0,r.cost-k.total_points);
+      const weekdayBlocked=gated && r.allowed_weekdays && r.allowed_weekdays.length && !r.allowed_weekdays.includes(todayDow());
+      let costLabel,btnLabel;
+      if(gated){
+        const credLabel=credits>0?credits+' credit'+(credits===1?'':'s')+' to claim':'No credits yet';
+        costLabel=(r.cost>0?r.cost+' ⭐ · ':'')+credLabel+(weekdayBlocked && credits>0?' (Fri/Sat only)':'');
+        btnLabel=eligible?'Claim':(credits>0?(weekdayBlocked?'Wait for Fri/Sat':'Need '+shortBy+' more ⭐'):'Locked');
+      }else{
+        costLabel=r.cost+' ⭐';
+        btnLabel=eligible?'Redeem':'Need '+shortBy;
+      }
+      return `<div class="reward">
+        <div class="emo">${r.emoji}</div><div class="nm">${esc(r.name)}</div><div class="cost">${costLabel}</div>
+        <button data-r="${r.id}" ${eligible?'':'disabled'}>${btnLabel}</button>
+      </div>`;
+    }).join('')}</div>`;
+  }).join('');
+  document.querySelectorAll('[data-r]').forEach(el=>el.onclick=()=>redeem(k,el.dataset.r));
+
+  $('#logoutBtn').onclick=()=>{me=null;window._activeKid=null;renderProfilePicker();};
+  $('#historyBtn').onclick=()=>openHistory(k);
+  if(isParent)$('#gear').onclick=()=>openAdmin(k);
+}
+
+async function openHistory(k){
+  const since=new Date();since.setDate(since.getDate()-365);
+  const {data}=await sb.from('completions').select('chore_id,points,completed_on,note').eq('profile_id',k.id).gte('completed_on',since.toISOString().slice(0,10)).order('completed_on',{ascending:false});
+  const byDate={};
+  (data||[]).forEach(c=>{
+    (byDate[c.completed_on]=byDate[c.completed_on]||[]).push(c);
+  });
+  const dates=Object.keys(byDate).sort((a,b)=>b.localeCompare(a));
+  app.insertAdjacentHTML('beforeend',`
+    <div class="modal open" id="historyModal">
+      <div class="sheet">
+        <h3><span>📜 ${esc(k.name)}'s history (past year)</span><button class="x" id="closeHistory">✕</button></h3>
+        ${dates.length?dates.map(d=>{
+          const items=byDate[d];
+          const dayTotal=items.reduce((s,c)=>s+c.points,0);
+          const dateLabel=new Date(d+'T00:00:00').toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+          return `<div class="note" style="font-weight:800;color:var(--ink);margin-top:14px">${dateLabel} — ${dayTotal>=0?'+':''}${dayTotal} ⭐</div>
+          ${items.map(c=>{
+            const chore=chores.find(x=>x.id===c.chore_id);
+            return `<div class="item"><span class="e">${chore?chore.emoji:'⭐'}</span><span class="t">${c.points>=0?'✅ ':''}${chore?esc(chore.name):'(removed chore)'}<small>${c.points>0?'+':''}${c.points} pts${c.note?' — '+esc(c.note):''}</small></span></div>`;
+          }).join('')}`;
+        }).join(''):'<div class="empty">No history yet.</div>'}
+      </div>
+    </div>`);
+  $('#closeHistory').onclick=()=>$('#historyModal').remove();
+}
+
+async function toggleChore(k,choreId){
+  const c=chores.find(x=>x.id===choreId);if(!c)return false;
+  if(doneToday.has(choreId)){
+    await sb.from('completions').delete().match({profile_id:k.id,chore_id:choreId,completed_on:today()});
+    doneToday.delete(choreId);
+    k.total_points=Math.max(0,k.total_points-c.points);
+    weekCompletions=weekCompletions.filter(cm=>!(cm.chore_id===choreId && cm.completed_on===today()));
+  }else{
+    let note=null;
+    if(c.prompts_note){
+      note=prompt(`What did ${k.name} read tonight? (title, pages — optional)`);
+      if(note===null)return false;
+    }
+    const {error}=await sb.from('completions').insert({family_id:familyId,profile_id:k.id,chore_id:choreId,points:c.points,completed_on:today(),note:note||null});
+    if(error){toast('Could not save — try again');return false;}
+    doneToday.add(choreId);
+    k.total_points=Math.max(0,k.total_points+c.points);
+    weekCompletions.push({profile_id:k.id,chore_id:choreId,points:c.points,completed_on:today(),note});
+    if(c.points>0 && k.last_active_date!==today()){
+      const y=new Date();y.setDate(y.getDate()-1);
+      k.streak=(k.last_active_date===y.toISOString().slice(0,10))?(k.streak||0)+1:1;
+      k.last_active_date=today();
+    }
+  }
+  await sb.from('profiles').update({total_points:k.total_points,streak:k.streak,last_active_date:k.last_active_date}).eq('id',k.id);
+  await reconcileCredits(k);
+  renderMain();
+  return true;
+}
+
+async function resetToday(k){
+  if(!confirm(`Reset ${k.name}'s checklist for today? This removes today's checkmarks and today's points only.`))return;
+  const {data:comp}=await sb.from('completions').select('points').eq('profile_id',k.id).eq('completed_on',today());
+  const pts=(comp||[]).reduce((s,c)=>s+c.points,0);
+  k.total_points=Math.max(0,k.total_points-pts);
+  await sb.from('profiles').update({total_points:k.total_points}).eq('id',k.id);
+  await sb.from('completions').delete().eq('profile_id',k.id).eq('completed_on',today());
+  doneToday=new Set([...doneToday].filter(id=>!chores.some(c=>c.id===id && c.profile_id===k.id)));
+  weekCompletions=weekCompletions.filter(cm=>!(cm.profile_id===k.id && cm.completed_on===today()));
+  $('#modal').remove();
+  toast(`${k.name}'s today reset`);
+  renderMain();
+}
+
+async function redeem(k,rewardId){
+  const r=rewards.find(x=>x.id===rewardId);if(!r||!canClaim(r,k))return;
+  k.total_points=Math.max(0,k.total_points-r.cost);
+  await sb.from('profiles').update({total_points:k.total_points}).eq('id',k.id);
+  if(isGated(r)){
+    const key=creditKey(r.id,k.id);
+    const row=rewardCredits[key];
+    const newCredits=Math.max(0,(row?row.credits:0)-1);
+    await sb.from('reward_credits').update({credits:newCredits}).eq('reward_id',r.id).eq('profile_id',k.id);
+    if(row)row.credits=newCredits;
+  }
+  toast(`${k.name} redeemed ${r.name}! ${r.emoji}`);
+  await sb.from('redemptions').insert({family_id:familyId,profile_id:k.id,reward_id:r.id,cost:r.cost});
+  renderMain();
+}
+
+async function proposeChore(k){
+  const nm=prompt("What chore do you want to propose?");
+  if(!nm||!nm.trim())return;
+  const emo=prompt("Pick an emoji for it (optional):","⭐")||'⭐';
+  const pts=parseInt(prompt("How many points should it be worth?","5"),10)||5;
+  const {error}=await sb.from('chores').insert({family_id:familyId,profile_id:k.id,emoji:emo,name:nm.trim(),points:pts,cadence:'daily',pending:true,proposed_by:k.id});
+  if(error){toast('Could not send that — try again');return;}
+  toast('Sent to parent for approval! 💌');
+}
+
+async function openAdmin(k){
+  // k may be null/parent when there are no kids yet — guard the kid-scoped bits.
+  const kids=profiles.filter(p=>p.role==='kid');
+  const focusKid=(k&&k.role==='kid')?k:kids[0]||null;
+  let counts={},graduationCandidates=[],pendingChores=[],notes=[];
+  if(focusKid){
+    const since=new Date();since.setDate(since.getDate()-30);
+    const [{data:recent},{data:notesData}]=await Promise.all([
+      sb.from('completions').select('chore_id,points').eq('profile_id',focusKid.id).gte('completed_on',since.toISOString().slice(0,10)),
+      sb.from('completions').select('chore_id,note,completed_on').eq('profile_id',focusKid.id).not('note','is',null).order('completed_on',{ascending:false})
+    ]);
+    (recent||[]).forEach(c=>{counts[c.chore_id]=(counts[c.chore_id]||0)+1;});
+    graduationCandidates=chores.filter(c=>c.profile_id===focusKid.id && c.points>0 && (counts[c.id]||0)>=21);
+    pendingChores=chores.filter(c=>c.profile_id===focusKid.id && c.pending);
+    notes=(notesData||[]).map(n=>({...n,choreName:(chores.find(c=>c.id===n.chore_id)||{}).name||'—'}));
+  }
+  const kidLabel=focusKid?esc(focusKid.name):'—';
+
+  app.insertAdjacentHTML('beforeend',`
+    <div class="modal open" id="modal">
+      <div class="sheet">
+        <h3><span>⚙️ Parent settings</span><button class="x" id="closeAdmin">✕</button></h3>
+        <div class="tabbar">
+          <button data-tab="chores" class="on">Chores</button>
+          <button data-tab="rewards">Rewards</button>
+          <button data-tab="family">Family</button>
+          <button data-tab="approvals">Approvals${pendingChores.length?' ('+pendingChores.length+')':''}</button>
+          <button data-tab="notes">Notes</button>
+          <button data-tab="pins">PINs</button>
+        </div>
+        <div class="panel on" id="panel-chores">
+          ${focusKid?'':'<div class="empty">Add a child in the Family tab first.</div>'}
+          ${focusKid?`
+          ${graduationCandidates.length?`<div class="note" style="color:var(--good);font-weight:800">🎓 Ready to graduate (21+ days in the last month):</div>
+          <div id="gradList">${graduationCandidates.map(c=>`
+            <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${counts[c.id]} days done</small></span>
+            <button class="del" style="background:var(--good-bg);color:var(--good)" data-grad="${c.id}">🎉</button></div>`).join('')}</div>`:''}
+          <div class="note">Editing chores for <b>${kidLabel}</b>${kids.length>1?' — switch kid in the Family tab':''}.</div>
+          <div id="choreList"></div>
+          <div class="addform"><input id="cEmo" placeholder="⭐" maxlength="2"><input id="cName" placeholder="Chore name"><input id="cPts" placeholder="+5"></div>
+          <button class="addbtn" id="addChore">＋ Add chore</button>
+          <div class="rowbtns"><button class="danger" id="resetTodayBtn">↺ Reset ${kidLabel}'s today</button></div>`:''}
+        </div>
+        <div class="panel" id="panel-approvals">
+          <div class="note">Chores ${kidLabel} proposed herself — approve to add them for real, reject to dismiss.</div>
+          <div id="pendingList">${pendingChores.length?pendingChores.map(c=>`
+            <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${c.points} pts proposed</small></span>
+            <button class="del" style="background:var(--good-bg);color:var(--good)" data-approve="${c.id}">✓</button>
+            <button class="del" data-reject="${c.id}">✕</button></div>`).join(''):'<div class="empty">No pending proposals.</div>'}</div>
+        </div>
+        <div class="panel" id="panel-notes">
+          <div class="note">${kidLabel}'s reading log and any other notes, newest first.</div>
+          <div id="notesList">${notes.length?notes.map(n=>`
+            <div class="item"><span class="e">📖</span><span class="t">${n.completed_on} — ${esc(n.choreName)}<small>${esc(n.note)}</small></span></div>`).join(''):'<div class="empty">No notes yet.</div>'}</div>
+        </div>
+        <div class="panel" id="panel-rewards">
+          <div class="note">Rewards are shared across all kids unless tied to one.</div>
+          <div id="rewardList"></div>
+          <div class="addform"><input id="rEmo" placeholder="🎁" maxlength="2"><input id="rName" placeholder="Reward name"><input id="rCost" placeholder="50"></div>
+          <button class="addbtn" id="addReward">＋ Add reward</button>
+        </div>
+        <div class="panel" id="panel-family">
+          <div class="note">Add or remove kids and parents. Each kid gets their own chore board.</div>
+          <div id="familyList"></div>
+          <div class="note" style="margin-top:10px;color:var(--ink);font-weight:800">Add a child</div>
+          <div class="addform four"><input id="fkEmo" placeholder="🦄" maxlength="2"><input id="fkName" placeholder="Name"><input id="fkAge" placeholder="Age" inputmode="numeric"><input id="fkPin" placeholder="PIN (4, opt)" inputmode="numeric" maxlength="4"></div>
+          <button class="addbtn" id="addKidBtn">＋ Add child</button>
+          <div class="note" style="margin-top:12px;color:var(--ink);font-weight:800">Add a parent</div>
+          <div class="addform"><input id="fpEmo" placeholder="🧑" maxlength="2"><input id="fpName" placeholder="Name"><input id="fpPin" placeholder="PIN (6)" inputmode="numeric" maxlength="6"></div>
+          <button class="addbtn" id="addParentBtn">＋ Add parent</button>
+        </div>
+        <div class="panel" id="panel-pins">
+          <div class="note">Change anyone's PIN. Parents use 6 digits, kids 4. Leave blank + Save to remove a kid's PIN.</div>
+          <div id="pinList"></div>
+        </div>
+      </div>
+    </div>`);
+  $('#closeAdmin').onclick=()=>$('#modal').remove();
+  if(focusKid)$('#resetTodayBtn').onclick=()=>resetToday(focusKid);
+  document.querySelectorAll('.tabbar button').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('.tabbar button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));$('#panel-'+b.dataset.tab).classList.add('on');
+  });
+
+  if(focusKid){
+    const allHerChores=chores.filter(c=>c.profile_id===focusKid.id && !c.pending);
+    $('#choreList').innerHTML=allHerChores.length?allHerChores.map(c=>`
+      <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${c.points>0?'+':''}${c.points} pts${c.weekdays&&c.weekdays.length?' · '+c.weekdays.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join('/'):''}</small></span><button class="del" data-delc="${c.id}">🗑️</button></div>`).join(''):'<div class="empty">No chores yet.</div>';
+    document.querySelectorAll('[data-delc]').forEach(el=>el.onclick=async()=>{
+      await sb.from('chores').update({archived:true}).eq('id',el.dataset.delc);
+      chores=chores.filter(c=>c.id!==el.dataset.delc);$('#modal').remove();openAdmin(focusKid);
+    });
+    document.querySelectorAll('[data-grad]').forEach(el=>el.onclick=async()=>{
+      const id=el.dataset.grad;
+      await sb.from('chores').update({archived:true,graduated_at:new Date().toISOString()}).eq('id',id);
+      chores=chores.filter(c=>c.id!==id);
+      toast('🎉 Graduated! That habit is hers now.');
+      $('#modal').remove();openAdmin(focusKid);renderMain();
+    });
+    document.querySelectorAll('[data-approve]').forEach(el=>el.onclick=async()=>{
+      const id=el.dataset.approve;
+      await sb.from('chores').update({pending:false}).eq('id',id);
+      const c=chores.find(x=>x.id===id);if(c)c.pending=false;
+      toast('Approved!');$('#modal').remove();openAdmin(focusKid);renderMain();
+    });
+    document.querySelectorAll('[data-reject]').forEach(el=>el.onclick=async()=>{
+      const id=el.dataset.reject;
+      await sb.from('chores').update({archived:true}).eq('id',id);
+      chores=chores.filter(c=>c.id!==id);
+      toast('Rejected');$('#modal').remove();openAdmin(focusKid);
+    });
+    $('#addChore').onclick=async()=>{
+      const nm=$('#cName').value.trim();if(!nm)return toast('Type a chore name');
+      let p=parseInt($('#cPts').value,10);if(isNaN(p))p=5;
+      const {data,error}=await sb.from('chores').insert({family_id:familyId,profile_id:focusKid.id,emoji:$('#cEmo').value.trim()||'⭐',name:nm,points:p,cadence:'daily'}).select().single();
+      if(error)return toast('Could not add chore');
+      chores.push(data);$('#modal').remove();openAdmin(focusKid);renderMain();toast('Chore added');
+    };
+  }
+
+  $('#rewardList').innerHTML=rewards.length?rewards.map(r=>`
+    <div class="item"><span class="e">${r.emoji}</span><span class="t">${esc(r.name)}<small>${r.cost} pts · ${r.tier}</small></span><button class="del" data-delr="${r.id}">🗑️</button></div>`).join(''):'<div class="empty">No rewards yet.</div>';
+  document.querySelectorAll('[data-delr]').forEach(el=>el.onclick=async()=>{
+    await sb.from('rewards').update({archived:true}).eq('id',el.dataset.delr);
+    rewards=rewards.filter(r=>r.id!==el.dataset.delr);$('#modal').remove();openAdmin(focusKid);
+  });
+  $('#addReward').onclick=async()=>{
+    const nm=$('#rName').value.trim();if(!nm)return toast('Type a reward name');
+    let c=parseInt($('#rCost').value,10);if(isNaN(c)||c<0)c=50;
+    const {data,error}=await sb.from('rewards').insert({family_id:familyId,owner:'both',emoji:$('#rEmo').value.trim()||'🎁',name:nm,cost:c,tier:'weekly'}).select().single();
+    if(error)return toast('Could not add reward');
+    rewards.push(data);$('#modal').remove();openAdmin(focusKid);renderMain();toast('Reward added');
+  };
+
+  // ── Family tab: manage profiles ──
+  $('#familyList').innerHTML=profiles.map(p=>{
+    const isLastParent=p.role==='parent' && profiles.filter(x=>x.role==='parent').length<=1;
+    const removable=!(p.id===me.id || isLastParent);
+    return `<div class="item"><span class="e">${p.emoji}</span><span class="t">${esc(p.name)}<small>${p.role}${p.age?' · age '+p.age:''}${p.pin_hash?' · 🔒 PIN':' · no PIN'}</small></span>
+      ${removable?`<button class="del" data-delp="${p.id}">🗑️</button>`:'<span style="font-size:11px;color:var(--muted);font-weight:800">'+(p.id===me.id?'you':'last parent')+'</span>'}</div>`;
+  }).join('');
+  document.querySelectorAll('[data-delp]').forEach(el=>el.onclick=async()=>{
+    const id=el.dataset.delp;
+    const prof=profiles.find(p=>p.id===id);
+    if(!confirm(`Remove ${prof?prof.name:'this profile'}? Their chores and history go too. This can't be undone.`))return;
+    await sb.from('profiles').delete().eq('id',id);
+    await loadProfiles();
+    $('#modal').remove();openAdmin(focusKid&&focusKid.id!==id?focusKid:null);renderMain();
+  });
+  $('#addKidBtn').onclick=async()=>{
+    const nm=$('#fkName').value.trim();if(!nm)return toast('Type the child\'s name');
+    const age=parseInt($('#fkAge').value,10)||null;
+    const pin=$('#fkPin').value.trim();
+    if(pin && pin.length!==4)return toast('Kid PIN must be 4 digits (or leave blank)');
+    const band=age?bandForAge(age).key:'7-9';
+    const {data,error}=await sb.from('profiles').insert({
+      family_id:familyId,name:nm,emoji:$('#fkEmo').value.trim()||'🦄',role:'kid',
+      age,daily_goal:DEFAULT_GOAL_BY_BAND[band],pin_hash:pin?await sha256(pin):null
+    }).select().single();
+    if(error)return toast('Could not add child');
+    profiles.push(data);$('#modal').remove();openAdmin(data);renderMain();toast(`${nm} added`);
+  };
+  $('#addParentBtn').onclick=async()=>{
+    const nm=$('#fpName').value.trim();if(!nm)return toast('Type the parent\'s name');
+    const pin=$('#fpPin').value.trim();
+    if(pin.length!==6)return toast('Parent PIN must be 6 digits');
+    const {data,error}=await sb.from('profiles').insert({
+      family_id:familyId,name:nm,emoji:$('#fpEmo').value.trim()||'🧑',role:'parent',
+      daily_goal:0,pin_hash:await sha256(pin)
+    }).select().single();
+    if(error)return toast('Could not add parent');
+    profiles.push(data);$('#modal').remove();openAdmin(focusKid);renderMain();toast(`${nm} added`);
+  };
+
+  // ── PINs tab ──
+  $('#pinList').innerHTML=profiles.map(p=>{
+    const len=p.role==='parent'?6:4;
+    return `<div class="item"><span class="e">${p.emoji}</span><span class="t">${esc(p.name)}<small>${p.role} · ${len}-digit</small></span>
+      <input data-pinfor="${p.id}" placeholder="New ${len}-digit PIN" maxlength="${len}" inputmode="numeric" style="width:120px;border:2px solid var(--line);border-radius:10px;padding:8px;font-weight:700">
+      <button class="del" style="background:var(--accent);color:#fff" data-savepin="${p.id}">Save</button>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('[data-savepin]').forEach(el=>el.onclick=async()=>{
+    const id=el.dataset.savepin;
+    const prof=profiles.find(p=>p.id===id);
+    const input=document.querySelector(`[data-pinfor="${id}"]`);
+    const v=input.value.trim();
+    const len=prof.role==='parent'?6:4;
+    if(v===''){ // blank = remove PIN, but parents must keep one
+      if(prof.role==='parent')return toast('Parents must keep a PIN');
+      await sb.from('profiles').update({pin_hash:null}).eq('id',id);
+      prof.pin_hash=null;input.value='';return toast('PIN removed');
+    }
+    if(v.length!==len)return toast(`PIN must be ${len} digits`);
+    const hash=await sha256(v);
+    await sb.from('profiles').update({pin_hash:hash}).eq('id',id);
+    prof.pin_hash=hash;
+    input.value='';toast('PIN updated');
+  });
+}
+
+boot();
+</script>
+</body>
+</html>
