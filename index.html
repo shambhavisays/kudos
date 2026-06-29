@@ -1049,17 +1049,26 @@ function renderMain(){
 }
 
 async function openHistory(k){
-  const since=new Date();since.setDate(since.getDate()-365);
-  const {data}=await sb.from('completions').select('chore_id,points,completed_on,note').eq('profile_id',k.id).gte('completed_on',since.toISOString().slice(0,10)).order('completed_on',{ascending:false});
+  // Detailed daily history for ~3 months; older activity as monthly summaries.
+  // (Raw completions are retained 13 months, then rolled into monthly_summaries.)
+  const detailStart=new Date();detailStart.setDate(detailStart.getDate()-92);
+  const detailStartStr=localDateStr(detailStart);
+  const detailMonthStart=detailStartStr.slice(0,8)+'01'; // first day of that month
+  const [{data},{data:sums}]=await Promise.all([
+    sb.from('completions').select('chore_id,points,completed_on,note').eq('profile_id',k.id).gte('completed_on',detailStartStr).order('completed_on',{ascending:false}),
+    sb.from('monthly_summaries').select('month,stars,chores').eq('profile_id',k.id).lt('month',detailMonthStart).order('month',{ascending:false})
+  ]);
   const byDate={};
   (data||[]).forEach(c=>{
     (byDate[c.completed_on]=byDate[c.completed_on]||[]).push(c);
   });
   const dates=Object.keys(byDate).sort((a,b)=>b.localeCompare(a));
+  const earlier=sums||[];
   app.insertAdjacentHTML('beforeend',`
     <div class="modal open" id="historyModal">
       <div class="sheet">
-        <h3><span>📜 ${esc(k.name)}'s history (past year)</span><button class="x" id="closeHistory">✕</button></h3>
+        <h3><span>📜 ${esc(k.name)}'s history</span><button class="x" id="closeHistory">✕</button></h3>
+        <div class="note">Daily detail for the last 3 months. Older activity is kept as monthly summaries.</div>
         ${dates.length?dates.map(d=>{
           const items=byDate[d];
           const dayTotal=items.reduce((s,c)=>s+c.points,0);
@@ -1069,7 +1078,12 @@ async function openHistory(k){
             const chore=chores.find(x=>x.id===c.chore_id);
             return `<div class="item"><span class="e">${chore?chore.emoji:'⭐'}</span><span class="t">${c.points>=0?'✅ ':''}${chore?esc(chore.name):'(removed chore)'}<small>${c.points>0?'+':''}${c.points} pts${c.note?' — '+esc(c.note):''}</small></span></div>`;
           }).join('')}`;
-        }).join(''):'<div class="empty">No history yet.</div>'}
+        }).join(''):'<div class="empty">No recent history yet.</div>'}
+        ${earlier.length?`<div class="note" style="font-weight:800;color:var(--ink);margin-top:18px">Earlier months</div>
+          ${earlier.map(m=>{
+            const ml=new Date(m.month+'T00:00:00').toLocaleDateString(undefined,{month:'long',year:'numeric'});
+            return `<div class="item"><span class="e">📅</span><span class="t">${ml}<small>${m.chores} chores · ${m.stars>=0?'+':''}${m.stars} ⭐</small></span></div>`;
+          }).join('')}`:''}
       </div>
     </div>`);
   $('#closeHistory').onclick=()=>$('#historyModal').remove();
