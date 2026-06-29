@@ -55,6 +55,8 @@ create table chores (
   proposed_by uuid references profiles(id),
   -- When true, completing prompts for a note (e.g. a reading log).
   prompts_note boolean not null default false,
+  -- When true, completing requires attaching a photo (parent-set, per chore).
+  requires_photo boolean not null default false,
   archived boolean not null default false,
   graduated_at timestamptz,
   created_at timestamptz not null default now()
@@ -67,6 +69,8 @@ create table completions (
   chore_id uuid not null references chores(id) on delete cascade,
   points int not null,
   note text,
+  -- Storage path of the proof photo, when the chore requires_photo.
+  photo_path text,
   completed_on date not null default current_date,
   created_at timestamptz not null default now(),
   unique (profile_id, chore_id, completed_on)
@@ -234,3 +238,17 @@ end; $$;
 
 create extension if not exists pg_cron;
 select cron.schedule('kudos-history-maintenance', '0 3 1 * *', 'select kudos_maintain_history();');
+
+-- ── Photo proof storage ──────────────────────────────────────────────────────
+-- Private bucket for chore proof photos. A family can only read/write photos
+-- under its own family-id folder. Path: {family_id}/{profile_id}/{timestamp}.{ext}
+insert into storage.buckets (id, name, public)
+values ('chore-photos', 'chore-photos', false)
+on conflict (id) do nothing;
+
+create policy "chore photos read" on storage.objects for select to authenticated
+  using (bucket_id='chore-photos' and (storage.foldername(name))[1] in (select id::text from families where owner_user_id=auth.uid()));
+create policy "chore photos insert" on storage.objects for insert to authenticated
+  with check (bucket_id='chore-photos' and (storage.foldername(name))[1] in (select id::text from families where owner_user_id=auth.uid()));
+create policy "chore photos delete" on storage.objects for delete to authenticated
+  using (bucket_id='chore-photos' and (storage.foldername(name))[1] in (select id::text from families where owner_user_id=auth.uid()));
