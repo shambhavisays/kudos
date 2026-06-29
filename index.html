@@ -135,6 +135,8 @@
   .addform{display:grid;grid-template-columns:50px 1fr 65px;gap:7px;margin:6px 4px 4px}
   .addform input{border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;width:100%}
   .addform.four{grid-template-columns:50px 1fr 56px 64px}
+  .rewardopts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:6px 4px 4px}
+  .addform select,.rewardopts select{border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;width:100%;background:#fff;font-family:'Nunito';color:var(--ink)}
   .addbtn{grid-column:1/-1;border:none;background:var(--accent);color:#fff;border-radius:12px;padding:11px;font-family:'Fredoka';font-weight:600;font-size:14px;cursor:pointer;margin-top:2px}
   .rowbtns{display:flex;gap:8px;margin:10px 4px 0;flex-wrap:wrap}
   .rowbtns button{flex:1;min-width:130px;border:none;border-radius:13px;padding:11px;font-family:'Fredoka';font-weight:600;font-size:13px;cursor:pointer;background:var(--bg);color:var(--ink)}
@@ -1025,6 +1027,17 @@ async function openAdmin(k){
           <div class="note">Rewards are shared across all kids unless tied to one.</div>
           <div id="rewardList"></div>
           <div class="addform"><input id="rEmo" placeholder="🎁" maxlength="2"><input id="rName" placeholder="Reward name"><input id="rCost" placeholder="50"></div>
+          <div class="rewardopts">
+            <select id="rTier">
+              <option value="instant">⚡ Same-day</option>
+              <option value="weekly" selected>📆 Weekly</option>
+              <option value="monthly">🏆 Monthly / Saver</option>
+            </select>
+            <select id="rOwner">
+              <option value="both" selected>Shared — all kids</option>
+              ${kids.map(kk=>`<option value="${kk.id}">${esc(kk.name)} only</option>`).join('')}
+            </select>
+          </div>
           <button class="addbtn" id="addReward">＋ Add reward</button>
         </div>
         <div class="panel" id="panel-family">
@@ -1086,8 +1099,10 @@ async function openAdmin(k){
     };
   }
 
-  $('#rewardList').innerHTML=rewards.length?rewards.map(r=>`
-    <div class="item"><span class="e">${r.emoji}</span><span class="t">${esc(r.name)}<small>${r.cost} pts · ${r.tier}</small></span><button class="del" data-delr="${r.id}">🗑️</button></div>`).join(''):'<div class="empty">No rewards yet.</div>';
+  $('#rewardList').innerHTML=rewards.length?rewards.map(r=>{
+    const ownerLabel=r.owner==='profile'?((profiles.find(p=>p.id===r.owner_profile_id)||{}).name||'one kid')+' only':'shared';
+    return `<div class="item"><span class="e">${r.emoji}</span><span class="t">${esc(r.name)}<small>${r.cost} pts · ${r.tier} · ${esc(ownerLabel)}</small></span><button class="del" data-delr="${r.id}">🗑️</button></div>`;
+  }).join(''):'<div class="empty">No rewards yet.</div>';
   document.querySelectorAll('[data-delr]').forEach(el=>el.onclick=async()=>{
     await sb.from('rewards').update({archived:true}).eq('id',el.dataset.delr);
     rewards=rewards.filter(r=>r.id!==el.dataset.delr);$('#modal').remove();openAdmin(focusKid);
@@ -1095,7 +1110,15 @@ async function openAdmin(k){
   $('#addReward').onclick=async()=>{
     const nm=$('#rName').value.trim();if(!nm)return toast('Type a reward name');
     let c=parseInt($('#rCost').value,10);if(isNaN(c)||c<0)c=50;
-    const {data,error}=await sb.from('rewards').insert({family_id:familyId,owner:'both',emoji:$('#rEmo').value.trim()||'🎁',name:nm,cost:c,tier:'weekly'}).select().single();
+    const tier=$('#rTier').value;
+    const ownerSel=$('#rOwner').value;
+    const toOneKid=ownerSel!=='both';
+    const {data,error}=await sb.from('rewards').insert({
+      family_id:familyId,
+      owner:toOneKid?'profile':'both',
+      owner_profile_id:toOneKid?ownerSel:null,
+      emoji:$('#rEmo').value.trim()||'🎁',name:nm,cost:c,tier
+    }).select().single();
     if(error)return toast('Could not add reward');
     rewards.push(data);$('#modal').remove();openAdmin(focusKid);renderMain();toast('Reward added');
   };
