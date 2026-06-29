@@ -37,6 +37,7 @@ Built as a single static `index.html` (vanilla JS, no build step) on top of Supa
 - Tiered rewards (instant / weekly / monthly), per-kid or shared, chosen from a **tier + owner picker** in the add-reward form; a starter set is seeded for new families
 - **Goal pinning** — a kid pins one reward as their savings goal; a "Saving up for X" progress strip surfaces on their board
 - **Propose-a-reward** — kids suggest rewards that land in the parent's approval queue (parent sets the cost)
+- **Photo proof** — optional per chore (parent ticks "require a photo"); completing a flagged chore attaches a photo to a private Storage bucket, shown to the parent as a thumbnail in History
 - Condition-gated rewards + banked credits (perfect-week, "all chores today," etc.) — runtime supports them; create them via SQL for now
 - Streaks with one monthly streak-freeze per kid
 
@@ -56,7 +57,7 @@ This is a **household-account** model (like Netflix/Disney+ profiles), appropria
 ## Roadmap / not built yet
 
 - No per-kid login or "join code" device pairing — every device logs in with the one family account (fine for a household; a v2 would add per-member accounts)
-- No photo proof on completions (would need Supabase Storage)
+- Photo proof is mandatory-once-flagged but can't be reviewed/approved as a gate (the photo is attached and shown to the parent, not an approval step that withholds points)
 - Gated-reward and weekday-only reward rules can't be created from the UI yet (schema + runtime support them; add via SQL)
 - No Google login (email/password only for now), no focus-reflection mechanic, no weekly parent-review or year-in-review screen, no Google Calendar integration
 
@@ -66,6 +67,7 @@ This is a **household-account** model (like Netflix/Disney+ profiles), appropria
 - `schema.sql` — full consolidated schema + RLS (run once on a fresh project)
 - `migration-01-goals-and-proposed-rewards.sql` — adds goal pinning + proposed-reward columns to an existing project
 - `migration-02-history-retention.sql` — adds monthly summaries + the 13-month retention job to an existing project
+- `migration-03-photo-proof.sql` — adds photo-proof columns + the private Storage bucket and policies to an existing project
 - `seed.sql` — optional demo data (see below)
 
 ## Demo data (optional)

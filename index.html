@@ -122,6 +122,11 @@
   .wallcard .wdot.done{opacity:1}
   .wallcard .wgoal{font-size:11px;font-weight:800;color:var(--muted);margin-top:2px}
   .wallcard .whint{color:var(--muted);font-weight:700;font-size:12px;margin-top:2px}
+  .phototag{font-size:11px;margin-left:3px;vertical-align:middle}
+  .histphoto{width:48px;height:48px;border-radius:10px;object-fit:cover;border:2px solid var(--line);cursor:pointer;flex:none}
+  #lightbox{position:fixed;inset:0;background:rgba(10,16,26,.85);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
+  #lightbox.open{display:flex}
+  #lightbox img{max-width:100%;max-height:90vh;border-radius:14px}
   .sectionhd{display:flex;align-items:center;justify-content:space-between;margin:20px 4px 10px}
   .sectionhd h2{font-family:'Fredoka';font-weight:600;font-size:17px;margin:0}
   .sectionhd .hint{font-size:12px;font-weight:700;color:var(--muted)}
@@ -188,6 +193,8 @@
 <div class="wrap" id="app"></div>
 <div id="fx"></div>
 <div id="toast"></div>
+<input id="photoInput" type="file" accept="image/*" capture="environment" style="display:none">
+<div id="lightbox" onclick="this.classList.remove('open')"><img alt="proof photo"></div>
 
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -234,6 +241,25 @@ async function sha256(text){
   const buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
   return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
 }
+
+// Photo proof: open the camera/file picker, return the chosen File (or null).
+function capturePhoto(){
+  return new Promise(resolve=>{
+    const input=$('#photoInput');
+    input.value='';
+    const done=()=>{input.removeEventListener('change',done);resolve((input.files&&input.files[0])||null);};
+    input.addEventListener('change',done);
+    input.click();
+  });
+}
+// Upload to the private chore-photos bucket; returns the stored path (or null).
+async function uploadChorePhoto(kidId,file){
+  const ext=((file.name||'').split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+  const path=`${familyId}/${kidId}/${Date.now()}.${ext}`;
+  const {error}=await sb.storage.from('chore-photos').upload(path,file,{contentType:file.type||'image/jpeg',upsert:false});
+  return error?null:path;
+}
+function showPhoto(url){const lb=$('#lightbox');lb.querySelector('img').src=url;lb.classList.add('open');}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Starter content for new families
@@ -991,7 +1017,7 @@ function renderMain(){
     if(!items.length)return '';
     return `<div class="periodlab">${label}</div><div class="periodgrid">${items.map(c=>`
       <div class="chore ${c.points<0?'neg':''} ${c.points===0?'care':''} ${doneToday.has(c.id)?'done':''}" data-c="${c.id}">
-        <div><div class="emo">${c.emoji}</div><div class="nm">${esc(c.name)}${c.category==='stretch'?' <span class="stretchtag">✨ Bonus</span>':''}</div><div class="pp">${c.points===0?'Daily care':(c.points>0?'+':'')+c.points+' ⭐'}${c.category==='stretch'?' (bonus)':''}</div></div>
+        <div><div class="emo">${c.emoji}</div><div class="nm">${esc(c.name)}${c.requires_photo?'<span class="phototag" title="Photo needed">📷</span>':''}${c.category==='stretch'?' <span class="stretchtag">✨ Bonus</span>':''}</div><div class="pp">${c.points===0?'Daily care':(c.points>0?'+':'')+c.points+' ⭐'}${c.category==='stretch'?' (bonus)':''}</div></div>
         <div class="tick">${doneToday.has(c.id)?'✓':''}</div>
       </div>`).join('')}</div>`;
   }).join('');
@@ -1055,9 +1081,16 @@ async function openHistory(k){
   const detailStartStr=localDateStr(detailStart);
   const detailMonthStart=detailStartStr.slice(0,8)+'01'; // first day of that month
   const [{data},{data:sums}]=await Promise.all([
-    sb.from('completions').select('chore_id,points,completed_on,note').eq('profile_id',k.id).gte('completed_on',detailStartStr).order('completed_on',{ascending:false}),
+    sb.from('completions').select('chore_id,points,completed_on,note,photo_path').eq('profile_id',k.id).gte('completed_on',detailStartStr).order('completed_on',{ascending:false}),
     sb.from('monthly_summaries').select('month,stars,chores').eq('profile_id',k.id).lt('month',detailMonthStart).order('month',{ascending:false})
   ]);
+  // Signed URLs for any proof photos (private bucket — short-lived links).
+  const photoUrls={};
+  const paths=(data||[]).map(c=>c.photo_path).filter(Boolean);
+  if(paths.length){
+    const {data:signed}=await sb.storage.from('chore-photos').createSignedUrls(paths,3600);
+    (signed||[]).forEach(s=>{if(s.signedUrl)photoUrls[s.path]=s.signedUrl;});
+  }
   const byDate={};
   (data||[]).forEach(c=>{
     (byDate[c.completed_on]=byDate[c.completed_on]||[]).push(c);
@@ -1076,7 +1109,8 @@ async function openHistory(k){
           return `<div class="note" style="font-weight:800;color:var(--ink);margin-top:14px">${dateLabel} — ${dayTotal>=0?'+':''}${dayTotal} ⭐</div>
           ${items.map(c=>{
             const chore=chores.find(x=>x.id===c.chore_id);
-            return `<div class="item"><span class="e">${chore?chore.emoji:'⭐'}</span><span class="t">${c.points>=0?'✅ ':''}${chore?esc(chore.name):'(removed chore)'}<small>${c.points>0?'+':''}${c.points} pts${c.note?' — '+esc(c.note):''}</small></span></div>`;
+            const purl=c.photo_path&&photoUrls[c.photo_path];
+            return `<div class="item"><span class="e">${chore?chore.emoji:'⭐'}</span><span class="t">${c.points>=0?'✅ ':''}${chore?esc(chore.name):'(removed chore)'}<small>${c.points>0?'+':''}${c.points} pts${c.note?' — '+esc(c.note):''}</small></span>${purl?`<img class="histphoto" src="${purl}" data-full="${purl}" alt="proof">`:''}</div>`;
           }).join('')}`;
         }).join(''):'<div class="empty">No recent history yet.</div>'}
         ${earlier.length?`<div class="note" style="font-weight:800;color:var(--ink);margin-top:18px">Earlier months</div>
@@ -1087,6 +1121,7 @@ async function openHistory(k){
       </div>
     </div>`);
   $('#closeHistory').onclick=()=>$('#historyModal').remove();
+  document.querySelectorAll('#historyModal .histphoto').forEach(el=>el.onclick=()=>showPhoto(el.dataset.full));
 }
 
 async function toggleChore(k,choreId){
@@ -1102,7 +1137,15 @@ async function toggleChore(k,choreId){
       note=prompt(`What did ${k.name} read tonight? (title, pages — optional)`);
       if(note===null)return false;
     }
-    const {error}=await sb.from('completions').insert({family_id:familyId,profile_id:k.id,chore_id:choreId,points:c.points,completed_on:today(),note:note||null});
+    let photoPath=null;
+    if(c.requires_photo){
+      toast('📷 Add a photo to finish this one');
+      const file=await capturePhoto();
+      if(!file)return false;            // cancelled — don't complete
+      photoPath=await uploadChorePhoto(k.id,file);
+      if(!photoPath){toast('Photo upload failed — try again');return false;}
+    }
+    const {error}=await sb.from('completions').insert({family_id:familyId,profile_id:k.id,chore_id:choreId,points:c.points,completed_on:today(),note:note||null,photo_path:photoPath});
     if(error){toast('Could not save — try again');return false;}
     doneToday.add(choreId);
     if(c.points>0)toast(pickCheer());
@@ -1219,6 +1262,7 @@ async function openAdmin(k){
           <div class="note">Editing chores for <b>${kidLabel}</b>${kids.length>1?' — switch kid in the Family tab':''}.</div>
           <div id="choreList"></div>
           <div class="addform"><input id="cEmo" placeholder="⭐" maxlength="2"><input id="cName" placeholder="Chore name"><input id="cPts" placeholder="+5"></div>
+          <label class="toggle" style="margin:2px 4px 4px"><input type="checkbox" id="cPhoto"> 📷 Require a photo to complete</label>
           <button class="addbtn" id="addChore">＋ Add chore</button>
           <div class="rowbtns"><button class="danger" id="resetTodayBtn">↺ Reset ${kidLabel}'s today</button></div>`:''}
         </div>
@@ -1285,7 +1329,7 @@ async function openAdmin(k){
   if(focusKid){
     const allHerChores=chores.filter(c=>c.profile_id===focusKid.id && !c.pending);
     $('#choreList').innerHTML=allHerChores.length?allHerChores.map(c=>`
-      <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${c.points>0?'+':''}${c.points} pts${c.weekdays&&c.weekdays.length?' · '+c.weekdays.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join('/'):''}</small></span><button class="del" data-delc="${c.id}">🗑️</button></div>`).join(''):'<div class="empty">No chores yet.</div>';
+      <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${c.points>0?'+':''}${c.points} pts${c.requires_photo?' · 📷 photo':''}${c.weekdays&&c.weekdays.length?' · '+c.weekdays.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join('/'):''}</small></span><button class="del" data-delc="${c.id}">🗑️</button></div>`).join(''):'<div class="empty">No chores yet.</div>';
     document.querySelectorAll('[data-delc]').forEach(el=>el.onclick=async()=>{
       await sb.from('chores').update({archived:true}).eq('id',el.dataset.delc);
       chores=chores.filter(c=>c.id!==el.dataset.delc);$('#modal').remove();openAdmin(focusKid);
@@ -1312,7 +1356,7 @@ async function openAdmin(k){
     $('#addChore').onclick=async()=>{
       const nm=$('#cName').value.trim();if(!nm)return toast('Type a chore name');
       let p=parseInt($('#cPts').value,10);if(isNaN(p))p=5;
-      const {data,error}=await sb.from('chores').insert({family_id:familyId,profile_id:focusKid.id,emoji:$('#cEmo').value.trim()||'⭐',name:nm,points:p,cadence:'daily'}).select().single();
+      const {data,error}=await sb.from('chores').insert({family_id:familyId,profile_id:focusKid.id,emoji:$('#cEmo').value.trim()||'⭐',name:nm,points:p,cadence:'daily',requires_photo:$('#cPhoto').checked}).select().single();
       if(error)return toast('Could not add chore');
       chores.push(data);$('#modal').remove();openAdmin(focusKid);renderMain();toast('Chore added');
     };
