@@ -52,6 +52,8 @@ Row Level Security scopes every row to families owned by the authenticated user 
 
 This is a **household-account** model (like Netflix/Disney+ profiles), appropriate for a chore tracker with no money or location data. A per-user-account model (Apple Family Sharing / Greenlight style) would be the right upgrade if real allowance money is ever added.
 
+**Dependencies.** The Supabase client library is self-hosted (`lib/supabase.umd.js`, pinned to 2.45.4) and served from our own domain rather than a third-party CDN — no runtime supply-chain dependency. Update it by replacing that one file.
+
 **Data retention.** Raw daily completions are kept ~13 months (enough for a full year + "vs. last year"), then rolled into tiny per-kid monthly summaries and trimmed — data-minimization by design for children's activity. A monthly `pg_cron` job (`kudos_maintain_history`) handles the rollup and trim; star balances and streaks live on the profile, so trimming never changes them. The History view shows daily detail for ~3 months and monthly summaries beyond.
 
 ## Roadmap / not built yet
@@ -64,6 +66,7 @@ This is a **household-account** model (like Netflix/Disney+ profiles), appropria
 ## Files
 
 - `index.html` — the entire app
+- `lib/supabase.umd.js` — self-hosted Supabase client library (pinned 2.45.4)
 - `schema.sql` — full consolidated schema + RLS (run once on a fresh project)
 - `migration-01-goals-and-proposed-rewards.sql` — adds goal pinning + proposed-reward columns to an existing project
 - `migration-02-history-retention.sql` — adds monthly summaries + the 13-month retention job to an existing project
