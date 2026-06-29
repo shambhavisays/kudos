@@ -196,8 +196,11 @@
 <input id="photoInput" type="file" accept="image/*" capture="environment" style="display:none">
 <div id="lightbox" onclick="this.classList.remove('open')"><img alt="proof photo"></div>
 
+<!-- Self-hosted Supabase client (pinned @2.45.4). Loaded from our own domain
+     instead of a third-party CDN, so no runtime supply-chain dependency. -->
+<script src="./lib/supabase.umd.js"></script>
 <script type="module">
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+const { createClient } = supabase;
 
 const SUPABASE_URL = 'https://pzfuqrbrbplnbabggsyr.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_5qUfnJlKZYVrjOgS5y4XpQ_OYJjV-ME';
