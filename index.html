@@ -18,7 +18,7 @@
 <style>
   :root{
     --bg:#F4F6FB; --card:#ffffff; --ink:#1d2b3a; --muted:#7c8aa0;
-    --accent:#378ADD; --accent-deep:#185FA5; --good:#3b6d11; --good-bg:#EAF3DE;
+    --accent:#378ADD; --accent-deep:#185FA5; --good:#1f9d57; --good-deep:#147a42; --good-bg:#E6F7ED;
     --bad:#A32D2D; --bad-bg:#FCEBEB; --line:#E6EAF2; --gold:#BA7517;
     --k1:#378ADD;
   }
@@ -140,10 +140,10 @@
   .periodlab{display:flex;align-items:center;gap:8px;font-family:'Fredoka';font-weight:600;font-size:14px;color:var(--ink);margin:14px 4px 8px}
   .periodlab::after{content:'';flex:1;height:1px;background:var(--line)}
   .periodlab:first-child{margin-top:0}
-  .chore{background:#fff;border-radius:18px;padding:14px 13px;box-shadow:none;border:2px solid var(--line);cursor:pointer;position:relative;min-height:96px;display:flex;flex-direction:column;justify-content:space-between}
+  .chore{background:#fff;border-radius:18px;padding:14px 13px;box-shadow:none;border:2px solid var(--line);cursor:pointer;position:relative;min-height:108px;display:flex;flex-direction:column;justify-content:space-between}
   .chore:active{transform:scale(.96)}
-  .chore .emo{font-size:26px}
-  .chore .nm{font-family:'Fredoka';font-weight:600;font-size:14px;margin-top:6px}
+  .chore .emo{font-size:34px;line-height:1}
+  .chore .nm{font-family:'Fredoka';font-weight:600;font-size:15px;margin-top:7px}
   .chore .pp{font-weight:800;font-size:12px;color:var(--good);margin-top:2px}
   .chore.neg .pp{color:var(--bad)}
   .chore.care .pp{color:var(--muted)}
@@ -192,6 +192,14 @@
   #fx{position:fixed;inset:0;pointer-events:none;z-index:90;overflow:hidden}
   .fxpiece{position:absolute;font-size:26px;animation:fly .9s ease-out forwards}
   @keyframes fly{0%{opacity:1;transform:translateY(0) scale(.6) rotate(0deg)}100%{opacity:0;transform:translateY(-150px) scale(1.3) rotate(45deg)}}
+  .emoji-in{cursor:pointer;text-align:center!important;caret-color:transparent}
+  #emojiPick{position:fixed;inset:0;background:rgba(20,30,45,.45);z-index:95;display:none;align-items:center;justify-content:center;padding:20px}
+  #emojiPick.open{display:flex}
+  .emojisheet{background:#fff;border-radius:20px;padding:16px;width:100%;max-width:340px;max-height:70vh;overflow-y:auto}
+  .emojisheet h4{font-family:'Fredoka';font-weight:600;font-size:15px;margin:2px 2px 12px}
+  .emojigrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+  .emojibtn{border:none;background:var(--bg);border-radius:12px;font-size:24px;padding:8px 0;cursor:pointer;line-height:1}
+  .emojibtn:active{transform:scale(.9)}
 </style>
 </head>
 <body>
@@ -200,6 +208,7 @@
 <div id="toast"></div>
 <input id="photoInput" type="file" accept="image/*" capture="environment" style="display:none">
 <div id="lightbox" onclick="this.classList.remove('open')"><img alt="proof photo"></div>
+<div id="emojiPick"><div class="emojisheet"><h4>Pick an emoji</h4><div class="emojigrid" id="emojiGrid"></div></div></div>
 
 <!-- Self-hosted Supabase client (pinned @2.45.4). Loaded from our own domain
      instead of a third-party CDN, so no runtime supply-chain dependency. -->
@@ -281,6 +290,29 @@ async function uploadChorePhoto(kidId,file){
   return error?null:path;
 }
 function showPhoto(url){const lb=$('#lightbox');lb.querySelector('img').src=url;lb.classList.add('open');}
+
+// Tap-to-pick emoji grid (replaces typing an emoji on the create forms).
+const EMOJI_SETS={
+  chore:['🛏️','🪥','🧸','👕','🥦','📚','🍽️','🛁','📖','🧺','🧹','🧽','🚽','🐕','🐾','🪴','🗑️','🍳','🎒','✏️','🎨','🎹','⚽','🏊','🥋','💪','💧','😊','😢','⭐'],
+  reward:['🎁','📺','🌙','🍕','🎬','🧸','🍦','🍪','🍫','🎮','🎡','🏖️','🐷','🛌','🚲','💵','🎈','🪅','🦄','🏆','⭐','🌟'],
+  person:['🦄','🐯','🐻','🦊','🐶','🐱','🐰','🐼','🐸','🦁','🐧','🐢','🐙','🦖','🌟','🚀','⚽','🎀','👦','👧','🧒','🧑','👩','👨','👵','👴']
+};
+let emojiTarget=null;
+function openEmojiPick(input){
+  emojiTarget=input;
+  const set=EMOJI_SETS[input.dataset.kind||'chore']||EMOJI_SETS.chore;
+  $('#emojiGrid').innerHTML=set.map(e=>`<button type="button" class="emojibtn">${e}</button>`).join('');
+  document.querySelectorAll('#emojiGrid .emojibtn').forEach(b=>b.onclick=()=>{
+    if(emojiTarget)emojiTarget.value=b.textContent;
+    $('#emojiPick').classList.remove('open');
+  });
+  $('#emojiPick').classList.add('open');
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest && e.target.closest('.emoji-in');
+  if(t){t.blur&&t.blur();openEmojiPick(t);}
+});
+$('#emojiPick').onclick=e=>{if(e.target.id==='emojiPick')$('#emojiPick').classList.remove('open');};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Starter content for new families
@@ -503,7 +535,7 @@ function renderWizKidDetails(){
         <h2>Who is this for?</h2>
         <div class="sub">${kid.chores.length} chore${kid.chores.length===1?'':'s'} picked. Just a name to finish.</div>
         <div class="miniform three">
-          <input id="kEmoji" maxlength="2" value="${esc(kid.emoji)}" placeholder="🦄">
+          <input id="kEmoji" class="emoji-in" data-kind="person" readonly maxlength="2" value="${esc(kid.emoji)}" placeholder="🦄">
           <input id="kName" value="${esc(kid.name)}" placeholder="Child's name">
           <input id="kAge" type="number" min="1" max="18" value="${kid.age}" placeholder="Age">
         </div>
@@ -1011,7 +1043,7 @@ function renderMain(){
       </div>
     </header>
     <div class="kids" id="kidTabs"></div>
-    <div class="hero">
+    <div class="hero" style="background:linear-gradient(${accent}14,${accent}05);border-color:${accent}40">
       <div class="row1">
         <div class="who">${greet[0]}, ${esc(k.name)} ${k.emoji} ${greet[1]}</div>
         <div class="pts"><b style="color:${accent}">${k.total_points}</b><span>STARS</span></div>
@@ -1028,9 +1060,9 @@ function renderMain(){
       </div>
     </div>
     ${goalHtml(k,accent)}
-    ${recapHtml(k,accent)}
     <div class="sectionhd"><h2>🎯 Today's chores</h2><span class="hint">Tap to complete</span></div>
     <div id="grid"></div>
+    ${recapHtml(k,accent)}
     <div id="rewardsRow"></div>
   `;
 
@@ -1289,7 +1321,7 @@ async function openAdmin(k){
             <button class="del" style="background:var(--good-bg);color:var(--good)" data-grad="${c.id}">🎉</button></div>`).join('')}</div>`:''}
           <div class="note">Editing chores for <b>${kidLabel}</b>${kids.length>1?' — switch kid in the Family tab':''}.</div>
           <div id="choreList"></div>
-          <div class="addform"><input id="cEmo" placeholder="⭐" maxlength="2"><input id="cName" placeholder="Chore name"><input id="cPts" placeholder="+5"></div>
+          <div class="addform"><input id="cEmo" class="emoji-in" data-kind="chore" readonly placeholder="⭐" maxlength="2"><input id="cName" placeholder="Chore name"><input id="cPts" placeholder="+5"></div>
           <label class="toggle" style="margin:2px 4px 4px"><input type="checkbox" id="cPhoto"> 📷 Require a photo to complete</label>
           <button class="addbtn" id="addChore">＋ Add chore</button>
           <div class="rowbtns"><button class="danger" id="resetTodayBtn">↺ Reset ${kidLabel}'s today</button></div>`:''}
@@ -1317,7 +1349,7 @@ async function openAdmin(k){
         <div class="panel" id="panel-rewards">
           <div class="note">Rewards are shared across all kids unless tied to one.</div>
           <div id="rewardList"></div>
-          <div class="addform"><input id="rEmo" placeholder="🎁" maxlength="2"><input id="rName" placeholder="Reward name"><input id="rCost" placeholder="50"></div>
+          <div class="addform"><input id="rEmo" class="emoji-in" data-kind="reward" readonly placeholder="🎁" maxlength="2"><input id="rName" placeholder="Reward name"><input id="rCost" placeholder="50"></div>
           <div class="rewardopts">
             <select id="rTier">
               <option value="instant">⚡ Same-day</option>
@@ -1335,10 +1367,10 @@ async function openAdmin(k){
           <div class="note">Add or remove kids and parents. Each kid gets their own chore board.</div>
           <div id="familyList"></div>
           <div class="note" style="margin-top:10px;color:var(--ink);font-weight:800">Add a child</div>
-          <div class="addform four"><input id="fkEmo" placeholder="🦄" maxlength="2"><input id="fkName" placeholder="Name"><input id="fkAge" placeholder="Age" inputmode="numeric"><input id="fkPin" placeholder="PIN (4, opt)" inputmode="numeric" maxlength="4"></div>
+          <div class="addform four"><input id="fkEmo" class="emoji-in" data-kind="person" readonly placeholder="🦄" maxlength="2"><input id="fkName" placeholder="Name"><input id="fkAge" placeholder="Age" inputmode="numeric"><input id="fkPin" placeholder="PIN (4, opt)" inputmode="numeric" maxlength="4"></div>
           <button class="addbtn" id="addKidBtn">＋ Add child</button>
           <div class="note" style="margin-top:12px;color:var(--ink);font-weight:800">Add a parent</div>
-          <div class="addform"><input id="fpEmo" placeholder="🧑" maxlength="2"><input id="fpName" placeholder="Name"><input id="fpPin" placeholder="PIN (6)" inputmode="numeric" maxlength="6"></div>
+          <div class="addform"><input id="fpEmo" class="emoji-in" data-kind="person" readonly placeholder="🧑" maxlength="2"><input id="fpName" placeholder="Name"><input id="fpPin" placeholder="PIN (6)" inputmode="numeric" maxlength="6"></div>
           <button class="addbtn" id="addParentBtn">＋ Add parent</button>
         </div>
         <div class="panel" id="panel-pins">
