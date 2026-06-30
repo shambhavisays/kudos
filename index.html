@@ -336,6 +336,29 @@
   .lp-toast .tx span{font-weight:800;font-size:11.5px;color:var(--muted)}
   .lp-pill{position:absolute;right:8px;bottom:-12px;z-index:5;background:#fff;border-radius:999px;padding:8px 15px 8px 10px;display:flex;align-items:center;gap:9px;box-shadow:0 18px 36px -16px rgba(33,48,74,.45);font-family:'Fredoka';font-weight:500;font-size:13.5px;color:var(--ink)}
   .lp-pill .pop{width:25px;height:25px;border-radius:8px;background:#FFF2D6;display:grid;place-items:center;font-size:14px}
+  /* ── Hero motion (respects reduced-motion) ── */
+  @media (prefers-reduced-motion: no-preference){
+    .lp-scene .card{animation:kfloat 6s ease-in-out infinite}
+    @keyframes kfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+    .lp-burst{animation:kburst 5s ease-in-out infinite}
+    @keyframes kburst{0%,100%{transform:rotate(0) scale(1)}50%{transform:rotate(9deg) scale(1.12)}}
+    .kstar{transform-box:fill-box;transform-origin:center;animation:ktwinkle 3.2s ease-in-out infinite}
+    .kstar.s2{animation-duration:2.6s;animation-delay:.4s}
+    .kstar.s3{animation-duration:3.9s;animation-delay:.9s}
+    @keyframes ktwinkle{0%,100%{opacity:.5;transform:translateY(0) scale(.85)}50%{opacity:1;transform:translateY(-5px) scale(1.12)}}
+    .lp-toast{animation:ktoastin .6s .5s both ease-out, kbob 4s 1.2s ease-in-out infinite}
+    @keyframes ktoastin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes kbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+    .lp-pill{animation:kpillin .5s 1.15s both cubic-bezier(.2,1.3,.4,1)}
+    @keyframes kpillin{from{opacity:0;transform:translateY(10px) scale(.85)}to{opacity:1;transform:translateY(0) scale(1)}}
+    /* the WallBoard's "Tidy toys" row completing, on a loop */
+    .krow-check{transform-box:fill-box;transform-origin:center;animation:kcheckpop 6s ease-in-out infinite}
+    @keyframes kcheckpop{0%,52%{opacity:0;transform:scale(0)}62%,90%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(0)}}
+    .krow-pts{animation:kptsfade 6s ease-in-out infinite}
+    @keyframes kptsfade{0%,52%{opacity:1}62%,100%{opacity:0}}
+    .krow-bg{animation:krowfill 6s ease-in-out infinite}
+    @keyframes krowfill{0%,52%{fill:#F4F6FB}62%,90%{fill:#E9F8F0}100%{fill:#F4F6FB}}
+  }
   @media(min-width:760px){
     .lp-navright .navlink{display:inline-block}
     .lp-navright .navcta{display:inline-flex}
@@ -371,6 +394,13 @@
   .pwlab{font-weight:800;font-size:11px;color:var(--muted)}
   .reassure{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:12px}
   .reassure span{font-weight:800;font-size:11px;color:var(--good-deep);background:var(--good-bg);border-radius:999px;padding:5px 10px}
+  /* ── Continue with Google ── */
+  .gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#fff;border:2px solid var(--line);border-radius:14px;padding:13px;font-family:'Fredoka';font-weight:500;font-size:16px;color:var(--ink);cursor:pointer;transition:background .15s,border-color .15s}
+  .gbtn:hover{background:#F7F9FC;border-color:#D7DEEA}
+  .gbtn:disabled{opacity:.6;cursor:default}
+  .gbtn .g{width:18px;height:18px;flex:none}
+  .authdiv{display:flex;align-items:center;gap:12px;color:var(--muted);font-weight:800;font-size:11.5px;letter-spacing:.02em;margin:14px 0}
+  .authdiv::before,.authdiv::after{content:"";flex:1;height:1px;background:var(--line)}
 </style>
 </head>
 <body>
@@ -666,7 +696,7 @@ function renderLanding(){
               <g transform="translate(278 98)"><rect x="0" y="0" width="20" height="20" rx="6" fill="#378ADD"></rect><path d="M10 3 L12.4 8 L18 8.7 L13.9 12.5 L14.9 18 L10 15.4 L5.1 18 L6.1 12.5 L2 8.7 L7.6 8 Z" fill="#FFD24A"></path><text x="28" y="15" font-family="Fredoka,sans-serif" font-size="14" font-weight="600" fill="#21304A">Kudos</text><rect x="180" y="0" width="64" height="22" rx="11" fill="#EAF2FC"></rect><text x="212" y="15" font-family="Fredoka,sans-serif" font-size="12" font-weight="600" fill="#378ADD" text-anchor="middle">Maya 120★</text></g>
               <g transform="translate(278 128)"><rect x="0" y="0" width="244" height="26" rx="9" fill="#E9F8F0"></rect><rect x="8" y="5" width="16" height="16" rx="5" fill="#fff"></rect><text x="32" y="17" font-family="Nunito,sans-serif" font-size="12" font-weight="700" fill="#2C8A5E">Make bed</text><circle cx="230" cy="13" r="9" fill="#45C48A"></circle><path d="M226 13 l3 3 l5 -6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></g>
               <g transform="translate(278 160)"><rect x="0" y="0" width="244" height="26" rx="9" fill="#E9F8F0"></rect><rect x="8" y="5" width="16" height="16" rx="5" fill="#fff"></rect><text x="32" y="17" font-family="Nunito,sans-serif" font-size="12" font-weight="700" fill="#2C8A5E">Brush teeth</text><circle cx="230" cy="13" r="9" fill="#45C48A"></circle><path d="M226 13 l3 3 l5 -6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></g>
-              <g transform="translate(278 192)"><rect x="0" y="0" width="244" height="26" rx="9" fill="#F4F6FB"></rect><rect x="8" y="5" width="16" height="16" rx="5" fill="#fff"></rect><text x="32" y="17" font-family="Nunito,sans-serif" font-size="12" font-weight="700" fill="#21304A">Tidy toys</text><text x="236" y="17" font-family="Fredoka,sans-serif" font-size="12" font-weight="600" fill="#F2B63C" text-anchor="end">+5★</text></g>
+              <g transform="translate(278 192)"><rect class="krow-bg" x="0" y="0" width="244" height="26" rx="9" fill="#F4F6FB"></rect><rect x="8" y="5" width="16" height="16" rx="5" fill="#fff"></rect><text x="32" y="17" font-family="Nunito,sans-serif" font-size="12" font-weight="700" fill="#21304A">Tidy toys</text><text class="krow-pts" x="236" y="17" font-family="Fredoka,sans-serif" font-size="12" font-weight="600" fill="#F2B63C" text-anchor="end">+5★</text><g class="krow-check"><circle cx="230" cy="13" r="9" fill="#45C48A"></circle><path d="M226 13 l3 3 l5 -6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></g></g>
               <g transform="translate(278 224)"><rect x="0" y="0" width="244" height="26" rx="9" fill="#F4F6FB"></rect><rect x="8" y="5" width="16" height="16" rx="5" fill="#fff"></rect><text x="32" y="17" font-family="Nunito,sans-serif" font-size="12" font-weight="700" fill="#21304A">Read 20 min</text><text x="236" y="17" font-family="Fredoka,sans-serif" font-size="12" font-weight="600" fill="#F2B63C" text-anchor="end">+10★</text></g>
             </g>
             <!-- island -->
@@ -680,7 +710,7 @@ function renderLanding(){
             <!-- dog -->
             <g transform="translate(-74 14)"><ellipse cx="150" cy="556" rx="56" ry="30" fill="#D9A86B"></ellipse><circle cx="104" cy="534" r="26" fill="#E0B273"></circle><path d="M84 520 q-8 18 4 30 q10 -10 6 -28Z" fill="#C9954F"></path><path d="M124 520 q8 18 -4 30 q-10 -10 -6 -28Z" fill="#C9954F"></path><circle cx="98" cy="534" r="2.8" fill="#3a2a20"></circle><circle cx="112" cy="534" r="2.8" fill="#3a2a20"></circle><ellipse cx="104" cy="542" rx="5" ry="4" fill="#5A3D24"></ellipse><circle cx="186" cy="548" r="9" fill="#E0B273"></circle></g>
             <!-- floating stars -->
-            <g fill="#FFD24A"><path d="M222 60 l3 6.6 l7.3 1 l-5.3 5.1 l1.3 7.2 l-6.3 -3.4 l-6.3 3.4 l1.3 -7.2 l-5.3 -5.1 l7.3 -1 Z"></path><path d="M588 120 l2.4 5 l5.5 .8 l-4 3.9 l1 5.4 l-4.9 -2.6 l-4.9 2.6 l1 -5.4 l-4 -3.9 l5.5 -.8 Z" opacity=".8"></path><path d="M600 320 l2 4.3 l4.7 .7 l-3.4 3.3 l.8 4.6 l-4.1 -2.2 l-4.1 2.2 l.8 -4.6 l-3.4 -3.3 l4.7 -.7 Z" opacity=".7"></path></g>
+            <g fill="#FFD24A"><path class="kstar s1" d="M222 60 l3 6.6 l7.3 1 l-5.3 5.1 l1.3 7.2 l-6.3 -3.4 l-6.3 3.4 l1.3 -7.2 l-5.3 -5.1 l7.3 -1 Z"></path><path class="kstar s2" d="M588 120 l2.4 5 l5.5 .8 l-4 3.9 l1 5.4 l-4.9 -2.6 l-4.9 2.6 l1 -5.4 l-4 -3.9 l5.5 -.8 Z" opacity=".8"></path><path class="kstar s3" d="M600 320 l2 4.3 l4.7 .7 l-3.4 3.3 l.8 4.6 l-4.1 -2.2 l-4.1 2.2 l.8 -4.6 l-3.4 -3.3 l4.7 -.7 Z" opacity=".7"></path></g>
           </svg>
         </div>
         <div class="lp-toast"><span class="st"><svg viewBox="0 0 100 100" width="22" height="22"><path d="M50,12 L61.17,34.63 L86.14,38.26 L68.07,55.87 L72.34,80.74 L50,69 L27.66,80.74 L31.93,55.87 L13.86,38.26 L38.83,34.63 Z" fill="#FFD24A" stroke="#FFD24A" stroke-width="9" stroke-linejoin="round"></path></svg></span><div class="tx"><b>Nice one, Maya!</b><span>Tidy toys done · +5★</span></div></div>
@@ -840,6 +870,22 @@ async function submitFeedback(){
   toast('Thank you! 💛');
 }
 
+// Google's 4-colour "G" mark, reused on every "Continue with Google" button.
+const GOOGLE_SVG=`<svg class="g" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.02-3.7H.96v2.34A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.98 10.72a5.4 5.4 0 0 1 0-3.44V4.94H.96a9 9 0 0 0 0 8.12l3.02-2.34z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.9 11.43 0 9 0A9 9 0 0 0 .96 4.94l3.02 2.34C4.68 5.16 6.66 3.58 9 3.58z"/></svg>`;
+
+// Kick off Google OAuth. This redirects the whole page to Google and back to the
+// app's origin; on return boot() picks up the session (and any onboarding stash).
+async function signInWithGoogle(btn){
+  if(btn){btn.disabled=true;}
+  const {error}=await sb.auth.signInWithOAuth({
+    provider:'google',
+    options:{ redirectTo: window.location.origin+window.location.pathname,
+              queryParams:{ prompt:'select_account' } }
+  });
+  if(error){ if(btn)btn.disabled=false; toast(error.message||'Could not start Google sign-in'); }
+  // On success the browser navigates away to Google; nothing after this runs.
+}
+
 function renderLogin(){
   document.body.classList.remove('landing');
   app.innerHTML=`
@@ -847,6 +893,8 @@ function renderLogin(){
       <img src="./icons/icon-192.png" alt="Kudos" style="width:60px;height:60px;border-radius:16px">
       <h2>Welcome back</h2>
       <div class="authcard">
+        <button class="gbtn" id="googleBtn">${GOOGLE_SVG}Continue with Google</button>
+        <div class="authdiv">or with email</div>
         <label>Email</label>
         <input id="logEmail" type="email" inputmode="email" placeholder="you@example.com" autocomplete="email">
         <label>Password</label>
@@ -856,6 +904,7 @@ function renderLogin(){
       <button class="linkbtn" id="toStart">New here? Get started</button>
     </div>`;
   $('#toStart').onclick=renderLanding;
+  $('#googleBtn').onclick=()=>signInWithGoogle($('#googleBtn'));
   const submit=async()=>{
     const email=$('#logEmail').value.trim(), pass=$('#logPass').value;
     if(!email||!pass)return toast('Enter your email and password');
@@ -1010,13 +1059,15 @@ function renderWizParent(){
         <div class="authcard" style="max-width:none">
           <label>Your name</label>
           <input id="pName" placeholder="e.g. Mom, Dad, Priya">
+          <label>Parent PIN (6 digits) — locks Parent settings</label>
+          <input id="pPin" inputmode="numeric" maxlength="6" placeholder="6-digit PIN">
+          <button class="gbtn" id="googleBtn" style="margin-top:12px">${GOOGLE_SVG}Sign up with Google</button>
+          <div class="authdiv">or with email &amp; password</div>
           <label>Email</label>
           <input id="pEmail" type="email" inputmode="email" placeholder="you@example.com" autocomplete="email">
           <label>Password</label>
           <input id="pPass" type="password" placeholder="At least 6 characters" autocomplete="new-password">
           <div class="pwmeter"><div class="pwbar"><span id="pwfill"></span></div><div class="pwlab" id="pwlab">Use 6+ characters — longer is stronger</div></div>
-          <label>Parent PIN (6 digits) — locks Parent settings</label>
-          <input id="pPin" inputmode="numeric" maxlength="6" placeholder="6-digit PIN">
           <button class="bigbtn" id="createBtn" style="margin-top:8px">Create account & save</button>
           <div class="reassure"><span>✓ Free forever</span><span>✓ No credit card</span><span>✓ Your data stays yours</span></div>
         </div>
@@ -1033,6 +1084,25 @@ function renderWizParent(){
     lab.textContent=r.label;
     lab.style.color=r.muted?'var(--muted)':r.color;
   };
+  // Name + PIN are needed whichever way the parent signs up. Pre-hash the PIN and
+  // stash the whole board (no plaintext, no password) so setup can complete on the
+  // first authenticated load — covers email-confirm-on AND the Google redirect.
+  const stashParent=async(name,pin)=>{
+    const parentSalt=genSalt();
+    onboard.parent={name,emoji:'🧑',pinHash:await hashPin(pin,parentSalt),pinSalt:parentSalt};
+    onboard.familyName=name.endsWith('s')?`${name}' Family`:`${name}'s Family`;
+    localStorage.setItem('kudos:onboard',JSON.stringify(onboard));
+  };
+
+  $('#googleBtn').onclick=async()=>{
+    const name=$('#pName').value.trim();
+    const pin=$('#pPin').value.trim();
+    if(!name)return toast('Add your name first');
+    if(pin.length!==6)return toast('Set a 6-digit Parent PIN first');
+    await stashParent(name,pin);
+    signInWithGoogle($('#googleBtn'));
+  };
+
   $('#createBtn').onclick=async()=>{
     const name=$('#pName').value.trim();
     const email=$('#pEmail').value.trim();
@@ -1043,12 +1113,7 @@ function renderWizParent(){
     if(pass.length<6)return toast('Password needs at least 6 characters');
     if(pin.length!==6)return toast('Parent PIN must be 6 digits');
 
-    const parentSalt=genSalt();
-    onboard.parent={name,emoji:'🧑',pinHash:await hashPin(pin,parentSalt),pinSalt:parentSalt};
-    onboard.familyName=name.endsWith('s')?`${name}' Family`:`${name}'s Family`;
-    // Stash everything (PINs are pre-hashed; no plaintext, no password stored) so
-    // setup can complete on first authenticated load — covers email-confirm-on too.
-    localStorage.setItem('kudos:onboard',JSON.stringify(onboard));
+    await stashParent(name,pin);
 
     $('#createBtn').disabled=true;$('#createBtn').textContent='Creating…';
     const {data,error}=await sb.auth.signUp({email,password:pass});
