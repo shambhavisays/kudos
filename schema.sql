@@ -146,6 +146,17 @@ create table monthly_summaries (
   unique (profile_id, month)
 );
 
+-- Anonymous feedback inbox. Not tied to a family — anyone (signed in or not)
+-- can submit from the landing page. RLS below allows insert only, so the anon
+-- key can never read submissions back; you read them in the dashboard.
+create table feedback (
+  id uuid primary key default gen_random_uuid(),
+  message text not null check (char_length(message) between 1 and 2000),
+  email text check (email is null or char_length(email) <= 254),
+  source text,
+  created_at timestamptz not null default now()
+);
+
 -- ── Row Level Security ───────────────────────────────────────────────────────
 -- Every table is scoped to families owned by the authenticated user. A request
 -- can only see/modify rows whose family_id belongs to a family it owns; the
@@ -160,6 +171,7 @@ alter table redemptions enable row level security;
 alter table reward_credits enable row level security;
 alter table devices enable row level security;
 alter table monthly_summaries enable row level security;
+alter table feedback enable row level security;
 
 -- Helper: the set of family ids the current user owns.
 create or replace function owned_family_ids()
@@ -207,6 +219,12 @@ create policy "own devices" on devices
 create policy "own monthly_summaries" on monthly_summaries
   for all using (family_id in (select owned_family_ids()))
   with check (family_id in (select owned_family_ids()));
+
+-- Feedback is write-only from the client: anyone may insert, no one may read
+-- back through the API (no select policy). Read submissions in the dashboard.
+create policy "anyone can submit feedback" on feedback
+  for insert to anon, authenticated
+  with check (true);
 
 -- ── History retention (13 months) ───────────────────────────────────────────
 -- Keep ~13 months of raw daily completions; roll older activity into
