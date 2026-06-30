@@ -244,6 +244,13 @@
   .lp-foot .copy{color:var(--muted);font-weight:700;font-size:12px}
   .fbta{border:2px solid var(--line);border-radius:12px;padding:12px;font-size:15px;font-family:'Nunito';font-weight:700;width:100%;resize:vertical;color:var(--ink)}
   .fbta:focus{outline:none;border-color:var(--accent)}
+  /* ── Signup reassurance + password strength ── */
+  .pwmeter{display:flex;flex-direction:column;gap:5px;margin-top:-5px}
+  .pwbar{height:6px;border-radius:999px;background:var(--line);overflow:hidden}
+  .pwbar span{display:block;height:100%;width:0;border-radius:999px;background:var(--line);transition:width .25s,background .25s}
+  .pwlab{font-weight:800;font-size:11px;color:var(--muted)}
+  .reassure{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+  .reassure span{font-weight:800;font-size:11px;color:var(--good-deep);background:var(--good-bg);border-radius:999px;padding:5px 10px}
 </style>
 </head>
 <body>
@@ -321,6 +328,21 @@ function genSalt(){
   return [...a].map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 const hashPin=(pin,salt)=>sha256(salt+':'+pin);
+// Lightweight password-strength hint for the signup field — purely advisory
+// (the real minimum is enforced separately). Scores length + character variety.
+function pwStrength(p){
+  if(!p) return {pct:0,label:'Use 6+ characters — longer is stronger',color:'var(--line)',muted:true};
+  if(p.length<6) return {pct:22,label:'Too short',color:'var(--bad)'};
+  let s=0;
+  if(p.length>=10) s++;
+  if(p.length>=14) s++;
+  if(/[a-z]/.test(p)&&/[A-Z]/.test(p)) s++;
+  if(/\d/.test(p)) s++;
+  if(/[^A-Za-z0-9]/.test(p)) s++;
+  if(s<=1) return {pct:45,label:'Weak',color:'#d98a00'};
+  if(s<=2) return {pct:70,label:'Good',color:'var(--accent)'};
+  return {pct:100,label:'Strong 💪',color:'var(--good)'};
+}
 // Verify a PIN, supporting legacy unsalted hashes (sha256(pin) with no salt).
 async function pinMatches(profile,pin){
   if(profile.pin_salt)return (await hashPin(pin,profile.pin_salt))===profile.pin_hash;
@@ -747,14 +769,25 @@ function renderWizParent(){
           <input id="pEmail" type="email" inputmode="email" placeholder="you@example.com" autocomplete="email">
           <label>Password</label>
           <input id="pPass" type="password" placeholder="At least 6 characters" autocomplete="new-password">
+          <div class="pwmeter"><div class="pwbar"><span id="pwfill"></span></div><div class="pwlab" id="pwlab">Use 6+ characters — longer is stronger</div></div>
           <label>Parent PIN (6 digits) — locks Parent settings</label>
           <input id="pPin" inputmode="numeric" maxlength="6" placeholder="6-digit PIN">
           <button class="bigbtn" id="createBtn" style="margin-top:8px">Create account & save</button>
+          <div class="reassure"><span>✓ Free forever</span><span>✓ No credit card</span><span>✓ Your data stays yours</span></div>
         </div>
         <button class="linkbtn" id="wizBack3">← Back</button>
       </div>
     </div>`;
   $('#wizBack3').onclick=renderWizAddMore;
+  const pw=$('#pPass');
+  pw.oninput=()=>{
+    const r=pwStrength(pw.value);
+    $('#pwfill').style.width=r.pct+'%';
+    $('#pwfill').style.background=r.color;
+    const lab=$('#pwlab');
+    lab.textContent=r.label;
+    lab.style.color=r.muted?'var(--muted)':r.color;
+  };
   $('#createBtn').onclick=async()=>{
     const name=$('#pName').value.trim();
     const email=$('#pEmail').value.trim();
