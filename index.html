@@ -200,6 +200,50 @@
   .emojigrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
   .emojibtn{border:none;background:var(--bg);border-radius:12px;font-size:24px;padding:8px 0;cursor:pointer;line-height:1}
   .emojibtn:active{transform:scale(.9)}
+  /* ── Landing / marketing page ── */
+  .lp{max-width:680px;margin:0 auto}
+  .lp-nav{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 0}
+  .lp-nav .b{display:flex;align-items:center;gap:9px}
+  .lp-nav .b img{width:32px;height:32px;border-radius:9px;display:block}
+  .lp-nav .b b{font-family:'Fredoka';font-weight:600;font-size:19px}
+  .lp-hero{text-align:center;padding:30px 8px 6px}
+  .lp-hero img.mark{width:76px;height:76px;border-radius:19px;margin-bottom:16px}
+  .lp-hero h1{font-family:'Fredoka';font-weight:600;font-size:30px;line-height:1.14;margin:0 0 12px}
+  .lp-hero .sub{color:var(--muted);font-weight:700;font-size:16px;max-width:440px;margin:0 auto 22px;line-height:1.45}
+  .lp-actions{display:flex;flex-direction:column;align-items:center;gap:11px}
+  .lp-actions .bigbtn{font-size:17px;padding:15px 30px}
+  .lp-trust{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+  .lp-trust span{font-weight:800;font-size:12px;color:var(--good-deep);background:var(--good-bg);border-radius:999px;padding:5px 11px}
+  .lp-sec{padding:34px 4px 0;margin-top:34px;border-top:1px solid var(--line)}
+  .lp-sec h2{font-family:'Fredoka';font-weight:600;font-size:22px;margin:0 0 6px;text-align:center}
+  .lp-sec .lead{color:var(--muted);font-weight:700;font-size:14px;max-width:420px;margin:0 auto 20px;text-align:center;line-height:1.45}
+  .lp-cards{display:grid;grid-template-columns:1fr;gap:12px}
+  @media(min-width:540px){.lp-cards{grid-template-columns:1fr 1fr}}
+  .lp-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px}
+  .lp-card .ic{font-size:25px;line-height:1}
+  .lp-card h3{font-family:'Fredoka';font-weight:600;font-size:15px;margin:9px 0 4px}
+  .lp-card p{color:var(--muted);font-weight:700;font-size:13px;margin:0;line-height:1.45}
+  .lp-steps{counter-reset:step;display:flex;flex-direction:column;gap:12px;max-width:460px;margin:0 auto}
+  .lp-step{display:flex;gap:13px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px}
+  .lp-step .n{counter-increment:step;flex:none;width:30px;height:30px;border-radius:50%;background:#eaf2fc;color:var(--accent-deep);font-family:'Fredoka';font-weight:600;font-size:15px;display:grid;place-items:center}
+  .lp-step .n::before{content:counter(step)}
+  .lp-step h3{font-family:'Fredoka';font-weight:600;font-size:15px;margin:3px 0 3px}
+  .lp-step p{color:var(--muted);font-weight:700;font-size:13px;margin:0;line-height:1.45}
+  .lp-why{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;max-width:480px;margin:0 auto;color:var(--muted);font-weight:700;font-size:14px;line-height:1.55;text-align:center}
+  .lp-faq{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+  .lp-faq details{background:#fff;border:1px solid var(--line);border-radius:14px;padding:0 15px}
+  .lp-faq summary{font-family:'Fredoka';font-weight:600;font-size:14px;cursor:pointer;padding:13px 0;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .lp-faq summary::-webkit-details-marker{display:none}
+  .lp-faq summary::after{content:'+';color:var(--muted);font-weight:700}
+  .lp-faq details[open] summary::after{content:'\2013'}
+  .lp-faq details p{color:var(--muted);font-weight:700;font-size:13px;margin:0 0 13px;line-height:1.5}
+  .lp-final{text-align:center}
+  .lp-foot{padding:24px 4px 6px;border-top:1px solid var(--line);margin-top:34px;text-align:center}
+  .lp-foot .links{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:9px}
+  .lp-foot .links a{color:var(--accent-deep);font-weight:800;font-size:13px;cursor:pointer;text-decoration:none}
+  .lp-foot .copy{color:var(--muted);font-weight:700;font-size:12px}
+  .fbta{border:2px solid var(--line);border-radius:12px;padding:12px;font-size:15px;font-family:'Nunito';font-weight:700;width:100%;resize:vertical;color:var(--ink)}
+  .fbta:focus{outline:none;border-color:var(--accent)}
 </style>
 </head>
 <body>
@@ -209,6 +253,17 @@
 <input id="photoInput" type="file" accept="image/*" capture="environment" style="display:none">
 <div id="lightbox" onclick="this.classList.remove('open')"><img alt="proof photo"></div>
 <div id="emojiPick"><div class="emojisheet"><h4>Pick an emoji</h4><div class="emojigrid" id="emojiGrid"></div></div></div>
+<div id="fbModal" class="modal"><div class="sheet">
+  <h3>Share feedback <button class="x" id="fbClose" aria-label="Close">✕</button></h3>
+  <p class="note" style="margin:-6px 4px 12px">Found a bug or have an idea? I read every note. Email is optional — add it only if you'd like a reply.</p>
+  <div class="authcard" style="max-width:none;border:none;padding:0 4px">
+    <label>Your feedback</label>
+    <textarea id="fbMsg" class="fbta" rows="4" maxlength="2000" placeholder="What's working, what's not, what you wish it did…"></textarea>
+    <label>Email (optional)</label>
+    <input id="fbEmail" type="email" inputmode="email" placeholder="you@example.com" autocomplete="email">
+    <button class="bigbtn" id="fbSend" style="margin-top:4px">Send feedback</button>
+  </div>
+</div></div>
 
 <!-- Self-hosted Supabase client (pinned @2.45.4). Loaded from our own domain
      instead of a third-party CDN, so no runtime supply-chain dependency. -->
@@ -416,16 +471,108 @@ async function loadProfiles(){
 // ── Landing (signed out) ──────────────────────────────────────────────────────
 function renderLanding(){
   app.innerHTML=`
-    <div class="center">
-      <img src="./icons/icon-192.png" alt="Kudos" style="width:72px;height:72px;border-radius:18px">
-      <h2>Kudos</h2>
-      <p class="tagline">Give kids the kudos they deserve. Track chores, earn stars, cash them in for rewards.</p>
-      <button class="bigbtn" id="startBtn">Get started — free</button>
-      <button class="linkbtn" id="toLogin">I already have an account · Log in</button>
-      <p class="note" style="max-width:300px;margin-top:14px">Your family's data is private to your account. We only store what's needed to run your board — no ads, no trackers. <a href="https://github.com/shambhavisays/kudos/blob/main/PRIVACY.md" target="_blank" rel="noopener" style="color:var(--accent-deep)">Privacy note</a></p>
-    </div>`;
-  $('#startBtn').onclick=()=>startOnboarding();
-  $('#toLogin').onclick=renderLogin;
+  <div class="lp">
+    <nav class="lp-nav">
+      <span class="b"><img src="./icons/icon-192.png" alt=""><b>Kudos</b></span>
+      <button class="linkbtn" id="navLogin">Log in</button>
+    </nav>
+
+    <section class="lp-hero">
+      <img class="mark" src="./icons/icon-192.png" alt="Kudos">
+      <h1>Chores done. Stars earned. Less nagging.</h1>
+      <p class="sub">Kudos is a free family chore tracker. Kids see exactly what to do today and earn stars they can spend on rewards — and you set it up in about two minutes.</p>
+      <div class="lp-actions">
+        <button class="bigbtn" data-start>Get started — free</button>
+        <button class="linkbtn" id="heroLogin">I already have an account · Log in</button>
+      </div>
+      <div class="lp-trust">
+        <span>✓ Free forever</span><span>✓ No credit card</span><span>✓ Private by design</span><span>✓ Set up in 2 min</span>
+      </div>
+    </section>
+
+    <section class="lp-sec">
+      <h2>How it works</h2>
+      <p class="lead">Three steps from "who's doing the dishes" to a board that runs itself.</p>
+      <div class="lp-steps">
+        <div class="lp-step"><span class="n"></span><div><h3>Set up the board</h3><p>Add your kids and pick starter chores tuned to their age. No app to install.</p></div></div>
+        <div class="lp-step"><span class="n"></span><div><h3>Kids earn stars</h3><p>They tap off chores as they go and watch their star balance climb.</p></div></div>
+        <div class="lp-step"><span class="n"></span><div><h3>Cash in rewards</h3><p>Stars buy rewards you choose — screen time, a treat, or a big saved-up goal.</p></div></div>
+      </div>
+    </section>
+
+    <section class="lp-sec">
+      <h2>Everything you need</h2>
+      <p class="lead">Built for real households — multiple kids, different ages, one shared screen.</p>
+      <div class="lp-cards">
+        <div class="lp-card"><div class="ic">🗒️</div><h3>Chores by time of day</h3><p>Morning, afternoon, and evening groups so kids always know what's next.</p></div>
+        <div class="lp-card"><div class="ic">⭐</div><h3>Stars &amp; rewards</h3><p>Tiered rewards — instant, weekly, monthly — shared across the family or set per kid.</p></div>
+        <div class="lp-card"><div class="ic">🎯</div><h3>Goals &amp; streaks</h3><p>Pin a savings goal and keep daily streaks alive, with one monthly streak-freeze.</p></div>
+        <div class="lp-card"><div class="ic">📷</div><h3>Photo proof</h3><p>Ask for a photo on the chores that need it — optional, and set per chore.</p></div>
+        <div class="lp-card"><div class="ic">🔒</div><h3>Parent settings</h3><p>A parent PIN locks setup; each kid taps their own profile to check in.</p></div>
+        <div class="lp-card"><div class="ic">📺</div><h3>WallBoard mode</h3><p>A shared family screen showing everyone's progress at a glance — fridge-ready.</p></div>
+      </div>
+    </section>
+
+    <section class="lp-sec">
+      <h2>Why it's free</h2>
+      <div class="lp-why">
+        Kudos has no ads and no trackers. It's a craft project built by a product manager who wanted a chore app that respects families and their data. Your family's information stays private to your account — nothing is sold, nothing is shared.
+        <div style="margin-top:12px"><a href="https://github.com/shambhavisays/kudos/blob/main/PRIVACY.md" target="_blank" rel="noopener" style="color:var(--accent-deep);font-weight:800">Read the privacy note →</a></div>
+      </div>
+    </section>
+
+    <section class="lp-sec">
+      <h2>Questions</h2>
+      <div class="lp-faq">
+        <details><summary>Is it really free?</summary><p>Yes — no paid tiers, no credit card, no ads. It's built to stay that way.</p></details>
+        <details><summary>Do my kids need their own logins?</summary><p>No. You sign up once for the household, then each kid taps their own profile. Older kids can have an optional PIN on a shared device.</p></details>
+        <details><summary>Is my kids' data safe?</summary><p>Yes. Everything is private to your account and protected row-by-row in the database, so no other family can ever see your board. See the privacy note for what's stored.</p></details>
+        <details><summary>What devices does it work on?</summary><p>Any modern browser — phone, tablet, or computer. Add it to your home screen for an app-like experience.</p></details>
+      </div>
+    </section>
+
+    <section class="lp-sec lp-final">
+      <h2>Ready to give kids the kudos they deserve?</h2>
+      <p class="lead">Free, private, and ready in two minutes.</p>
+      <button class="bigbtn" data-start>Get started — free</button>
+    </section>
+
+    <footer class="lp-foot">
+      <div class="links">
+        <a href="https://github.com/shambhavisays/kudos/blob/main/PRIVACY.md" target="_blank" rel="noopener">Privacy</a>
+        <a href="https://github.com/shambhavisays/kudos" target="_blank" rel="noopener">GitHub</a>
+        <a id="fbLink">Share feedback</a>
+      </div>
+      <div class="copy">Made with 💛 as a portfolio project · ${new Date().getFullYear()}</div>
+    </footer>
+  </div>`;
+  document.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>startOnboarding());
+  $('#navLogin').onclick=renderLogin;
+  $('#heroLogin').onclick=renderLogin;
+  $('#fbLink').onclick=openFeedback;
+}
+
+// ── Feedback (anonymous insert into Supabase; no read access via anon key) ────
+function openFeedback(){
+  const m=$('#fbModal');
+  m.classList.add('open');
+  m.onclick=e=>{ if(e.target===m) closeFeedback(); };
+  $('#fbClose').onclick=closeFeedback;
+  $('#fbSend').onclick=submitFeedback;
+  setTimeout(()=>$('#fbMsg').focus(),50);
+}
+function closeFeedback(){ $('#fbModal').classList.remove('open'); }
+async function submitFeedback(){
+  const msg=$('#fbMsg').value.trim();
+  if(!msg){ toast('Add a little note first'); $('#fbMsg').focus(); return; }
+  const email=$('#fbEmail').value.trim()||null;
+  const btn=$('#fbSend'); btn.disabled=true; btn.textContent='Sending…';
+  const { error } = await sb.from('feedback').insert({ message:msg, email, source:'landing' });
+  btn.disabled=false; btn.textContent='Send feedback';
+  if(error){ toast('Could not send — please try again'); return; }
+  $('#fbMsg').value=''; $('#fbEmail').value='';
+  closeFeedback();
+  toast('Thank you! 💛');
 }
 
 function renderLogin(){
