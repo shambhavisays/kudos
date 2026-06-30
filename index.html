@@ -242,6 +242,38 @@
   .lp-foot .links{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:9px}
   .lp-foot .links a{color:var(--accent-deep);font-weight:800;font-size:13px;cursor:pointer;text-decoration:none}
   .lp-foot .copy{color:var(--muted);font-weight:700;font-size:12px}
+  /* Wider marketing canvas — the app itself stays 720px; only the landing breaks out. */
+  body.landing .wrap{max-width:1040px}
+  .lp{max-width:none}
+  .lp-hero-copy{max-width:520px;margin:0 auto}
+  .lp-cap{text-align:center;color:var(--muted);font-weight:700;font-size:12px;margin-top:13px}
+  /* Phone-frame mockup showing a real Kudos board */
+  .lp-phone{width:264px;max-width:78vw;margin:24px auto 0;background:#1d2b3a;border-radius:34px;padding:11px;box-shadow:0 26px 50px -20px rgba(29,43,58,.55)}
+  .lp-phone .scr{background:var(--bg);border-radius:25px;padding:13px 12px}
+  .lp-bm-head{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--line);border-radius:16px;padding:11px 13px;margin-bottom:6px}
+  .lp-bm-head .who{font-family:'Fredoka';font-weight:600;font-size:15px}
+  .lp-bm-head .pts{text-align:right;line-height:1}
+  .lp-bm-head .pts b{font-family:'Fredoka';font-size:21px;color:var(--accent-deep);display:block}
+  .lp-bm-head .pts span{font-size:9px;font-weight:800;letter-spacing:1px;color:var(--muted)}
+  .lp-bm-sec{font-family:'Fredoka';font-weight:600;font-size:12px;color:var(--ink);margin:9px 2px 5px;display:flex;align-items:center;gap:6px}
+  .lp-bm-row{display:flex;align-items:center;gap:9px;background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:6px}
+  .lp-bm-row .e{font-size:17px}
+  .lp-bm-row .t{flex:1;font-family:'Fredoka';font-weight:600;font-size:12.5px}
+  .lp-bm-row .ck{font-weight:800;font-size:11px;color:var(--gold)}
+  .lp-bm-row.done{border-color:var(--good);background:var(--good-bg)}
+  .lp-bm-row.done .ck{width:19px;height:19px;border-radius:50%;background:var(--good);color:#fff;display:grid;place-items:center;font-size:11px}
+  @media(min-width:760px){
+    .lp-hero{display:flex;align-items:center;gap:44px;text-align:left;padding:48px 8px 22px}
+    .lp-hero-copy{flex:1;margin:0}
+    .lp-hero h1{font-size:36px}
+    .lp-hero .sub{margin-left:0;margin-right:0}
+    .lp-actions{align-items:flex-start}
+    .lp-trust{justify-content:flex-start}
+    .lp-phone{flex:none;margin:0}
+    .lp-cards{grid-template-columns:repeat(3,1fr)}
+    .lp-steps{max-width:none;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .lp-sec h2{font-size:24px}
+  }
   .fbta{border:2px solid var(--line);border-radius:12px;padding:12px;font-size:15px;font-family:'Nunito';font-weight:700;width:100%;resize:vertical;color:var(--ink)}
   .fbta:focus{outline:none;border-color:var(--accent)}
   /* ── Signup reassurance + password strength ── */
@@ -460,6 +492,7 @@ const STARTER_REWARDS=[
 async function boot(){
   const {data:{session}}=await sb.auth.getSession();
   if(!session){renderLanding();return;}
+  document.body.classList.remove('landing');
   currentUser=session.user;
 
   let fam=await loadOwnedFamily();
@@ -492,6 +525,7 @@ async function loadProfiles(){
 
 // ── Landing (signed out) ──────────────────────────────────────────────────────
 function renderLanding(){
+  document.body.classList.add('landing');
   app.innerHTML=`
   <div class="lp">
     <nav class="lp-nav">
@@ -500,15 +534,31 @@ function renderLanding(){
     </nav>
 
     <section class="lp-hero">
-      <img class="mark" src="./icons/icon-192.png" alt="Kudos">
-      <h1>Chores done. Stars earned. Less nagging.</h1>
-      <p class="sub">Kudos is a free family chore tracker. Kids see exactly what to do today and earn stars they can spend on rewards — and you set it up in about two minutes.</p>
-      <div class="lp-actions">
-        <button class="bigbtn" data-start>Get started — free</button>
-        <button class="linkbtn" id="heroLogin">I already have an account · Log in</button>
+      <div class="lp-hero-copy">
+        <img class="mark" src="./icons/icon-192.png" alt="Kudos">
+        <h1>Chores done. Stars earned. Less nagging.</h1>
+        <p class="sub">Kudos is a free family chore tracker. Kids see exactly what to do today and earn stars they can spend on rewards — and you set it up in about two minutes.</p>
+        <div class="lp-actions">
+          <button class="bigbtn" data-start>Get started — free</button>
+          <button class="linkbtn" id="heroLogin">I already have an account · Log in</button>
+        </div>
+        <div class="lp-trust">
+          <span>✓ Free forever</span><span>✓ No credit card</span><span>✓ Private by design</span><span>✓ Set up in 2 min</span>
+        </div>
       </div>
-      <div class="lp-trust">
-        <span>✓ Free forever</span><span>✓ No credit card</span><span>✓ Private by design</span><span>✓ Set up in 2 min</span>
+      <div>
+        <div class="lp-phone"><div class="scr">
+          <div class="lp-bm-head"><div class="who">🦄 Maya</div><div class="pts"><b>120</b><span>STARS</span></div></div>
+          <div class="lp-bm-sec">☀️ Morning</div>
+          <div class="lp-bm-row done"><span class="e">🛏️</span><span class="t">Make bed</span><span class="ck">✓</span></div>
+          <div class="lp-bm-row done"><span class="e">🪥</span><span class="t">Brush teeth</span><span class="ck">✓</span></div>
+          <div class="lp-bm-sec">🌤️ Afternoon</div>
+          <div class="lp-bm-row done"><span class="e">📚</span><span class="t">Homework</span><span class="ck">✓</span></div>
+          <div class="lp-bm-row"><span class="e">🧸</span><span class="t">Tidy toys</span><span class="ck">+5</span></div>
+          <div class="lp-bm-sec">🌙 Evening</div>
+          <div class="lp-bm-row"><span class="e">🛁</span><span class="t">Bath time</span><span class="ck">+5</span></div>
+        </div></div>
+        <div class="lp-cap">A real Kudos board — set up in two minutes.</div>
       </div>
     </section>
 
@@ -598,6 +648,7 @@ async function submitFeedback(){
 }
 
 function renderLogin(){
+  document.body.classList.remove('landing');
   app.innerHTML=`
     <div class="center">
       <img src="./icons/icon-192.png" alt="Kudos" style="width:60px;height:60px;border-radius:16px">
@@ -630,6 +681,7 @@ let onboard=null;
 let wizActiveKid=0;
 
 function startOnboarding(){
+  document.body.classList.remove('landing');
   onboard={familyName:'',kids:[blankKid()],parent:null};
   wizActiveKid=0;
   renderWizChores();
