@@ -243,13 +243,18 @@
   .lp-foot .links a{color:var(--accent-deep);font-weight:800;font-size:13px;cursor:pointer;text-decoration:none}
   .lp-foot .copy{color:var(--muted);font-weight:700;font-size:12px}
   /* Wider marketing canvas — the app itself stays 720px; only the landing breaks out. */
-  body.landing .wrap{max-width:1040px}
+  body.landing .wrap{max-width:1180px}
   .lp{max-width:none}
-  .lp-hero-copy{max-width:520px;margin:0 auto}
-  .lp-cap{text-align:center;color:var(--muted);font-weight:700;font-size:12px;margin-top:13px}
-  /* Phone-frame mockup showing a real Kudos board */
-  .lp-phone{width:264px;max-width:78vw;margin:24px auto 0;background:#1d2b3a;border-radius:34px;padding:11px;box-shadow:0 26px 50px -20px rgba(29,43,58,.55)}
+  .lp-hero-copy{max-width:600px;margin:0 auto}
+  .lp-cap{text-align:center;color:var(--muted);font-weight:700;font-size:12.5px;margin-top:18px}
+  /* Showcase band — two device mockups (with room between for a mascot later) */
+  .lp-showcase{display:flex;justify-content:center;align-items:flex-start;gap:38px;flex-wrap:wrap;margin-top:26px}
+  .lp-dev{display:flex;flex-direction:column;align-items:center;gap:11px}
+  .lp-tag{font-family:'Fredoka';font-weight:600;font-size:12px;color:var(--accent-deep);background:#eaf2fc;border-radius:999px;padding:5px 13px}
+  /* Phone-frame mockup */
+  .lp-phone{width:262px;max-width:80vw;margin:0 auto;background:#1d2b3a;border-radius:34px;padding:11px;box-shadow:0 26px 50px -20px rgba(29,43,58,.55)}
   .lp-phone .scr{background:var(--bg);border-radius:25px;padding:13px 12px}
+  /* Kid board */
   .lp-bm-head{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--line);border-radius:16px;padding:11px 13px;margin-bottom:6px}
   .lp-bm-head .who{font-family:'Fredoka';font-weight:600;font-size:15px}
   .lp-bm-head .pts{text-align:right;line-height:1}
@@ -262,14 +267,19 @@
   .lp-bm-row .ck{font-weight:800;font-size:11px;color:var(--gold)}
   .lp-bm-row.done{border-color:var(--good);background:var(--good-bg)}
   .lp-bm-row.done .ck{width:19px;height:19px;border-radius:50%;background:var(--good);color:#fff;display:grid;place-items:center;font-size:11px}
+  /* Parent setup view (second device) */
+  .lp-pm-head{display:flex;align-items:center;justify-content:space-between;padding:4px 3px 9px}
+  .lp-pm-head b{font-family:'Fredoka';font-weight:600;font-size:14px}
+  .lp-pm-head .add{background:var(--accent);color:#fff;font-family:'Fredoka';font-weight:600;font-size:10px;border-radius:9px;padding:5px 9px}
+  .lp-pm-row{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:7px}
+  .lp-pm-row .e{font-size:16px}
+  .lp-pm-row .t{flex:1;font-family:'Fredoka';font-weight:600;font-size:12px;line-height:1.15}
+  .lp-pm-row .t small{display:block;font-family:'Nunito';font-weight:700;font-size:10px;color:var(--muted)}
+  .lp-pm-row .pt{font-weight:800;font-size:11px;color:var(--gold)}
   @media(min-width:760px){
-    .lp-hero{display:flex;align-items:center;gap:44px;text-align:left;padding:48px 8px 22px}
-    .lp-hero-copy{flex:1;margin:0}
-    .lp-hero h1{font-size:36px}
-    .lp-hero .sub{margin-left:0;margin-right:0}
-    .lp-actions{align-items:flex-start}
-    .lp-trust{justify-content:flex-start}
-    .lp-phone{flex:none;margin:0}
+    .lp-hero{padding:50px 8px 14px}
+    .lp-hero h1{font-size:38px}
+    .lp-showcase{gap:54px;margin-top:34px}
     .lp-cards{grid-template-columns:repeat(3,1fr)}
     .lp-steps{max-width:none;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
     .lp-sec h2{font-size:24px}
@@ -546,20 +556,39 @@ function renderLanding(){
           <span>✓ Free forever</span><span>✓ No credit card</span><span>✓ Private by design</span><span>✓ Set up in 2 min</span>
         </div>
       </div>
-      <div>
-        <div class="lp-phone"><div class="scr">
-          <div class="lp-bm-head"><div class="who">🦄 Maya</div><div class="pts"><b>120</b><span>STARS</span></div></div>
-          <div class="lp-bm-sec">☀️ Morning</div>
-          <div class="lp-bm-row done"><span class="e">🛏️</span><span class="t">Make bed</span><span class="ck">✓</span></div>
-          <div class="lp-bm-row done"><span class="e">🪥</span><span class="t">Brush teeth</span><span class="ck">✓</span></div>
-          <div class="lp-bm-sec">🌤️ Afternoon</div>
-          <div class="lp-bm-row done"><span class="e">📚</span><span class="t">Homework</span><span class="ck">✓</span></div>
-          <div class="lp-bm-row"><span class="e">🧸</span><span class="t">Tidy toys</span><span class="ck">+5</span></div>
-          <div class="lp-bm-sec">🌙 Evening</div>
-          <div class="lp-bm-row"><span class="e">🛁</span><span class="t">Bath time</span><span class="ck">+5</span></div>
-        </div></div>
-        <div class="lp-cap">A real Kudos board — set up in two minutes.</div>
+
+      <!-- Showcase band: kid board + parent setup, both real Kudos UI in code.
+           The flex gap leaves room to drop a mascot illustration between them later. -->
+      <div class="lp-showcase">
+        <div class="lp-dev">
+          <div class="lp-tag">What kids see</div>
+          <div class="lp-phone"><div class="scr">
+            <div class="lp-bm-head"><div class="who">🦄 Maya</div><div class="pts"><b>120</b><span>STARS</span></div></div>
+            <div class="lp-bm-sec">☀️ Morning</div>
+            <div class="lp-bm-row done"><span class="e">🛏️</span><span class="t">Make bed</span><span class="ck">✓</span></div>
+            <div class="lp-bm-row done"><span class="e">🪥</span><span class="t">Brush teeth</span><span class="ck">✓</span></div>
+            <div class="lp-bm-sec">🌤️ Afternoon</div>
+            <div class="lp-bm-row done"><span class="e">📚</span><span class="t">Homework</span><span class="ck">✓</span></div>
+            <div class="lp-bm-row"><span class="e">🧸</span><span class="t">Tidy toys</span><span class="ck">+5</span></div>
+            <div class="lp-bm-sec">🌙 Evening</div>
+            <div class="lp-bm-row"><span class="e">🛁</span><span class="t">Bath time</span><span class="ck">+5</span></div>
+          </div></div>
+        </div>
+
+        <div class="lp-dev">
+          <div class="lp-tag">What parents set up</div>
+          <div class="lp-phone"><div class="scr">
+            <div class="lp-pm-head"><b>Manage chores</b><span class="add">＋ Add</span></div>
+            <div class="lp-pm-row"><span class="e">🛏️</span><span class="t">Make bed<small>Morning · daily</small></span><span class="pt">+3 ⭐</span></div>
+            <div class="lp-pm-row"><span class="e">🪥</span><span class="t">Brush teeth<small>Morning · daily</small></span><span class="pt">+3 ⭐</span></div>
+            <div class="lp-pm-row"><span class="e">📚</span><span class="t">Homework<small>Afternoon · weekdays</small></span><span class="pt">+10 ⭐</span></div>
+            <div class="lp-pm-row"><span class="e">🧸</span><span class="t">Tidy toys<small>Afternoon · daily</small></span><span class="pt">+5 ⭐</span></div>
+            <div class="lp-pm-row"><span class="e">🛁</span><span class="t">Bath time<small>Evening · daily</small></span><span class="pt">+5 ⭐</span></div>
+            <div class="lp-pm-row"><span class="e">📖</span><span class="t">Read 20 min<small>Evening · 📷 photo</small></span><span class="pt">+10 ⭐</span></div>
+          </div></div>
+        </div>
       </div>
+      <div class="lp-cap">Two views of one board — kids tap chores off, parents set them up. All real Kudos, no mockups.</div>
     </section>
 
     <section class="lp-sec">
