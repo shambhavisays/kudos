@@ -1212,8 +1212,11 @@ async function toggleChore(k,choreId){
     k.total_points=Math.max(0,k.total_points+c.points);
     weekCompletions.push({profile_id:k.id,chore_id:choreId,points:c.points,completed_on:today(),note});
     if(c.points>0 && k.last_active_date!==today()){
+      // "Yesterday" must use the same LOCAL calendar date as today()/last_active_date.
+      // (Using toISOString() here is UTC and drifts a day in the evening, wrongly
+      // resetting streaks for users behind UTC.)
       const y=new Date();y.setDate(y.getDate()-1);
-      k.streak=(k.last_active_date===y.toISOString().slice(0,10))?(k.streak||0)+1:1;
+      k.streak=(k.last_active_date===localDateStr(y))?(k.streak||0)+1:1;
       k.last_active_date=today();
     }
   }
@@ -1288,7 +1291,7 @@ async function openAdmin(k){
   if(focusKid){
     const since=new Date();since.setDate(since.getDate()-30);
     const [{data:recent},{data:notesData}]=await Promise.all([
-      sb.from('completions').select('chore_id,points').eq('profile_id',focusKid.id).gte('completed_on',since.toISOString().slice(0,10)),
+      sb.from('completions').select('chore_id,points').eq('profile_id',focusKid.id).gte('completed_on',localDateStr(since)),
       sb.from('completions').select('chore_id,note,completed_on').eq('profile_id',focusKid.id).not('note','is',null).order('completed_on',{ascending:false})
     ]);
     (recent||[]).forEach(c=>{counts[c.chore_id]=(counts[c.chore_id]||0)+1;});
