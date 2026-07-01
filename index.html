@@ -64,7 +64,9 @@
   .choreToggle{position:relative;border:2px solid var(--line);background:#fff;border-radius:16px;padding:12px;cursor:pointer;min-height:84px;display:flex;flex-direction:column;justify-content:space-between}
   .choreToggle .emo{font-size:24px}
   .choreToggle .nm{font-family:'Fredoka';font-weight:600;font-size:13px;margin-top:4px}
-  .choreToggle .pp{font-weight:800;font-size:11px;color:var(--good)}
+  .choreToggle .pp{font-weight:800;font-size:11px;color:var(--good-deep);background:var(--good-bg);border-radius:999px;padding:3px 8px;align-self:flex-start;cursor:pointer;border:1px solid transparent}
+  .choreToggle .pp:hover{border-color:currentColor}
+  .choreToggle .pp.care{color:var(--accent-deep);background:#eaf2fc}
   .choreToggle.sel{border-color:var(--good);background:var(--good-bg)}
   .choreToggle .tk{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;border:2px solid var(--line);background:#fff;display:grid;place-items:center;font-size:11px;color:#fff}
   .choreToggle.sel .tk{background:var(--good);border-color:var(--good)}
@@ -545,31 +547,45 @@ $('#emojiPick').onclick=e=>{if(e.target.id==='emojiPick')$('#emojiPick').classLi
 // Starter content for new families
 // ─────────────────────────────────────────────────────────────────────────────
 // Age bands are cumulative — each adds to the one below it.
+// Self-care basics are a real achievement for toddlers (they earn stars), but for
+// older kids they're simply expected — "daily care": still tapped off and still
+// building the streak, but worth no stars. Parents can flip any task between
+// "earns stars" and "daily care" in the picker or Parent settings.
+const SELFCARE=[
+  {emoji:'🛏️',name:'Make bed'},
+  {emoji:'🪥',name:'Brush teeth'},
+  {emoji:'👕',name:'Get dressed'},
+];
+const care=p=>SELFCARE.map(c=>({...c,points:p}));
+
 const BAND_4_6=[
-  {emoji:'🛏️',name:'Make bed',points:5},
-  {emoji:'🪥',name:'Brush teeth',points:5},
+  ...care(5),                                    // toddlers: self-care earns stars
   {emoji:'🧸',name:'Put toys away',points:5},
-  {emoji:'👕',name:'Get dressed',points:5},
   {emoji:'🥦',name:'Eat veggies',points:5},
 ];
-const BAND_7_9=[...BAND_4_6,
+const EXTRAS_7_9=[
+  {emoji:'🧸',name:'Put toys away',points:5},
+  {emoji:'🥦',name:'Eat veggies',points:5},
   {emoji:'📚',name:'Homework',points:10},
   {emoji:'🍽️',name:'Set / clear table',points:5},
-  {emoji:'🛁',name:'Shower routine',points:5},
+  {emoji:'🛁',name:'Shower routine',points:0},   // self-care → daily care
   {emoji:'📖',name:'Read 20 min',points:10},
 ];
-const BAND_10_12=[...BAND_7_9,
+const BAND_7_9=[...care(0), ...EXTRAS_7_9];       // school-age: self-care is daily care
+const EXTRAS_10_12=[...EXTRAS_7_9,
   {emoji:'🧺',name:'Own laundry',points:10},
   {emoji:'🧹',name:'Tidy own space',points:10},
   {emoji:'🐕',name:'Pet care',points:5},
-  {emoji:'🎒',name:'Pack own bag',points:5},
+  {emoji:'🎒',name:'Pack own bag',points:0},      // self-care → daily care
 ];
-const BAND_TEEN=[...BAND_10_12,
+const BAND_10_12=[...care(0), ...EXTRAS_10_12];
+const EXTRAS_TEEN=[...EXTRAS_10_12,
   {emoji:'🍳',name:'Cook a meal',points:15},
   {emoji:'🗑️',name:'Take out trash',points:5},
   {emoji:'💵',name:'Budget allowance',points:10},
   {emoji:'🚗',name:'Help with errands',points:10},
 ];
+const BAND_TEEN=[...care(0), ...EXTRAS_TEEN];
 const BANDS=[
   {key:'4-6',label:'4–6',lo:0,hi:6,chores:BAND_4_6},
   {key:'7-9',label:'7–9',lo:7,hi:9,chores:BAND_7_9},
@@ -578,7 +594,9 @@ const BANDS=[
 ];
 const bandForAge=age=>BANDS.find(b=>age>=b.lo&&age<=b.hi)||BANDS[1];
 const bandByKey=key=>BANDS.find(b=>b.key===key)||BANDS[1];
-const DEFAULT_GOAL_BY_BAND={'4-6':30,'7-9':50,'10-12':70,'teen':90};
+// Goals ≈ 80% of each band's earnable (star) points, so the bar stays reachable
+// after self-care moved to daily care: 4-6=25 max, 7-9=35, 10-12=60, teen=100.
+const DEFAULT_GOAL_BY_BAND={'4-6':20,'7-9':30,'10-12':50,'teen':80};
 
 // Per-kid board accent colors — assigned in order as kids are added so each
 // child's board feels like their own. All chosen for white-text contrast.
@@ -940,23 +958,28 @@ function renderWizChores(){
   const band=bandForAge(kid.age);
   // The available pool follows the chosen age band; selection state persists by name.
   const selected=new Set(kid.chores.map(c=>c.name));
+  // Effective points per picked chore — a parent may have flipped stars ↔ daily care.
+  const selPts=new Map(kid.chores.map(c=>[c.name,c.points]));
   const pool=band.chores;
   app.innerHTML=`
     <div class="center" style="justify-content:flex-start;padding-top:28px">
       <div class="wizard">
         <div class="steplab">Step 1 of 2 · Kid ${wizActiveKid+1}</div>
         <h2>Here are starter chores</h2>
-        <div class="sub">Tap to pick the ones that fit. Set the age and the list adjusts.</div>
+        <div class="sub">Tap a card to pick it. Basics are set to <b>Daily care</b> (no stars) for older kids — tap the badge to switch whether a task earns stars.</div>
         <div class="agepills" id="agePills">
           ${BANDS.map(b=>`<button class="agepill ${b.key===band.key?'on':''}" data-band="${b.key}">${b.label} yrs</button>`).join('')}
         </div>
         <div class="choregrid" id="choreGrid">
-          ${pool.map(c=>`
+          ${pool.map(c=>{
+            const pts=selPts.has(c.name)?selPts.get(c.name):c.points;
+            const badge=pts>0?`+${pts} ⭐`:'🩵 Daily care';
+            return `
             <div class="choreToggle ${selected.has(c.name)?'sel':''}" data-name="${esc(c.name)}">
               <div class="tk">${selected.has(c.name)?'✓':''}</div>
               <div><div class="emo">${c.emoji}</div><div class="nm">${esc(c.name)}</div></div>
-              <div class="pp">+${c.points} ⭐</div>
-            </div>`).join('')}
+              <div class="pp ${pts>0?'':'care'}" data-flip="${esc(c.name)}" title="Tap to switch stars / daily care">${badge}</div>
+            </div>`;}).join('')}
         </div>
         <div class="wizrow">
           <button class="ghostbtn" id="wizBack">Back</button>
@@ -968,8 +991,11 @@ function renderWizChores(){
     const b=bandByKey(el.dataset.band);
     kid.bandKey=b.key;kid.age=Math.round((b.lo+Math.min(b.hi,18))/2);
     kid.daily_goal=DEFAULT_GOAL_BY_BAND[b.key];
-    // keep any still-valid picks, add the newly relevant defaults
-    const keep=kid.chores.filter(c=>b.chores.some(x=>x.name===c.name));
+    // Keep still-valid picks but re-apply this band's age-appropriate points, so a
+    // task that's "daily care" for a big kid becomes a star-worthy win for a toddler
+    // (and vice-versa). Then add the newly relevant defaults.
+    const bandPts=new Map(b.chores.map(c=>[c.name,c.points]));
+    const keep=kid.chores.filter(c=>bandPts.has(c.name)).map(c=>({...c,points:bandPts.get(c.name)}));
     const have=new Set(keep.map(c=>c.name));
     kid.chores=[...keep,...b.chores.filter(c=>!have.has(c.name))];
     renderWizChores();
@@ -979,6 +1005,19 @@ function renderWizChores(){
     const i=kid.chores.findIndex(c=>c.name===nm);
     if(i>=0)kid.chores.splice(i,1);
     else{const c=pool.find(x=>x.name===nm);if(c)kid.chores.push({...c});}
+    renderWizChores();
+  });
+  // Tapping the badge flips a task between earning stars and being daily care.
+  // (Also picks the task if it wasn't selected yet.) stopPropagation so the tile's
+  // select/deselect doesn't also fire.
+  document.querySelectorAll('#choreGrid .pp').forEach(el=>el.onclick=e=>{
+    e.stopPropagation();
+    const nm=el.dataset.flip;
+    let i=kid.chores.findIndex(c=>c.name===nm);
+    if(i<0){const pc=pool.find(x=>x.name===nm);if(!pc)return;kid.chores.push({...pc});i=kid.chores.length-1;}
+    const cur=kid.chores[i];
+    if(cur.points>0){cur.points=0;}
+    else{const pc=pool.find(x=>x.name===nm);cur.points=(pc&&pc.points>0)?pc.points:5;}
     renderWizChores();
   });
   $('#wizBack').onclick=()=>{ if(wizActiveKid>0){wizActiveKid--;renderWizChores();} else renderLanding(); };
@@ -1698,10 +1737,12 @@ async function toggleChore(k,choreId){
     const {error}=await sb.from('completions').insert({family_id:familyId,profile_id:k.id,chore_id:choreId,points:c.points,completed_on:today(),note:note||null,photo_path:photoPath});
     if(error){toast('Could not save — try again');return false;}
     doneToday.add(choreId);
-    if(c.points>0)toast(pickCheer());
+    toast(c.points>0?pickCheer():'Nice — that\'s done ✓');
     k.total_points=Math.max(0,k.total_points+c.points);
     weekCompletions.push({profile_id:k.id,chore_id:choreId,points:c.points,completed_on:today(),note});
-    if(c.points>0 && k.last_active_date!==today()){
+    // Any completed task keeps the streak alive — daily-care tasks count too, even
+    // though they earn no stars, so kids get credit for showing up.
+    if(k.last_active_date!==today()){
       // "Yesterday" must use the same LOCAL calendar date as today()/last_active_date.
       // (Using toISOString() here is UTC and drifts a day in the evening, wrongly
       // resetting streaks for users behind UTC.)
@@ -1814,7 +1855,8 @@ async function openAdmin(k){
             <button class="del" style="background:var(--good-bg);color:var(--good)" data-grad="${c.id}">🎉</button></div>`).join('')}</div>`:''}
           <div class="note">Editing chores for <b>${kidLabel}</b>${kids.length>1?' — switch kid in the Family tab':''}.</div>
           <div id="choreList"></div>
-          <div class="addform"><input id="cEmo" class="emoji-in" data-kind="chore" readonly placeholder="⭐" maxlength="2"><input id="cName" placeholder="Chore name"><input id="cPts" placeholder="+5"></div>
+          <div class="addform"><input id="cEmo" class="emoji-in" data-kind="chore" readonly placeholder="⭐" maxlength="2"><input id="cName" placeholder="Chore name"><input id="cPts" inputmode="numeric" placeholder="+5"></div>
+          <div class="note" style="margin:0 4px 4px;color:var(--muted)">Tip: set points to <b>0</b> for a <b>daily-care</b> task — tapped off and streak-building, but no stars. Flip any task later with the 🩵/⭐ button.</div>
           <label class="toggle" style="margin:2px 4px 4px"><input type="checkbox" id="cPhoto"> 📷 Require a photo to complete</label>
           <button class="addbtn" id="addChore">＋ Add chore</button>
           <div class="rowbtns"><button class="danger" id="resetTodayBtn">↺ Reset ${kidLabel}'s today</button></div>`:''}
@@ -1882,7 +1924,14 @@ async function openAdmin(k){
   if(focusKid){
     const allHerChores=chores.filter(c=>c.profile_id===focusKid.id && !c.pending);
     $('#choreList').innerHTML=allHerChores.length?allHerChores.map(c=>`
-      <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${c.points>0?'+':''}${c.points} pts${c.requires_photo?' · 📷 photo':''}${c.weekdays&&c.weekdays.length?' · '+c.weekdays.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join('/'):''}</small></span><button class="del" data-delc="${c.id}">🗑️</button></div>`).join(''):'<div class="empty">No chores yet.</div>';
+      <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${c.points>0?('+'+c.points+' pts'):'🩵 Daily care · no stars'}${c.requires_photo?' · 📷 photo':''}${c.weekdays&&c.weekdays.length?' · '+c.weekdays.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join('/'):''}</small></span><button class="del" data-carec="${c.id}" title="${c.points>0?'Make this daily care (no stars)':'Make this earn stars'}">${c.points>0?'🩵':'⭐'}</button><button class="del" data-delc="${c.id}">🗑️</button></div>`).join(''):'<div class="empty">No chores yet.</div>';
+    document.querySelectorAll('[data-carec]').forEach(el=>el.onclick=async()=>{
+      const c=chores.find(x=>x.id===el.dataset.carec);if(!c)return;
+      const np=c.points>0?0:5;   // → daily care, or back to a default star value
+      await sb.from('chores').update({points:np}).eq('id',c.id);
+      c.points=np;$('#modal').remove();openAdmin(focusKid);renderMain();
+      toast(np>0?'Now earns +5 ⭐':'Now daily care — no stars');
+    });
     document.querySelectorAll('[data-delc]').forEach(el=>el.onclick=async()=>{
       await sb.from('chores').update({archived:true}).eq('id',el.dataset.delc);
       chores=chores.filter(c=>c.id!==el.dataset.delc);$('#modal').remove();openAdmin(focusKid);
