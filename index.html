@@ -10,7 +10,8 @@
 <title>Kudos</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-<link rel="icon" type="image/png" href="./icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/kudos-favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
 <link rel="apple-touch-startup-image" href="./icons/icon-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -218,7 +219,7 @@
   .lp-trust{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:18px}
   .lp-trust span{font-weight:800;font-size:12px;color:var(--good-deep);background:var(--good-bg);border-radius:999px;padding:5px 11px}
   .lp-sec{padding:34px 4px 0;margin-top:34px;border-top:1px solid var(--line)}
-  .lp-sec h2{font-family:'Fredoka';font-weight:600;font-size:22px;margin:0 0 6px;text-align:center}
+  .lp-sec h2{font-family:'Fredoka';font-weight:600;font-size:26px;letter-spacing:-.4px;margin:0 0 6px;text-align:center}
   .lp-sec .lead{color:var(--muted);font-weight:700;font-size:14px;max-width:420px;margin:0 auto 20px;text-align:center;line-height:1.45}
   .lp-cards{display:grid;grid-template-columns:1fr;gap:12px}
   @media(min-width:540px){.lp-cards{grid-template-columns:1fr 1fr}}
@@ -227,18 +228,18 @@
   .lp-card h3{font-family:'Fredoka';font-weight:600;font-size:15px;margin:9px 0 4px}
   .lp-card p{color:var(--muted);font-weight:700;font-size:13px;margin:0;line-height:1.45}
   .lp-steps{counter-reset:step;display:flex;flex-direction:column;gap:12px;max-width:460px;margin:0 auto}
-  .lp-step{display:flex;gap:13px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px}
+  .lp-step{display:block;background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px 20px}
   .lp-step .n{counter-increment:step;flex:none;width:30px;height:30px;border-radius:50%;background:#eaf2fc;color:var(--accent-deep);font-family:'Fredoka';font-weight:600;font-size:15px;display:grid;place-items:center}
   .lp-step .n::before{content:counter(step)}
   .lp-step h3{font-family:'Fredoka';font-weight:600;font-size:15px;margin:3px 0 3px}
   .lp-step p{color:var(--muted);font-weight:700;font-size:13px;margin:0;line-height:1.45}
-  .lp-why{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;max-width:480px;margin:0 auto;color:var(--muted);font-weight:700;font-size:14px;line-height:1.55;text-align:center}
+  .lp-why{background:#fff;border:1px solid var(--line);border-radius:24px;padding:34px 30px;max-width:560px;margin:0 auto;text-align:center;box-shadow:0 20px 48px -34px rgba(33,48,74,.5)}
   .lp-faq{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
   .lp-faq details{background:#fff;border:1px solid var(--line);border-radius:14px;padding:0 15px}
   .lp-faq summary{font-family:'Fredoka';font-weight:600;font-size:14px;cursor:pointer;padding:13px 0;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
   .lp-faq summary::-webkit-details-marker{display:none}
-  .lp-faq summary::after{content:'+';color:var(--muted);font-weight:700}
-  .lp-faq details[open] summary::after{content:'\2013'}
+  .lp-faq summary::after{content:'+';color:var(--accent);font-weight:800;font-size:20px;line-height:1;transition:transform .2s ease}
+  .lp-faq details[open] summary::after{transform:rotate(45deg)}
   .lp-faq details p{color:var(--muted);font-weight:700;font-size:13px;margin:0 0 13px;line-height:1.5}
   .lp-final{text-align:center}
   .lp-foot{padding:24px 4px 6px;border-top:1px solid var(--line);margin-top:34px;text-align:center}
@@ -308,7 +309,7 @@
     .lp-showcase{gap:54px;margin-top:34px}
     .lp-cards{grid-template-columns:repeat(3,1fr)}
     .lp-steps{max-width:none;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-    .lp-sec h2{font-size:24px}
+    .lp-sec h2{font-size:40px;letter-spacing:-1px}
   }
   /* ── Illustrated hero (redesign) ── */
   .lp-navright{display:flex;align-items:center;gap:15px}
@@ -318,7 +319,7 @@
   .lp-hero2{position:relative;display:grid;grid-template-columns:1fr;gap:24px;align-items:center;padding:22px 2px 6px}
   .lp-eyebrow{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 7px;font-weight:800;font-size:12.5px;color:var(--accent);box-shadow:0 6px 16px -10px rgba(33,48,74,.35)}
   .lp-eyebrow .sun{width:21px;height:21px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#FFE38C,#FFC83D);display:grid;place-items:center;font-size:12px}
-  .lp-hero2 h1{font-family:'Fredoka';font-weight:600;font-size:33px;line-height:1.04;letter-spacing:-.8px;margin:15px 0 0}
+  .lp-hero2 h1{font-family:'Fredoka';font-weight:600;font-size:37px;line-height:1.03;letter-spacing:-.9px;margin:15px 0 0}
   .lp-hl{position:relative;white-space:nowrap}
   .lp-hl>span{position:relative;z-index:1}
   .lp-hl:after{content:"";position:absolute;left:-5px;right:-5px;bottom:4px;height:30%;background:#FFD24A;border-radius:6px;z-index:0;transform:rotate(-1.2deg)}
@@ -339,33 +340,24 @@
   .lp-pill{position:absolute;right:8px;bottom:-12px;z-index:5;background:#fff;border-radius:999px;padding:8px 15px 8px 10px;display:flex;align-items:center;gap:9px;box-shadow:0 18px 36px -16px rgba(33,48,74,.45);font-family:'Fredoka';font-weight:500;font-size:13.5px;color:var(--ink)}
   .lp-pill .pop{width:25px;height:25px;border-radius:8px;background:#FFF2D6;display:grid;place-items:center;font-size:14px}
   /* ── Hero motion (respects reduced-motion) ── */
+  /* Hero motion — the brief's three looping keyframes (7s), reduced-motion safe. */
   @media (prefers-reduced-motion: no-preference){
-    .lp-scene .card{animation:kfloat 6s ease-in-out infinite}
-    @keyframes kfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-    .lp-burst{animation:kburst 5s ease-in-out infinite}
-    @keyframes kburst{0%,100%{transform:rotate(0) scale(1)}50%{transform:rotate(9deg) scale(1.12)}}
-    .kstar{transform-box:fill-box;transform-origin:center;animation:ktwinkle 3.2s ease-in-out infinite}
-    .kstar.s2{animation-duration:2.6s;animation-delay:.4s}
-    .kstar.s3{animation-duration:3.9s;animation-delay:.9s}
-    @keyframes ktwinkle{0%,100%{opacity:.5;transform:translateY(0) scale(.85)}50%{opacity:1;transform:translateY(-5px) scale(1.12)}}
-    .lp-toast{animation:ktoastin .6s .5s both ease-out, kbob 4s 1.2s ease-in-out infinite}
-    @keyframes ktoastin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes kbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-    .lp-pill{animation:kpillin .5s 1.15s both cubic-bezier(.2,1.3,.4,1)}
-    @keyframes kpillin{from{opacity:0;transform:translateY(10px) scale(.85)}to{opacity:1;transform:translateY(0) scale(1)}}
-    /* the WallBoard's "Tidy toys" row completing, on a loop */
-    .krow-check{transform-box:fill-box;transform-origin:center;animation:kcheckpop 6s ease-in-out infinite}
-    @keyframes kcheckpop{0%,52%{opacity:0;transform:scale(0)}62%,90%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(0)}}
-    .krow-pts{animation:kptsfade 6s ease-in-out infinite}
-    @keyframes kptsfade{0%,52%{opacity:1}62%,100%{opacity:0}}
-    .krow-bg{animation:krowfill 6s ease-in-out infinite}
-    @keyframes krowfill{0%,52%{fill:#F4F6FB}62%,90%{fill:#E9F8F0}100%{fill:#F4F6FB}}
+    .lp-burst{transform-origin:center;animation:starLife 7s ease-in-out infinite}
+    @keyframes starLife{0%{transform:translateY(0) rotate(0) scale(1)}10%{transform:translateY(-6px) rotate(-4deg)}20%{transform:translateY(0) rotate(0) scale(1)}26%{transform:scale(1.22) rotate(-9deg)}33%{transform:scale(1) rotate(0)}55%{transform:translateY(-5px) rotate(3deg)}72%{transform:translateY(0) rotate(0)}100%{transform:translateY(0) rotate(0) scale(1)}}
+    .lp-toast{animation:toastIn 7s ease-in-out infinite}
+    @keyframes toastIn{0%{opacity:0;transform:translateY(16px) scale(.92)}7%{opacity:0;transform:translateY(16px) scale(.92)}14%{opacity:1;transform:translateY(-3px) scale(1.02)}19%{transform:translateY(0) scale(1)}84%{opacity:1;transform:translateY(0) scale(1)}94%{opacity:0;transform:translateY(10px) scale(.96)}100%{opacity:0;transform:translateY(10px) scale(.96)}}
+    .lp-pill{animation:pillPop 7s ease-in-out infinite}
+    @keyframes pillPop{0%,30%{opacity:0;transform:translateY(10px) scale(.8)}38%{opacity:1;transform:translateY(-4px) scale(1.07)}45%{transform:translateY(0) scale(1)}84%{opacity:1;transform:translateY(0) scale(1)}94%,100%{opacity:0;transform:scale(.9)}}
+    .kstar{transform-box:fill-box;transform-origin:center;animation:twinkle 3.4s ease-in-out infinite}
+    .kstar.s2{animation-delay:.5s}
+    .kstar.s3{animation-delay:1s}
+    @keyframes twinkle{0%,100%{opacity:.55;transform:scale(.85)}50%{opacity:1;transform:scale(1.1)}}
   }
   @media(min-width:760px){
     .lp-navright .navlink{display:inline-block}
     .lp-navright .navcta{display:inline-flex}
     .lp-hero2{grid-template-columns:.92fr 1.08fr;gap:38px;padding:30px 2px 18px}
-    .lp-hero2 h1{font-size:50px;letter-spacing:-1.4px}
+    .lp-hero2 h1{font-size:62px;letter-spacing:-1.6px}
     .lp-hero2 .lede{font-size:18px}
     .lp-scene{margin-top:0}
     .lp-toast{left:-22px;bottom:68px}
@@ -383,10 +375,35 @@
   .hlw:after{content:"";position:absolute;left:-4px;right:-4px;bottom:1px;height:36%;background:var(--gold-mark);border-radius:5px;z-index:0;transform:rotate(-1deg)}
   /* soft cream section bands for rhythm */
   .lp-sec.lp-warm{border-top:none;background:var(--cream);border:1px solid var(--cream-line);border-radius:26px;padding:32px 24px 28px;margin-top:30px}
-  /* warmer feature cards */
-  .lp-card{transition:transform .15s,box-shadow .15s}
-  .lp-card:hover{transform:translateY(-2px);box-shadow:0 16px 30px -20px rgba(33,48,74,.4)}
-  .lp-card .ic{display:inline-grid;place-items:center;width:46px;height:46px;border-radius:13px;background:#FFF3DA;font-size:23px;margin-bottom:2px}
+  /* feature cards with per-feature tinted icon tiles */
+  .lp-card{transition:transform .18s ease,box-shadow .18s ease}
+  .lp-card:hover{transform:translateY(-4px);box-shadow:0 28px 52px -28px rgba(33,48,74,.5)}
+  .lp-card .ic{display:inline-grid;place-items:center;width:52px;height:52px;border-radius:15px;background:#eef2f8;font-size:26px;margin-bottom:4px}
+  .tile-blue{background:#E7F1FC!important}.tile-gold{background:#FFF3D6!important}.tile-green{background:#E4F6EE!important}
+  .tile-purple{background:#EDE7FB!important}.tile-orange{background:#FEEBD6!important}.tile-teal{background:#DCF4F4!important}
+  /* purple label pill for the "parents set up" view */
+  .lp-tag.par{color:#6D51C4;background:#EEE8FB}
+  /* how-it-works: colored number badge + emoji */
+  .lp-step .step-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .lp-step .step-num{font-family:'Fredoka';font-weight:600;font-size:18px;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;color:#fff}
+  .lp-step .n-blue{background:var(--accent)}.lp-step .n-gold{background:var(--gold)}.lp-step .n-green{background:var(--good)}
+  .lp-step .step-ic{font-size:28px;line-height:1}
+  /* why it's free: cheer-star + reassurance chips */
+  .lp-why .why-star{width:52px;height:52px;display:block;margin:0 auto 6px}
+  .lp-why .why-body{color:var(--muted);font-weight:700;font-size:14.5px;line-height:1.6;margin:0 auto;max-width:460px}
+  .why-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:18px 0 16px}
+  .why-chip{display:inline-flex;align-items:center;gap:7px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-weight:700;font-size:13px;color:var(--ink)}
+  .why-chip .d{width:7px;height:7px;border-radius:50%;background:var(--good)}
+  .why-link{font-family:'Fredoka';font-weight:500;font-size:15px;color:var(--accent-deep);text-decoration:none}
+  .why-link:hover{text-decoration:underline}
+  /* final CTA — blue gradient band */
+  .lp-sec.lp-ctaband{border-top:none;background:linear-gradient(155deg,#4090E1,#2C74C9);border-radius:26px;margin-top:30px;padding:44px 26px 46px}
+  .lp-ctaband .cta-star{width:60px;height:60px;display:block;margin:0 auto 16px;filter:drop-shadow(0 12px 20px rgba(0,0,0,.18))}
+  .lp-ctaband h2{color:#fff}
+  .lp-ctaband h2 .hlw:after{display:none}
+  .lp-ctaband .lead{color:rgba(255,255,255,.9)}
+  .ctaband-btn{font-family:'Fredoka';font-weight:500;font-size:17px;background:#fff;color:var(--accent-deep);border:none;border-radius:15px;padding:15px 32px;cursor:pointer;box-shadow:0 16px 30px -12px rgba(0,0,0,.3);transition:background .15s,color .15s}
+  .ctaband-btn:hover{background:var(--gold-mark);color:var(--ink)}
   .fbta{border:2px solid var(--line);border-radius:12px;padding:12px;font-size:15px;font-family:'Nunito';font-weight:700;width:100%;resize:vertical;color:var(--ink)}
   .fbta:focus{outline:none;border-color:var(--accent)}
   /* ── Signup reassurance + password strength ── */
@@ -667,22 +684,22 @@ function renderLanding(){
     <div class="lp-glow" style="width:540px;height:540px;background:#BFE0FF;opacity:.5;top:-190px;right:-130px"></div>
     <div class="lp-glow" style="width:440px;height:440px;background:#FFE7A8;opacity:.42;top:360px;left:-170px"></div>
     <nav class="lp-nav">
-      <span class="b"><img src="./icons/icon-192.png" alt=""><b>Kudos</b></span>
+      <span class="b"><svg class="brandmark" viewBox="0 0 100 100" width="34" height="34" aria-hidden="true"><rect x="2" y="2" width="96" height="96" rx="26" fill="#378ADD"></rect><g transform="translate(50 52) scale(0.62) translate(-50 -50)"><path d="M50,12 L61.17,34.63 L86.14,38.26 L68.07,55.87 L72.34,80.74 L50,69 L27.66,80.74 L31.93,55.87 L13.86,38.26 L38.83,34.63 Z" fill="#FFD24A" stroke="#FFD24A" stroke-width="9" stroke-linejoin="round"></path><circle cx="41" cy="46" r="4" fill="#378ADD"></circle><circle cx="59" cy="46" r="4" fill="#378ADD"></circle><path d="M41,56 Q50,64 59,56" stroke="#378ADD" stroke-width="4.6" fill="none" stroke-linecap="round"></path></g></svg><b>Kudos</b></span>
       <div class="lp-navright">
         <button class="navlink" data-scroll="lpHow">How it works</button>
         <button class="navlink" data-scroll="lpFeat">Features</button>
         <button class="linkbtn" id="navLogin">Log in</button>
-        <button class="bigbtn navcta" data-start>Get started — free</button>
+        <button class="bigbtn navcta" data-start>Get started free</button>
       </div>
     </nav>
 
     <section class="lp-hero2">
       <div class="lp-hero-copy">
-        <div class="lp-eyebrow"><span class="sun">☀️</span> Summer mode is on</div>
-        <h1>Less nagging. More <span class="lp-hl"><span>‘I did it’</span></span></h1>
-        <p class="lede">Kudos turns everyday jobs into a rhythm kids actually feel good about. <b>Finish a chore, earn a star, watch the “well done” add up</b> — on a board the whole family can see.</p>
+        <div class="lp-eyebrow"><span class="sun">⭐</span> Every star is a little “well done”</div>
+        <h1>Less nagging. More <span class="lp-hl"><span>“I did it.”</span></span></h1>
+        <p class="lede">The good feeling of getting it done, <b>made visible.</b> Kids finish a chore, earn a star, and watch the “well done” add up.</p>
         <div class="cta">
-          <button class="bigbtn" data-start>Get started — free</button>
+          <button class="bigbtn" data-start>Get started free</button>
           <button class="seehow" data-scroll="lpHow">See how it works →</button>
         </div>
         <div class="lp-trust">
@@ -714,7 +731,7 @@ function renderLanding(){
               <g transform="translate(278 98)"><rect x="0" y="0" width="20" height="20" rx="6" fill="#378ADD"></rect><path d="M10 3 L12.4 8 L18 8.7 L13.9 12.5 L14.9 18 L10 15.4 L5.1 18 L6.1 12.5 L2 8.7 L7.6 8 Z" fill="#FFD24A"></path><text x="28" y="15" font-family="Fredoka,sans-serif" font-size="14" font-weight="600" fill="#21304A">Kudos</text><rect x="180" y="0" width="64" height="22" rx="11" fill="#EAF2FC"></rect><text x="212" y="15" font-family="Fredoka,sans-serif" font-size="12" font-weight="600" fill="#378ADD" text-anchor="middle">Maya 120★</text></g>
               <g transform="translate(278 128)"><rect x="0" y="0" width="244" height="26" rx="9" fill="#E9F8F0"></rect><rect x="8" y="5" width="16" height="16" rx="5" fill="#fff"></rect><text x="32" y="17" font-family="Nunito,sans-serif" font-size="12" font-weight="700" fill="#2C8A5E">Make bed</text><circle cx="230" cy="13" r="9" fill="#45C48A"></circle><path d="M226 13 l3 3 l5 -6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></g>
               <g transform="translate(278 160)"><rect x="0" y="0" width="244" height="26" rx="9" fill="#E9F8F0"></rect><rect x="8" y="5" width="16" height="16" rx="5" fill="#fff"></rect><text x="32" y="17" font-family="Nunito,sans-serif" font-size="12" font-weight="700" fill="#2C8A5E">Brush teeth</text><circle cx="230" cy="13" r="9" fill="#45C48A"></circle><path d="M226 13 l3 3 l5 -6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></g>
-              <g transform="translate(278 192)"><rect class="krow-bg" x="0" y="0" width="244" height="26" rx="9" fill="#F4F6FB"></rect><rect x="8" y="5" width="16" height="16" rx="5" fill="#fff"></rect><text x="32" y="17" font-family="Nunito,sans-serif" font-size="12" font-weight="700" fill="#21304A">Tidy toys</text><text class="krow-pts" x="236" y="17" font-family="Fredoka,sans-serif" font-size="12" font-weight="600" fill="#F2B63C" text-anchor="end">+5★</text><g class="krow-check"><circle cx="230" cy="13" r="9" fill="#45C48A"></circle><path d="M226 13 l3 3 l5 -6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></g></g>
+              <g transform="translate(278 192)"><rect x="0" y="0" width="244" height="26" rx="9" fill="#F4F6FB"></rect><rect x="8" y="5" width="16" height="16" rx="5" fill="#fff"></rect><text x="32" y="17" font-family="Nunito,sans-serif" font-size="12" font-weight="700" fill="#21304A">Tidy toys</text><text x="236" y="17" font-family="Fredoka,sans-serif" font-size="12" font-weight="600" fill="#F2B63C" text-anchor="end">+5★</text></g>
               <g transform="translate(278 224)"><rect x="0" y="0" width="244" height="26" rx="9" fill="#F4F6FB"></rect><rect x="8" y="5" width="16" height="16" rx="5" fill="#fff"></rect><text x="32" y="17" font-family="Nunito,sans-serif" font-size="12" font-weight="700" fill="#21304A">Read 20 min</text><text x="236" y="17" font-family="Fredoka,sans-serif" font-size="12" font-weight="600" fill="#F2B63C" text-anchor="end">+10★</text></g>
             </g>
             <!-- island -->
@@ -739,10 +756,10 @@ function renderLanding(){
     <!-- Real-app proof: kid board + parent setup, both the actual Kudos UI in code. -->
     <section class="lp-sec">
       <h2>Two views of one <span class="hlw"><span>board</span></span></h2>
-      <p class="lead">Kids tap chores off; you set them up. This is the actual Kudos UI — no stock screenshots.</p>
+      <p class="lead">Kids tap chores off as they go. Parents set them up once. Same board, same stars.</p>
       <div class="lp-showcase">
         <div class="lp-dev">
-          <div class="lp-tag">What kids see</div>
+          <div class="lp-tag">👧 What kids see</div>
           <div class="lp-phone"><div class="scr">
             <div class="lp-bm-head"><div class="who">🦄 Maya</div><div class="pts"><b>120</b><span>STARS</span></div></div>
             <div class="lp-bm-sec">☀️ Morning</div>
@@ -757,7 +774,7 @@ function renderLanding(){
         </div>
 
         <div class="lp-dev">
-          <div class="lp-tag">What parents set up</div>
+          <div class="lp-tag par">🛠️ What parents set up</div>
           <div class="lp-phone"><div class="scr">
             <div class="lp-pm-head"><b>Manage chores</b><span class="add">＋ Add</span></div>
             <div class="lp-pm-row"><span class="e">🛏️</span><span class="t">Make bed<small>Morning · daily</small></span><span class="pt">+3 ⭐</span></div>
@@ -769,15 +786,15 @@ function renderLanding(){
           </div></div>
         </div>
       </div>
-      <div class="lp-cap">Two views of one board — kids tap chores off, parents set them up. All real Kudos, no mockups.</div>
+      <div class="lp-cap">Two views of one board: kids tap chores off, parents set them up. All real Kudos, no mockups.</div>
     </section>
 
     <!-- Parent oversight: see every kid's progress on one shared board. -->
     <section class="lp-sec">
       <div class="lp-split">
         <div class="lp-split-copy">
-          <h2>See how everyone's doing — at a <span class="hlw"><span>glance</span></span></h2>
-          <p class="lead">The Family board shows every kid's stars, streak, and today's progress on one shared screen. No nagging, no asking — just look up.</p>
+          <h2>See how everyone's doing, at a <span class="hlw"><span>glance</span></span></h2>
+          <p class="lead">The Family board shows every kid's stars, streak, and today's progress on one shared screen. No nagging, no asking. Just look up.</p>
           <ul class="lp-checks">
             <li>⭐ Stars and streaks for each kid, side by side</li>
             <li>✅ Today's chores ticking off in real time</li>
@@ -804,49 +821,52 @@ function renderLanding(){
 
     <section class="lp-sec lp-warm" id="lpHow">
       <h2>How it <span class="hlw"><span>works</span></span></h2>
-      <p class="lead">Three steps from "who's doing the dishes" to a board that runs itself.</p>
+      <p class="lead">Three steps from "who's doing the dishes?" to a board that runs itself.</p>
       <div class="lp-steps">
-        <div class="lp-step"><span class="n"></span><div><h3>Set up the board</h3><p>Add your kids and pick starter chores tuned to their age. No app to install.</p></div></div>
-        <div class="lp-step"><span class="n"></span><div><h3>Kids earn stars</h3><p>They tap off chores as they go and watch their star balance climb.</p></div></div>
-        <div class="lp-step"><span class="n"></span><div><h3>Cash in rewards</h3><p>Stars buy rewards you choose — screen time, a treat, or a big saved-up goal.</p></div></div>
+        <div class="lp-step"><div class="step-top"><span class="step-num n-blue">1</span><span class="step-ic">🧩</span></div><h3>Set up the board</h3><p>Add your kids and pick starter chores tuned to their age. No app to install.</p></div>
+        <div class="lp-step"><div class="step-top"><span class="step-num n-gold">2</span><span class="step-ic">⭐</span></div><h3>Kids earn stars</h3><p>They tap off chores as they go and watch their star balance climb.</p></div>
+        <div class="lp-step"><div class="step-top"><span class="step-num n-green">3</span><span class="step-ic">🎁</span></div><h3>Cash in rewards</h3><p>Stars buy rewards you choose: screen time, a treat, or a big saved-up goal.</p></div>
       </div>
     </section>
 
     <section class="lp-sec" id="lpFeat">
       <h2>Everything you <span class="hlw"><span>need</span></span></h2>
-      <p class="lead">Built for real households — multiple kids, different ages, one shared screen.</p>
+      <p class="lead">Built for real households: multiple kids, different ages, one shared screen.</p>
       <div class="lp-cards">
-        <div class="lp-card"><div class="ic">🗒️</div><h3>Chores by time of day</h3><p>Morning, afternoon, and evening groups so kids always know what's next.</p></div>
-        <div class="lp-card"><div class="ic">⭐</div><h3>Stars &amp; rewards</h3><p>Tiered rewards — instant, weekly, monthly — shared across the family or set per kid.</p></div>
-        <div class="lp-card"><div class="ic">🎯</div><h3>Goals &amp; streaks</h3><p>Pin a savings goal and keep daily streaks alive, with one monthly streak-freeze.</p></div>
-        <div class="lp-card"><div class="ic">📷</div><h3>Photo proof</h3><p>Ask for a photo on the chores that need it — optional, and set per chore.</p></div>
-        <div class="lp-card"><div class="ic">🔒</div><h3>Parent settings</h3><p>A parent PIN locks setup; each kid taps their own profile to check in.</p></div>
-        <div class="lp-card"><div class="ic">📺</div><h3>WallBoard mode</h3><p>A shared family screen showing everyone's progress at a glance — fridge-ready.</p></div>
+        <div class="lp-card"><div class="ic tile-blue">🗓️</div><h3>Chores by time of day</h3><p>Morning, afternoon, and evening groups so kids always know what's next.</p></div>
+        <div class="lp-card"><div class="ic tile-gold">⭐</div><h3>Stars &amp; rewards</h3><p>Tiered rewards, instant, weekly, or monthly, shared across the family or set per kid.</p></div>
+        <div class="lp-card"><div class="ic tile-green">🎯</div><h3>Goals &amp; streaks</h3><p>Pin a savings goal and keep daily streaks alive, with one monthly streak-freeze.</p></div>
+        <div class="lp-card"><div class="ic tile-purple">📷</div><h3>Photo proof</h3><p>Ask for a photo on the chores that need it. Optional, and set per chore.</p></div>
+        <div class="lp-card"><div class="ic tile-orange">🔒</div><h3>Parent settings</h3><p>A parent PIN locks setup. Each kid taps their own profile to check in.</p></div>
+        <div class="lp-card"><div class="ic tile-teal">📺</div><h3>WallBoard mode</h3><p>A shared family screen showing everyone's progress at a glance. Fridge-ready.</p></div>
       </div>
     </section>
 
     <section class="lp-sec lp-warm">
-      <h2>Why it's <span class="hlw"><span>free</span></span></h2>
       <div class="lp-why">
-        Kudos has no ads and no trackers. It's a craft project built by a product manager who wanted a chore app that respects families and their data. Your family's information stays private to your account — nothing is sold, nothing is shared.
-        <div style="margin-top:12px"><a href="https://github.com/shambhavisays/kudos/blob/main/PRIVACY.md" target="_blank" rel="noopener" style="color:var(--accent-deep);font-weight:800">Read the privacy note →</a></div>
+        <svg class="why-star" viewBox="0 0 100 100" aria-hidden="true"><path d="M50,12 L61.17,34.63 L86.14,38.26 L68.07,55.87 L72.34,80.74 L50,69 L27.66,80.74 L31.93,55.87 L13.86,38.26 L38.83,34.63 Z" fill="#FFD24A" stroke="#FFD24A" stroke-width="9" stroke-linejoin="round"></path><circle cx="41" cy="46" r="4" fill="#378ADD"></circle><circle cx="59" cy="46" r="4" fill="#378ADD"></circle><path d="M41,56 Q50,64 59,56" stroke="#378ADD" stroke-width="4.6" fill="none" stroke-linecap="round"></path></svg>
+        <h2 style="margin:0 0 14px">Why it's <span class="hlw"><span>free</span></span></h2>
+        <p class="why-body">Kudos has no ads and no trackers. Your family's information stays private to your account, never sold, never shared.</p>
+        <div class="why-chips"><span class="why-chip"><span class="d"></span>No ads</span><span class="why-chip"><span class="d"></span>No trackers</span><span class="why-chip"><span class="d"></span>Private by design</span></div>
+        <a class="why-link" href="https://github.com/shambhavisays/kudos/blob/main/PRIVACY.md" target="_blank" rel="noopener">Read the privacy note →</a>
       </div>
     </section>
 
     <section class="lp-sec">
       <h2>Questions</h2>
       <div class="lp-faq">
-        <details><summary>Is it really free?</summary><p>Yes — no paid tiers, no credit card, no ads. It's built to stay that way.</p></details>
+        <details open><summary>Is it really free?</summary><p>Yes. No paid tiers, no credit card, no ads. It's built to stay that way.</p></details>
         <details><summary>Do my kids need their own logins?</summary><p>No. You sign up once for the household, then each kid taps their own profile. Older kids can have an optional PIN on a shared device.</p></details>
         <details><summary>Is my kids' data safe?</summary><p>Yes. Everything is private to your account and protected row-by-row in the database, so no other family can ever see your board. See the privacy note for what's stored.</p></details>
-        <details><summary>What devices does it work on?</summary><p>Any modern browser — phone, tablet, or computer. Add it to your home screen for an app-like experience.</p></details>
+        <details><summary>What devices does it work on?</summary><p>Any modern browser: phone, tablet, or computer. Add it to your home screen for an app-like experience.</p></details>
       </div>
     </section>
 
-    <section class="lp-sec lp-final lp-warm">
-      <h2>Ready to give kids the <span class="hlw"><span>kudos</span></span> they deserve?</h2>
+    <section class="lp-sec lp-final lp-ctaband">
+      <svg class="cta-star" viewBox="0 0 100 100" aria-hidden="true"><path d="M50,12 L61.17,34.63 L86.14,38.26 L68.07,55.87 L72.34,80.74 L50,69 L27.66,80.74 L31.93,55.87 L13.86,38.26 L38.83,34.63 Z" fill="#FFD24A" stroke="#FFD24A" stroke-width="9" stroke-linejoin="round"></path><circle cx="41" cy="46" r="4" fill="#2C74C9"></circle><circle cx="59" cy="46" r="4" fill="#2C74C9"></circle><path d="M41,56 Q50,64 59,56" stroke="#2C74C9" stroke-width="4.6" fill="none" stroke-linecap="round"></path></svg>
+      <h2>Ready to give kids the kudos they deserve?</h2>
       <p class="lead">Free, private, and ready in two minutes.</p>
-      <button class="bigbtn" data-start>Get started — free</button>
+      <button class="ctaband-btn" data-start>Get started free</button>
     </section>
 
     <footer class="lp-foot">
