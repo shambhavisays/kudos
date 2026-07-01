@@ -157,6 +157,18 @@ create table feedback (
   created_at timestamptz not null default now()
 );
 
+-- Opt-in public testimonials. Anyone can submit (from the feedback modal); only
+-- rows you approve (approved=true, flipped in the dashboard) are readable through
+-- the anon key and shown on the landing page. Unapproved rows stay private.
+create table testimonials (
+  id uuid primary key default gen_random_uuid(),
+  name text not null check (char_length(name) between 1 and 80),
+  role text check (role is null or char_length(role) <= 80),
+  quote text not null check (char_length(quote) between 1 and 600),
+  approved boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
 -- ── Row Level Security ───────────────────────────────────────────────────────
 -- Every table is scoped to families owned by the authenticated user. A request
 -- can only see/modify rows whose family_id belongs to a family it owns; the
@@ -172,6 +184,7 @@ alter table reward_credits enable row level security;
 alter table devices enable row level security;
 alter table monthly_summaries enable row level security;
 alter table feedback enable row level security;
+alter table testimonials enable row level security;
 
 -- Helper: the set of family ids the current user owns.
 create or replace function owned_family_ids()
@@ -225,6 +238,15 @@ create policy "own monthly_summaries" on monthly_summaries
 create policy "anyone can submit feedback" on feedback
   for insert to anon, authenticated
   with check (true);
+
+-- Testimonials: anyone may submit; anyone may read ONLY approved rows. Unapproved
+-- submissions are invisible to the anon key until you approve them in the dashboard.
+create policy "anyone can submit a testimonial" on testimonials
+  for insert to anon, authenticated
+  with check (true);
+create policy "approved testimonials are public" on testimonials
+  for select to anon, authenticated
+  using (approved = true);
 
 -- ── History retention (13 months) ───────────────────────────────────────────
 -- Keep ~13 months of raw daily completions; roll older activity into

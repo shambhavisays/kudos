@@ -404,6 +404,15 @@
   .lp-ctaband .lead{color:rgba(255,255,255,.9)}
   .ctaband-btn{font-family:'Fredoka';font-weight:500;font-size:17px;background:#fff;color:var(--accent-deep);border:none;border-radius:15px;padding:15px 32px;cursor:pointer;box-shadow:0 16px 30px -12px rgba(0,0,0,.3);transition:background .15s,color .15s}
   .ctaband-btn:hover{background:var(--gold-mark);color:var(--ink)}
+  /* testimonials */
+  .lp-quotes{display:grid;grid-template-columns:1fr;gap:14px;max-width:900px;margin:0 auto}
+  @media(min-width:640px){.lp-quotes{grid-template-columns:1fr 1fr}}
+  @media(min-width:900px){.lp-quotes{grid-template-columns:repeat(3,1fr)}}
+  .lp-quote{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px 22px 18px;margin:0;box-shadow:0 18px 40px -32px rgba(33,48,74,.5)}
+  .lp-quote .q{font-size:15px;line-height:1.55;color:var(--ink);font-weight:700;margin:0 0 14px}
+  .lp-quote .who{display:flex;flex-direction:column;line-height:1.3}
+  .lp-quote .who b{font-family:'Fredoka';font-weight:600;font-size:14px;color:var(--ink)}
+  .lp-quote .who span{font-weight:700;font-size:12px;color:var(--muted)}
   .fbta{border:2px solid var(--line);border-radius:12px;padding:12px;font-size:15px;font-family:'Nunito';font-weight:700;width:100%;resize:vertical;color:var(--ink)}
   .fbta:focus{outline:none;border-color:var(--accent)}
   /* ── Signup reassurance + password strength ── */
@@ -437,7 +446,15 @@
     <textarea id="fbMsg" class="fbta" rows="4" maxlength="2000" placeholder="What's working, what's not, what you wish it did…"></textarea>
     <label>Email (optional)</label>
     <input id="fbEmail" type="email" inputmode="email" placeholder="you@example.com" autocomplete="email">
-    <button class="bigbtn" id="fbSend" style="margin-top:4px">Send feedback</button>
+    <label class="toggle" style="margin:10px 4px 2px"><input type="checkbox" id="fbFeature"> ⭐ You can feature this on the site</label>
+    <div id="fbFeatureFields" style="display:none">
+      <p class="note" style="margin:2px 4px 10px">We'll show your note with your first name once it's approved. Nothing goes public without your OK here.</p>
+      <label>First name (shown publicly)</label>
+      <input id="fbName" placeholder="e.g. Priya" maxlength="80" autocomplete="given-name">
+      <label>Role (optional)</label>
+      <input id="fbRole" placeholder="e.g. Mom of 2" maxlength="80">
+    </div>
+    <button class="bigbtn" id="fbSend" style="margin-top:8px">Send feedback</button>
   </div>
 </div></div>
 
@@ -846,7 +863,7 @@ function renderLanding(){
       <div class="lp-why">
         <svg class="why-star" viewBox="0 0 100 100" aria-hidden="true"><path d="M50,12 L61.17,34.63 L86.14,38.26 L68.07,55.87 L72.34,80.74 L50,69 L27.66,80.74 L31.93,55.87 L13.86,38.26 L38.83,34.63 Z" fill="#FFD24A" stroke="#FFD24A" stroke-width="9" stroke-linejoin="round"></path><circle cx="41" cy="46" r="4" fill="#378ADD"></circle><circle cx="59" cy="46" r="4" fill="#378ADD"></circle><path d="M41,56 Q50,64 59,56" stroke="#378ADD" stroke-width="4.6" fill="none" stroke-linecap="round"></path></svg>
         <h2 style="margin:0 0 14px">Why it's <span class="hlw"><span>free</span></span></h2>
-        <p class="why-body">Kudos has no ads and no trackers. Your family's information stays private to your account, never sold, never shared.</p>
+        <p class="why-body">Kudos has no ads and no trackers. It's a craft project built by a PM and mom of two who wanted a chore app that respects families and their data. Your family's information stays private to your account, never sold, never shared.</p>
         <div class="why-chips"><span class="why-chip"><span class="d"></span>No ads</span><span class="why-chip"><span class="d"></span>No trackers</span><span class="why-chip"><span class="d"></span>Private by design</span></div>
         <a class="why-link" href="https://github.com/shambhavisays/kudos/blob/main/PRIVACY.md" target="_blank" rel="noopener">Read the privacy note →</a>
       </div>
@@ -860,6 +877,12 @@ function renderLanding(){
         <details><summary>Is my kids' data safe?</summary><p>Yes. Everything is private to your account and protected row-by-row in the database, so no other family can ever see your board. See the privacy note for what's stored.</p></details>
         <details><summary>What devices does it work on?</summary><p>Any modern browser: phone, tablet, or computer. Add it to your home screen for an app-like experience.</p></details>
       </div>
+    </section>
+
+    <!-- Social proof: only real, approved, opt-in testimonials. Hidden until some exist. -->
+    <section class="lp-sec" id="lpTestimonials" style="display:none">
+      <h2>Loved by <span class="hlw"><span>families</span></span></h2>
+      <div class="lp-quotes" id="lpQuotes"></div>
     </section>
 
     <section class="lp-sec lp-final lp-ctaband">
@@ -883,6 +906,22 @@ function renderLanding(){
   document.querySelectorAll('[data-scroll]').forEach(b=>b.onclick=()=>{const t=document.getElementById(b.dataset.scroll);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});});
   $('#navLogin').onclick=renderLogin;
   $('#fbLink').onclick=openFeedback;
+  loadTestimonials();
+}
+
+// Fetch approved testimonials (RLS lets the anon key read only approved rows) and
+// reveal the section only if there are any — so it's never an empty/lonely block.
+async function loadTestimonials(){
+  const { data, error } = await sb.from('testimonials')
+    .select('name,role,quote').eq('approved',true).order('created_at',{ascending:false}).limit(6);
+  if(error || !data || !data.length) return;
+  const sec=$('#lpTestimonials'); if(!sec) return;
+  $('#lpQuotes').innerHTML=data.map(t=>`
+    <figure class="lp-quote">
+      <p class="q">“${esc(t.quote)}”</p>
+      <figcaption class="who"><b>${esc(t.name)}</b>${t.role?`<span>${esc(t.role)}</span>`:''}</figcaption>
+    </figure>`).join('');
+  sec.style.display='';
 }
 
 // ── Feedback (anonymous insert into Supabase; no read access via anon key) ────
@@ -892,6 +931,8 @@ function openFeedback(){
   m.onclick=e=>{ if(e.target===m) closeFeedback(); };
   $('#fbClose').onclick=closeFeedback;
   $('#fbSend').onclick=submitFeedback;
+  // Reveal the name/role fields only when the "feature this" opt-in is ticked.
+  $('#fbFeature').onchange=e=>{ $('#fbFeatureFields').style.display=e.target.checked?'':'none'; };
   setTimeout(()=>$('#fbMsg').focus(),50);
 }
 function closeFeedback(){ $('#fbModal').classList.remove('open'); }
@@ -899,13 +940,22 @@ async function submitFeedback(){
   const msg=$('#fbMsg').value.trim();
   if(!msg){ toast('Add a little note first'); $('#fbMsg').focus(); return; }
   const email=$('#fbEmail').value.trim()||null;
+  const feature=$('#fbFeature').checked;
+  const name=$('#fbName')?.value.trim();
+  if(feature && !name){ toast('Add a first name to feature it'); $('#fbName').focus(); return; }
   const btn=$('#fbSend'); btn.disabled=true; btn.textContent='Sending…';
+  // Always record the private note. Only when the user opts in do we also submit a
+  // testimonial (approved=false; nothing shows publicly until you approve it).
   const { error } = await sb.from('feedback').insert({ message:msg, email, source:'landing' });
+  if(!error && feature){
+    await sb.from('testimonials').insert({ name, role:$('#fbRole').value.trim()||null, quote:msg });
+  }
   btn.disabled=false; btn.textContent='Send feedback';
   if(error){ toast('Could not send — please try again'); return; }
-  $('#fbMsg').value=''; $('#fbEmail').value='';
+  $('#fbMsg').value=''; $('#fbEmail').value=''; $('#fbFeature').checked=false;
+  $('#fbName').value=''; $('#fbRole').value=''; $('#fbFeatureFields').style.display='none';
   closeFeedback();
-  toast('Thank you! 💛');
+  toast(feature?'Thank you! We\'ll review it soon 💛':'Thank you! 💛');
 }
 
 // Google's 4-colour "G" mark, reused on every "Continue with Google" button.
