@@ -1779,12 +1779,12 @@ function renderMain(){
       <div class="power">
         <div class="cap">Today</div>
         <div class="bar"><div class="fill" style="width:${pct}%;background:${accent}"></div></div>
-        <div class="lab"><span style="color:${accent}">${goalMsg}</span><span>${corePts}/${k.daily_goal} ⭐ ${corePts>=k.daily_goal?'🎉':''}</span></div>
+        <div class="lab"><span style="color:${accent}">${goalMsg}</span><span>${Math.min(corePts,k.daily_goal)}/${k.daily_goal} ⭐ ${corePts>=k.daily_goal?'🎉':''}</span></div>
       </div>
       <div class="power week">
         <div class="cap">This Week</div>
         <div class="bar"><div class="fill" style="width:${weekPct}%;background:${accent}"></div></div>
-        <div class="lab"><span></span><span>${weekCorePts}/${weekGoal} ⭐ ${weekGoal&&weekCorePts>=weekGoal?'🎉':''}</span></div>
+        <div class="lab"><span></span><span>${Math.min(weekCorePts,weekGoal)}/${weekGoal} ⭐ ${weekGoal&&weekCorePts>=weekGoal?'🎉':''}</span></div>
       </div>
     </div>
     ${goalHtml(k,accent)}
