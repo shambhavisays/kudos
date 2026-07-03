@@ -160,7 +160,8 @@
   .chore.done .tick{background:var(--good);border-color:var(--good)}
   .chore.neg.done{border-color:var(--bad);background:var(--bad-bg)}
   .chore.neg.done .tick{background:var(--bad);border-color:var(--bad)}
-  .tierlab{color:var(--muted);font-weight:800;font-size:12px;margin:10px 4px 4px}
+  .tierlab{color:var(--ink);font-weight:800;font-size:13px;margin:14px 4px 6px}
+  .tierlab small{display:block;color:var(--muted);font-weight:700;font-size:11px;margin-top:1px}
   .rewards{display:flex;gap:11px;overflow-x:auto;padding:4px 2px 6px}
   .reward{flex:none;width:148px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:6px}
   .reward .emo{font-size:26px}
@@ -480,25 +481,22 @@ const app=$('#app');
 // ── Each family runs on its own IANA timezone (captured at signup),
 // independent of whatever timezone a kid's device happens to be set to — Intl
 // handles the DST switch automatically. All "today"/weekday/streak logic reads
-// through these instead of device-local Date getters. TZ defaults to Central
-// until the family row loads, then setFamilyTimezone() overwrites it.
-let TZ='America/Chicago';
-function makeTzFormatters(){
-  return {
-    date:new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'}),
-    dow:new Intl.DateTimeFormat('en-US',{timeZone:TZ,weekday:'short'}),
-    hour:new Intl.DateTimeFormat('en-US',{timeZone:TZ,hour:'numeric',hourCycle:'h23'})
-  };
-}
-let _tzFmt=makeTzFormatters();
-function setFamilyTimezone(tz){TZ=tz||'America/Chicago';_tzFmt=makeTzFormatters();}
+// through these instead of raw device-local Date getters. TZ is simply the
+// device's own timezone — whatever zone the phone/tablet is set to is the one
+// the board uses.
+const TZ=Intl.DateTimeFormat().resolvedOptions().timeZone||'America/Chicago';
+const _tzFmt={
+  date:new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'}),
+  dow:new Intl.DateTimeFormat('en-US',{timeZone:TZ,weekday:'short'}),
+  hour:new Intl.DateTimeFormat('en-US',{timeZone:TZ,hour:'numeric',hourCycle:'h23'})
+};
 const DOW_SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-// Local calendar date (NOT toISOString, which is UTC and rolls over ~7pm Central,
-// stamping evening completions with tomorrow's date) — always read in family time.
+// Local calendar date (NOT toISOString, which is UTC and rolls over in the
+// evening, stamping completions with tomorrow's date) — read in device time.
 const localDateStr=d=>_tzFmt.date.format(d);
 const today=()=>localDateStr(new Date());
 const todayDow=(d=new Date())=>DOW_SHORT.indexOf(_tzFmt.dow.format(d));
-const chicagoHour=(d=new Date())=>+_tzFmt.hour.format(d);
+const localHour=(d=new Date())=>+_tzFmt.hour.format(d);
 // Pure calendar-date (Y-M-D) arithmetic — sidesteps device timezone entirely
 // (noon UTC as the scratch instant avoids any DST-edge rollover).
 function ymdParts(str){const[y,m,d]=str.split('-').map(Number);return{y,m,d};}
@@ -722,7 +720,7 @@ const colorForKidIndex=i=>KID_COLORS[i%KID_COLORS.length];
 
 // Time-of-day greeting for the hero.
 function greeting(){
-  const h=chicagoHour();
+  const h=localHour();
   if(h<12)return['Good morning','🌅'];
   if(h<17)return['Good afternoon','☀️'];
   return['Good evening','🌙'];
@@ -731,12 +729,16 @@ function greeting(){
 const CHEERS=['Nice one! 👏','You\'re on fire! 🔥','Superstar! 🌟','Boom — done! 💥','Way to go! 🎉','Crushing it! 💪','Love it! 💛','High five! ✋'];
 const pickCheer=()=>CHEERS[Math.floor(Math.random()*CHEERS.length)];
 
+// Two kinds of starter reward:
+//  • earn=true → banks a credit each day the child finishes all their chores
+//    (condition-gated, no star cost).
+//  • otherwise → bought with saved-up stars at the given cost.
 const STARTER_REWARDS=[
-  {emoji:'📺',name:'30 min screen time',cost:50,tier:'instant'},
-  {emoji:'🌙',name:'Stay up 15 min',cost:60,tier:'instant'},
-  {emoji:'🍕',name:'Pick dinner menu',cost:80,tier:'weekly'},
-  {emoji:'🎬',name:'Movie night',cost:120,tier:'weekly'},
-  {emoji:'🧸',name:'Small toy',cost:200,tier:'monthly'},
+  {emoji:'📺',name:'30 min screen time',earn:true},
+  {emoji:'🌙',name:'Special permission (treat, stay up late, pick dinner)',earn:true},
+  {emoji:'🍕',name:'Pick dinner menu',cost:80},
+  {emoji:'🎬',name:'Movie night',cost:120},
+  {emoji:'🧸',name:'Small toy',cost:200},
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -762,7 +764,6 @@ async function boot(){
   }
   if(!fam){renderEmptyFamilySetup();return;}
   family=fam;familyId=fam.id;
-  setFamilyTimezone(fam.timezone);   // before anything reads today()/todayDow()
   await loadProfiles();
   if(!profiles.length){renderEmptyFamilySetup();return;}
   renderProfilePicker();
@@ -790,7 +791,7 @@ function renderLanding(){
         <button class="navlink" data-scroll="lpHow">How it works</button>
         <button class="navlink" data-scroll="lpFeat">Features</button>
         <button class="linkbtn" id="navLogin">Log in</button>
-        <button class="bigbtn navcta" data-start>Get started free</button>
+        <button class="bigbtn navcta" data-start>Sign up free</button>
       </div>
     </nav>
 
@@ -800,7 +801,7 @@ function renderLanding(){
         <h1>Less nagging. More <span class="lp-hl"><span>“I did it.”</span></span></h1>
         <p class="lede">The good feeling of getting it done, <b>made visible.</b> Kids finish a chore, earn a star, and watch the “well done” add up.</p>
         <div class="cta">
-          <button class="bigbtn" data-start>Get started free</button>
+          <button class="bigbtn" data-start>Sign up free</button>
           <button class="seehow" data-scroll="lpHow">See how it works →</button>
         </div>
         <div class="lp-trust">
@@ -979,7 +980,7 @@ function renderLanding(){
       <svg class="cta-star" viewBox="0 0 100 100" aria-hidden="true"><path d="M50,12 L61.17,34.63 L86.14,38.26 L68.07,55.87 L72.34,80.74 L50,69 L27.66,80.74 L31.93,55.87 L13.86,38.26 L38.83,34.63 Z" fill="#FFD24A" stroke="#FFD24A" stroke-width="9" stroke-linejoin="round"></path><circle cx="41" cy="46" r="4" fill="#2C74C9"></circle><circle cx="59" cy="46" r="4" fill="#2C74C9"></circle><path d="M41,56 Q50,64 59,56" stroke="#2C74C9" stroke-width="4.6" fill="none" stroke-linecap="round"></path></svg>
       <h2>Ready to give kids the kudos they deserve?</h2>
       <p class="lead">Free, private, and ready in two minutes.</p>
-      <button class="ctaband-btn" data-start>Get started free</button>
+      <button class="ctaband-btn" data-start>Sign up free</button>
     </section>
 
     <footer class="lp-foot">
@@ -1079,7 +1080,7 @@ function renderLogin(){
         <input id="logPass" type="password" placeholder="••••••••" autocomplete="current-password">
         <button class="bigbtn" id="logBtn" style="margin-top:6px">Log in</button>
       </div>
-      <button class="linkbtn" id="toStart">New here? Get started</button>
+      <button class="linkbtn" id="toStart">New here? Sign up free</button>
     </div>`;
   $('#toStart').onclick=renderLanding;
   $('#googleBtn').onclick=()=>signInWithGoogle($('#googleBtn'));
@@ -1341,17 +1342,17 @@ function renderConfirmEmail(email){
 
 // Build the family from a wizard payload (runs authenticated, RLS-scoped to us).
 async function createFamilyFromPayload(p){
-  // Capture locale at signup. Timezone is reliable; country is a best-effort
-  // guess from the browser locale's region subtag (e.g. 'en-US' → 'US') — not
-  // geolocation, and editable later. Only affects US-specific holiday features.
+  // Dates run on the device's own timezone (see TZ up top). We still record the
+  // family's country — a best-effort guess from the browser locale's region
+  // subtag (e.g. 'en-US' → 'US') — because US federal-holiday features gate on
+  // it. Timezone is stored too for reference, but the app reads device time.
   const opts=Intl.DateTimeFormat().resolvedOptions();
-  const detectedTz=opts.timeZone||'America/Chicago';
+  const detectedTz=opts.timeZone||null;
   const detectedCountry=((opts.locale||'en-US').split('-')[1]||'US').toUpperCase();
   const {data:fam,error:fe}=await sb.from('families')
     .insert({owner_user_id:currentUser.id,name:p.familyName||'My Family',timezone:detectedTz,country:detectedCountry}).select().single();
   if(fe)throw fe;
   family=fam;familyId=fam.id;
-  setFamilyTimezone(fam.timezone);
 
   // Parent profile
   await sb.from('profiles').insert({
@@ -1376,9 +1377,12 @@ async function createFamilyFromPayload(p){
     }
   }
 
-  // Shared starter rewards
+  // Shared starter rewards — earn=true ones bank a credit on a fully-finished
+  // day (requires_all_today); the rest are bought with stars.
   await sb.from('rewards').insert(STARTER_REWARDS.map(r=>({
-    family_id:familyId,owner:'both',emoji:r.emoji,name:r.name,cost:r.cost,tier:r.tier
+    family_id:familyId,owner:'both',emoji:r.emoji,name:r.name,
+    cost:r.earn?0:(r.cost||0),tier:r.earn?'instant':'weekly',
+    requires_all_today:!!r.earn
   })));
 }
 
@@ -1754,7 +1758,6 @@ function renderMain(){
     .filter(cm=>{const c=chores.find(x=>x.id===cm.chore_id);return !c||c.category!=='stretch';})
     .reduce((s,cm)=>s+cm.points,0);
   const weekPct=Math.max(0,Math.min(100,weekGoal?(weekCorePts/weekGoal)*100:0));
-  const tiers=[['instant','⚡ Same-day'],['weekly','📆 Weekly'],['monthly','🏆 Monthly / Saver']];
   const mine=visibleRewards(k.id);
   const greet=greeting();
   const accent=k.color||'#378ADD';
@@ -1827,10 +1830,23 @@ function renderMain(){
     if(willComplete && ok)burst(rect.left+rect.width/2,rect.top+rect.height/2,['⭐','✨',k.emoji,'🎉']);
   });
 
-  $('#rewardsRow').innerHTML=tiers.map(([tier,label])=>{
-    const items=mine.filter(r=>r.tier===tier);
+  // Two clear reward categories, by how you earn them:
+  //  1) Earn by finishing your day — condition-gated (isGated): each day the
+  //     conditions are met banks one credit, claimed later. No star cost.
+  //  2) Spend your stars — plain cost, bought with the star balance, cheapest
+  //     first (instant treats → big saved-up goals all in one list).
+  // Collapse any accidental same-name duplicates so a reward shows once.
+  const seenNames=new Set();
+  const uniqueRewards=mine.filter(r=>{const key=(r.name||'').trim().toLowerCase();if(seenNames.has(key))return false;seenNames.add(key);return true;});
+  const earnRewards=uniqueRewards.filter(isGated);
+  const spendRewards=uniqueRewards.filter(r=>!isGated(r)).sort((a,b)=>(a.cost||0)-(b.cost||0));
+  const rewardGroups=[
+    ['🌟 Earn by finishing your day',earnRewards,'Complete your day to bank a credit — no stars needed'],
+    ['⭐ Spend your stars',spendRewards,'Spend your saved-up stars'],
+  ];
+  $('#rewardsRow').innerHTML=rewardGroups.map(([label,items,sub])=>{
     if(!items.length)return '';
-    return `<div class="tierlab">${label}</div><div class="rewards">${items.map(r=>{
+    return `<div class="tierlab">${label}<small>${sub}</small></div><div class="rewards">${items.map(r=>{
       const gated=isGated(r);
       const eligible=canClaim(r,k);
       const credits=gated?getCredits(r,k):0;
@@ -1950,7 +1966,7 @@ async function toggleChore(k,choreId){
     // Any completed task keeps the streak alive — daily-care tasks count too, even
     // though they earn no stars, so kids get credit for showing up.
     if(k.last_active_date!==today()){
-      // "Yesterday" must use the same Chicago calendar date as today()/last_active_date.
+      // "Yesterday" must use the same device-timezone calendar date as today()/last_active_date.
       // (Using toISOString() here is UTC and drifts a day in the evening, wrongly
       // resetting streaks; device-local Date math would do the same for a device set
       // to a different timezone than this family's Central time.)
@@ -2102,18 +2118,18 @@ async function openAdmin(k,opts={}){
         <div class="panel" id="panel-rewards">
           <div class="note">Rewards are shared across all kids unless tied to one.</div>
           <div id="rewardList"></div>
-          <div class="addform"><input id="rEmo" class="emoji-in" data-kind="reward" readonly placeholder="🎁" maxlength="2"><input id="rName" placeholder="Reward name"><input id="rCost" placeholder="50"></div>
+          <div class="addform"><input id="rEmo" class="emoji-in" data-kind="reward" readonly placeholder="🎁" maxlength="2"><input id="rName" placeholder="Reward name"><input id="rCost" inputmode="numeric" placeholder="Cost ⭐"></div>
           <div class="rewardopts">
-            <select id="rTier">
-              <option value="instant">⚡ Same-day</option>
-              <option value="weekly" selected>📆 Weekly</option>
-              <option value="monthly">🏆 Monthly / Saver</option>
+            <select id="rType">
+              <option value="spend" selected>⭐ Spend stars (set a cost)</option>
+              <option value="earn">🌟 Earn by finishing the day</option>
             </select>
             <select id="rOwner">
               <option value="both" selected>Shared — all kids</option>
               ${kids.map(kk=>`<option value="${kk.id}">${esc(kk.name)} only</option>`).join('')}
             </select>
           </div>
+          <div class="note" id="rTypeNote" style="margin:0 4px 4px;color:var(--muted)">Bought with saved-up stars.</div>
           <button class="addbtn" id="addReward">＋ Add reward</button>
         </div>
         <div class="panel" id="panel-family">
@@ -2231,17 +2247,27 @@ async function openAdmin(k,opts={}){
     rewards=rewards.filter(r=>r.id!==id);
     toast('Reward declined');$('#modal').remove();openAdmin(focusKid);
   });
+    // Reward-type toggle: hide the star cost when it's earned by finishing the day.
+    $('#rType').onchange=()=>{
+      const earn=$('#rType').value==='earn';
+      $('#rCost').style.display=earn?'none':'';
+      $('#rTypeNote').textContent=earn
+        ?'Banks a credit each day the child finishes all of that day\'s chores — no stars needed.'
+        :'Bought with saved-up stars.';
+    };
   $('#addReward').onclick=async()=>{
     const nm=$('#rName').value.trim();if(!nm)return toast('Type a reward name');
-    let c=parseInt($('#rCost').value,10);if(isNaN(c)||c<0)c=50;
-    const tier=$('#rTier').value;
+    const earn=$('#rType').value==='earn';
+    let c=parseInt($('#rCost').value,10);if(isNaN(c)||c<0)c=earn?0:50;
     const ownerSel=$('#rOwner').value;
     const toOneKid=ownerSel!=='both';
     const {data,error}=await sb.from('rewards').insert({
       family_id:familyId,
       owner:toOneKid?'profile':'both',
       owner_profile_id:toOneKid?ownerSel:null,
-      emoji:$('#rEmo').value.trim()||'🎁',name:nm,cost:c,tier
+      emoji:$('#rEmo').value.trim()||'🎁',name:nm,
+      cost:earn?0:c,tier:earn?'instant':'weekly',
+      requires_all_today:earn
     }).select().single();
     if(error)return toast('Could not add reward');
     rewards.push(data);$('#modal').remove();openAdmin(focusKid);renderMain();toast('Reward added');
