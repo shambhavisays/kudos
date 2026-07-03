@@ -14,6 +14,11 @@ create table families (
   id uuid primary key default gen_random_uuid(),
   owner_user_id uuid not null references auth.users(id) on delete cascade,
   name text not null default 'My Family',
+  -- Per-family locale, captured at signup. timezone is an IANA zone
+  -- (e.g. 'America/Chicago'); country is an ISO region code (e.g. 'US').
+  -- Holiday-aware scheduling only activates when country = 'US'.
+  timezone text,
+  country text,
   created_at timestamptz not null default now()
 );
 
@@ -45,8 +50,13 @@ create table chores (
   emoji text not null default '⭐',
   name text not null,
   points int not null,
-  cadence text not null default 'daily' check (cadence in ('daily','weekday','weekly','monthly','oneoff')),
+  cadence text not null default 'daily' check (cadence in ('daily','weekday','weekly','monthly','oneoff','holiday')),
   weekdays int[],
+  -- Pairs with weekdays: 'include' shows only on the listed weekdays;
+  -- 'exclude' shows every day except them. Ignored unless cadence='weekday'.
+  schedule_mode text not null default 'include' check (schedule_mode in ('include','exclude')),
+  -- The specific date for a one-time (cadence='oneoff') chore.
+  occurs_on date,
   -- Time-of-day grouping on the board (null = "Anytime").
   period text check (period in ('morning','afternoon','evening')),
   -- 'baseline' | 'effortful' | 'stretch'. Stretch tasks are bonus and excluded

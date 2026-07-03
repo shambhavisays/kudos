@@ -88,10 +88,12 @@
   .hero .who{font-family:'Fredoka';font-weight:600;font-size:20px;display:flex;align-items:center;gap:8px}
   .hero .pts{text-align:right;line-height:1}
   .hero .pts b{font-family:'Fredoka';font-size:32px;display:block;color:var(--accent-deep)}
-  .hero .pts span{font-size:11px;font-weight:800;letter-spacing:1px;color:var(--muted)}
+  .hero .pts span{font-size:11px;font-weight:800;letter-spacing:.4px;color:var(--muted);text-transform:uppercase;white-space:nowrap}
   .meta{display:flex;gap:10px;margin-top:10px;font-weight:800;font-size:12px;flex-wrap:wrap}
   .meta .chip{background:var(--bg);padding:5px 11px;border-radius:999px}
   .power{margin-top:14px}
+  .power.week{margin-top:10px}
+  .power .cap{font-size:11px;font-weight:800;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
   .power .bar{height:14px;border-radius:999px;background:var(--bg);overflow:hidden}
   .power .fill{height:100%;border-radius:999px;background:var(--accent);width:0;transition:width .5s}
   .power .lab{display:flex;justify-content:space-between;font-size:11px;font-weight:800;margin-top:6px;color:var(--muted)}
@@ -168,6 +170,10 @@
   .reward button:disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
   #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(40px);background:var(--ink);color:#fff;padding:13px 20px;border-radius:14px;font-family:'Fredoka';font-weight:600;opacity:0;transition:.3s;z-index:70;max-width:90%;text-align:center}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .fab{position:fixed;right:18px;bottom:26px;width:56px;height:56px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:26px;box-shadow:0 6px 18px rgba(20,30,45,.25);cursor:pointer;z-index:60;display:grid;place-items:center}
+  .fab:active{transform:scale(.94)}
+  .cWeekdays{display:flex;flex-wrap:wrap;gap:10px;margin:2px 4px 8px}
+  .cWeekdays label{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:700;color:var(--ink)}
   .modal{position:fixed;inset:0;background:rgba(20,30,45,.45);z-index:80;display:none;align-items:flex-end;justify-content:center}
   .modal.open{display:flex}
   .sheet{background:#fff;width:100%;max-width:720px;max-height:88vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:18px 16px 30px}
@@ -470,15 +476,92 @@ const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const $=s=>document.querySelector(s);
 const app=$('#app');
-const todayDow=()=>new Date().getDay();
+
+// ── Each family runs on its own IANA timezone (captured at signup),
+// independent of whatever timezone a kid's device happens to be set to — Intl
+// handles the DST switch automatically. All "today"/weekday/streak logic reads
+// through these instead of device-local Date getters. TZ defaults to Central
+// until the family row loads, then setFamilyTimezone() overwrites it.
+let TZ='America/Chicago';
+function makeTzFormatters(){
+  return {
+    date:new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'}),
+    dow:new Intl.DateTimeFormat('en-US',{timeZone:TZ,weekday:'short'}),
+    hour:new Intl.DateTimeFormat('en-US',{timeZone:TZ,hour:'numeric',hourCycle:'h23'})
+  };
+}
+let _tzFmt=makeTzFormatters();
+function setFamilyTimezone(tz){TZ=tz||'America/Chicago';_tzFmt=makeTzFormatters();}
+const DOW_SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 // Local calendar date (NOT toISOString, which is UTC and rolls over ~7pm Central,
-// stamping evening completions with tomorrow's date).
-const localDateStr=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+// stamping evening completions with tomorrow's date) — always read in family time.
+const localDateStr=d=>_tzFmt.date.format(d);
 const today=()=>localDateStr(new Date());
+const todayDow=(d=new Date())=>DOW_SHORT.indexOf(_tzFmt.dow.format(d));
+const chicagoHour=(d=new Date())=>+_tzFmt.hour.format(d);
+// Pure calendar-date (Y-M-D) arithmetic — sidesteps device timezone entirely
+// (noon UTC as the scratch instant avoids any DST-edge rollover).
+function ymdParts(str){const[y,m,d]=str.split('-').map(Number);return{y,m,d};}
+function ymdString(y,m,d){return y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');}
+function dowOfYmd(y,m,d){return new Date(Date.UTC(y,m-1,d)).getUTCDay();}
+function addDaysYmd(y,m,d,delta){
+  const dt=new Date(Date.UTC(y,m-1,d,12));
+  dt.setUTCDate(dt.getUTCDate()+delta);
+  return {y:dt.getUTCFullYear(),m:dt.getUTCMonth()+1,d:dt.getUTCDate()};
+}
+
+// ── US federal holidays, computed per year (handles floating ones like
+// "third Monday of January" automatically — no yearly hardcoded date list).
+function nthWeekday(year,month,weekday,n){ // month 1-12, weekday 0=Sun..6=Sat
+  const firstDow=dowOfYmd(year,month,1);
+  return 1+((weekday-firstDow+7)%7)+(n-1)*7;
+}
+function lastWeekday(year,month,weekday){
+  const lastDate=new Date(Date.UTC(year,month,0)).getUTCDate();
+  const lastDow=dowOfYmd(year,month,lastDate);
+  return lastDate-((lastDow-weekday+7)%7);
+}
+function usFederalHolidaySet(year){
+  return new Set([
+    ymdString(year,1,1),                          // New Year's Day
+    ymdString(year,1,nthWeekday(year,1,1,3)),     // MLK Day
+    ymdString(year,2,nthWeekday(year,2,1,3)),     // Presidents Day
+    ymdString(year,5,lastWeekday(year,5,1)),      // Memorial Day
+    ymdString(year,6,19),                          // Juneteenth
+    ymdString(year,7,4),                           // Independence Day
+    ymdString(year,9,nthWeekday(year,9,1,1)),     // Labor Day
+    ymdString(year,10,nthWeekday(year,10,1,2)),   // Columbus Day
+    ymdString(year,11,11),                         // Veterans Day
+    ymdString(year,11,nthWeekday(year,11,4,4)),   // Thanksgiving
+    ymdString(year,12,25),                         // Christmas
+  ]);
+}
+function isUSFederalHoliday(y,m,d){return usFederalHolidaySet(y).has(ymdString(y,m,d));}
+// US holiday awareness only applies to US families. A null/unset country is
+// treated as US-like (matches the app's original single-family assumption).
+function familyIsUS(){return !(family&&family.country&&family.country!=='US');}
+// True when today (family time) is a US federal holiday. Used by the 'holiday' cadence.
+function isTodayUSHoliday(){
+  if(!familyIsUS())return false;
+  const {y,m,d}=ymdParts(today());
+  return isUSFederalHoliday(y,m,d);
+}
+// True when tomorrow (family time) is a weekend or, for US families, a federal
+// holiday — no school. Weekend detection is universal; only the holiday check
+// is US-gated.
+function nextDayIsNonSchool(){
+  const {y,m,d}=ymdParts(today());
+  const t=addDaysYmd(y,m,d,1);
+  const tDow=dowOfYmd(t.y,t.m,t.d);
+  if(tDow===0||tDow===6)return true;
+  return familyIsUS()&&isUSFederalHoliday(t.y,t.m,t.d);
+}
+
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 let currentUser = null;   // Supabase Auth user (the parent who owns the family)
 let familyId = null;
+let family = null;   // full family row (timezone, country, name, …)
 let me = null;
 let profiles = [];
 let chores = [];
@@ -639,7 +722,7 @@ const colorForKidIndex=i=>KID_COLORS[i%KID_COLORS.length];
 
 // Time-of-day greeting for the hero.
 function greeting(){
-  const h=new Date().getHours();
+  const h=chicagoHour();
   if(h<12)return['Good morning','🌅'];
   if(h<17)return['Good afternoon','☀️'];
   return['Good evening','🌙'];
@@ -678,7 +761,8 @@ async function boot(){
     }
   }
   if(!fam){renderEmptyFamilySetup();return;}
-  familyId=fam.id;
+  family=fam;familyId=fam.id;
+  setFamilyTimezone(fam.timezone);   // before anything reads today()/todayDow()
   await loadProfiles();
   if(!profiles.length){renderEmptyFamilySetup();return;}
   renderProfilePicker();
@@ -1257,10 +1341,17 @@ function renderConfirmEmail(email){
 
 // Build the family from a wizard payload (runs authenticated, RLS-scoped to us).
 async function createFamilyFromPayload(p){
+  // Capture locale at signup. Timezone is reliable; country is a best-effort
+  // guess from the browser locale's region subtag (e.g. 'en-US' → 'US') — not
+  // geolocation, and editable later. Only affects US-specific holiday features.
+  const opts=Intl.DateTimeFormat().resolvedOptions();
+  const detectedTz=opts.timeZone||'America/Chicago';
+  const detectedCountry=((opts.locale||'en-US').split('-')[1]||'US').toUpperCase();
   const {data:fam,error:fe}=await sb.from('families')
-    .insert({owner_user_id:currentUser.id,name:p.familyName||'My Family'}).select().single();
+    .insert({owner_user_id:currentUser.id,name:p.familyName||'My Family',timezone:detectedTz,country:detectedCountry}).select().single();
   if(fe)throw fe;
-  familyId=fam.id;
+  family=fam;familyId=fam.id;
+  setFamilyTimezone(fam.timezone);
 
   // Parent profile
   await sb.from('profiles').insert({
@@ -1337,7 +1428,7 @@ async function loadFamilyBoardData(){
 async function renderWallboard(){
   await loadFamilyBoardData();
   const kids=profiles.filter(p=>p.role==='kid');
-  const dateline=new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'});
+  const dateline=new Date().toLocaleDateString(undefined,{timeZone:TZ,weekday:'long',day:'numeric',month:'long'});
   app.innerHTML=`
     <div class="wallhead">
       <div><h2>📺 Family board</h2><div class="sub">${dateline}</div></div>
@@ -1428,12 +1519,11 @@ function askPin(p){
   $('#pin').addEventListener('keydown',e=>{if(e.key==='Enter')$('#pinBtn').click();});
 }
 
-function mondayOfThisWeek(){
-  const d=new Date();const day=d.getDay();const diff=(day===0?-6:1-day);d.setDate(d.getDate()+diff);return d;
-}
 function thisWeekDates(){
-  const monday=mondayOfThisWeek();
-  return [0,1,2,3,4].map(i=>{const d=new Date(monday);d.setDate(d.getDate()+i);return localDateStr(d);});
+  const {y,m,d}=ymdParts(today());
+  const dow=dowOfYmd(y,m,d);
+  const monday=addDaysYmd(y,m,d,dow===0?-6:1-dow);
+  return [0,1,2,3,4].map(i=>{const dd=addDaysYmd(monday.y,monday.m,monday.d,i);return ymdString(dd.y,dd.m,dd.d);});
 }
 
 let weekDates=[];
@@ -1460,11 +1550,31 @@ async function loadKidData(){
   rewardCredits={};(credits||[]).forEach(c=>rewardCredits[creditKey(c.reward_id,c.profile_id)]=c);
 }
 
-function choresForDow(profileId,dow){
-  return chores.filter(c=>c.profile_id===profileId && !c.pending && (c.cadence==='daily' || (c.cadence==='weekday' && (c.weekdays||[]).includes(dow))));
+// Whether a chore is scheduled to appear on the given day-of-week / date.
+function choreAppearsToday(c,dow,dateStr){
+  switch(c.cadence){
+    case 'daily': return true;
+    case 'weekday': {
+      const days=c.weekdays||[];
+      return c.schedule_mode==='exclude' ? !days.includes(dow) : days.includes(dow);
+    }
+    case 'oneoff': return c.occurs_on===dateStr;
+    case 'holiday': return isTodayUSHoliday();
+    // 'weekly'/'monthly': no UI creates these — inert by design.
+    default: return false;
+  }
 }
+function choresForDow(profileId,dow){
+  const dateStr=today();
+  return chores.filter(c=>c.profile_id===profileId && !c.pending && choreAppearsToday(c,dow,dateStr));
+}
+// Next-day school-prep chores (packing/laying out clothes for tomorrow) don't
+// make sense when tomorrow is a weekend or US federal holiday.
+const SCHOOL_PREP_CHORES=new Set(['Keep clothes ready for next day','Pack bag & snack for next day']);
 function visibleChores(profileId){
-  return choresForDow(profileId,todayDow());
+  let list=choresForDow(profileId,todayDow());
+  if(nextDayIsNonSchool())list=list.filter(c=>!SCHOOL_PREP_CHORES.has(c.name));
+  return list;
 }
 function visibleRewards(profileId){
   return rewards.filter(r=>!r.pending && (r.owner==='both' || r.owner_profile_id===profileId));
@@ -1626,10 +1736,18 @@ function renderMain(){
   const activeKid=switchable.find(p=>window._activeKid && p.id===window._activeKid.id)||switchable[0];
   window._activeKid=activeKid;
   const k=activeKid;
-  const tp=todayPoints(k.id);
   const corePts=todayCorePoints(k.id);
   const stretchPts=todayStretchPoints(k.id);
   const pct=Math.max(0,Math.min(100,k.daily_goal?(corePts/k.daily_goal)*100:0));
+  // This-week core progress (non-stretch, positive-point completions), goal =
+  // daily_goal × 5. Mirrors the Today bar's core-only basis, not recapHtml's
+  // all-points sum.
+  const weekGoal=(k.daily_goal||0)*5;
+  const weekCorePts=weekCompletions
+    .filter(cm=>cm.profile_id===k.id)
+    .filter(cm=>{const c=chores.find(x=>x.id===cm.chore_id);return !c||c.category!=='stretch';})
+    .reduce((s,cm)=>s+cm.points,0);
+  const weekPct=Math.max(0,Math.min(100,weekGoal?(weekCorePts/weekGoal)*100:0));
   const tiers=[['instant','⚡ Same-day'],['weekly','📆 Weekly'],['monthly','🏆 Monthly / Saver']];
   const mine=visibleRewards(k.id);
   const greet=greeting();
@@ -1640,7 +1758,7 @@ function renderMain(){
 
   app.innerHTML=`
     <header class="top">
-      <div class="brand"><img class="logo" src="./icons/icon-192.png" alt=""><div><h1>Kudos</h1><div class="dateline">${new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div></div></div>
+      <div class="brand"><img class="logo" src="./icons/icon-192.png" alt=""><div><h1>Kudos</h1><div class="dateline">${new Date().toLocaleDateString(undefined,{timeZone:TZ,weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div></div></div>
       <div style="display:flex;gap:8px">
         <button class="gear" id="historyBtn" title="History">📜</button>
         ${isParent?'<button class="gear" id="gear" title="Parent settings">⚙️</button>':''}
@@ -1651,17 +1769,22 @@ function renderMain(){
     <div class="hero" style="background:linear-gradient(${accent}14,${accent}05);border-color:${accent}40">
       <div class="row1">
         <div class="who">${greet[0]}, ${esc(k.name)} ${k.emoji} ${greet[1]}</div>
-        <div class="pts"><b style="color:${accent}">${k.total_points}</b><span>STARS</span></div>
+        <div class="pts"><b style="color:${accent}">${k.total_points}</b><span>Total Stars</span></div>
       </div>
       <div class="meta">
         <span class="chip">🔥 ${k.streak||0} day streak</span>
         <span class="chip">🧊 ${k.freezes||0} freeze${(k.freezes||0)===1?'':'s'}</span>
-        <span class="chip">📅 today ${tp>=0?'+':''}${tp}</span>
         ${stretchPts>0?`<span class="chip">✨ +${stretchPts} bonus</span>`:''}
       </div>
       <div class="power">
+        <div class="cap">Today</div>
         <div class="bar"><div class="fill" style="width:${pct}%;background:${accent}"></div></div>
         <div class="lab"><span style="color:${accent}">${goalMsg}</span><span>${corePts}/${k.daily_goal} ⭐ ${corePts>=k.daily_goal?'🎉':''}</span></div>
+      </div>
+      <div class="power week">
+        <div class="cap">This Week</div>
+        <div class="bar"><div class="fill" style="width:${weekPct}%;background:${accent}"></div></div>
+        <div class="lab"><span></span><span>${weekCorePts}/${weekGoal} ⭐ ${weekGoal&&weekCorePts>=weekGoal?'🎉':''}</span></div>
       </div>
     </div>
     ${goalHtml(k,accent)}
@@ -1669,6 +1792,7 @@ function renderMain(){
     <div id="grid"></div>
     ${recapHtml(k,accent)}
     <div id="rewardsRow"></div>
+    ${isParent?'<button class="fab" id="quickAddChore" title="Add a chore">＋</button>':''}
   `;
 
   $('#kidTabs').innerHTML=switchable.length>1?switchable.map(p=>`
@@ -1737,6 +1861,7 @@ function renderMain(){
   $('#logoutBtn').onclick=()=>{me=null;window._activeKid=null;renderProfilePicker();};
   $('#historyBtn').onclick=()=>openHistory(k);
   if(isParent)$('#gear').onclick=()=>openAdmin(k);
+  if(isParent)$('#quickAddChore').onclick=()=>openAdmin(k,{focusAddForm:true});
 }
 
 async function openHistory(k){
@@ -1819,11 +1944,13 @@ async function toggleChore(k,choreId){
     // Any completed task keeps the streak alive — daily-care tasks count too, even
     // though they earn no stars, so kids get credit for showing up.
     if(k.last_active_date!==today()){
-      // "Yesterday" must use the same LOCAL calendar date as today()/last_active_date.
+      // "Yesterday" must use the same Chicago calendar date as today()/last_active_date.
       // (Using toISOString() here is UTC and drifts a day in the evening, wrongly
-      // resetting streaks for users behind UTC.)
-      const y=new Date();y.setDate(y.getDate()-1);
-      k.streak=(k.last_active_date===localDateStr(y))?(k.streak||0)+1:1;
+      // resetting streaks; device-local Date math would do the same for a device set
+      // to a different timezone than this family's Central time.)
+      const {y:ty,m:tm,d:td}=ymdParts(today());
+      const yest=addDaysYmd(ty,tm,td,-1);
+      k.streak=(k.last_active_date===ymdString(yest.y,yest.m,yest.d))?(k.streak||0)+1:1;
       k.last_active_date=today();
     }
   }
@@ -1890,7 +2017,7 @@ async function proposeReward(k){
   toast('Sent to parent for approval! 💌');
 }
 
-async function openAdmin(k){
+async function openAdmin(k,opts={}){
   // k may be null/parent when there are no kids yet — guard the kid-scoped bits.
   const kids=profiles.filter(p=>p.role==='kid');
   const focusKid=(k&&k.role==='kid')?k:kids[0]||null;
@@ -1932,6 +2059,15 @@ async function openAdmin(k){
           <div class="note">Editing chores for <b>${kidLabel}</b>${kids.length>1?' — switch kid in the Family tab':''}.</div>
           <div id="choreList"></div>
           <div class="addform"><input id="cEmo" class="emoji-in" data-kind="chore" readonly placeholder="⭐" maxlength="2"><input id="cName" placeholder="Chore name"><input id="cPts" inputmode="numeric" placeholder="+5"></div>
+          <div style="margin:6px 4px 4px"><select id="cCadence" style="width:100%;border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;background:#fff;font-family:'Nunito';color:var(--ink)">
+            <option value="daily" selected>📅 Every day</option>
+            <option value="weekday-include">🗓️ Specific days of the week</option>
+            <option value="weekday-exclude">🚫 Every day except…</option>
+            <option value="oneoff">1️⃣ One time (pick a date)</option>
+            <option value="holiday">🎉 US federal holidays only</option>
+          </select></div>
+          <div id="cWeekdays" class="cWeekdays" style="display:none">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d,i)=>`<label><input type="checkbox" class="cWd" value="${i}"> ${d}</label>`).join('')}</div>
+          <div id="cOccursOn" style="display:none;margin:2px 4px 8px"><input type="date" id="cDate" style="width:100%;border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;font-family:'Nunito';color:var(--ink)"></div>
           <div class="note" style="margin:0 4px 4px;color:var(--muted)">Tip: set points to <b>0</b> for a <b>daily-care</b> task — tapped off and streak-building, but no stars. Flip any task later with the 🩵/⭐ button.</div>
           <label class="toggle" style="margin:2px 4px 4px"><input type="checkbox" id="cPhoto"> 📷 Require a photo to complete</label>
           <button class="addbtn" id="addChore">＋ Add chore</button>
@@ -1997,10 +2133,17 @@ async function openAdmin(k){
     document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));$('#panel-'+b.dataset.tab).classList.add('on');
   });
 
+  // Quick-add entry point (the board FAB): the Chores tab is already active by
+  // default, so just scroll to and focus the name field.
+  if(opts.focusAddForm && focusKid){
+    document.getElementById('cName')?.scrollIntoView({block:'center'});
+    document.getElementById('cName')?.focus();
+  }
+
   if(focusKid){
     const allHerChores=chores.filter(c=>c.profile_id===focusKid.id && !c.pending);
     $('#choreList').innerHTML=allHerChores.length?allHerChores.map(c=>`
-      <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${c.points>0?('+'+c.points+' pts'):'🩵 Daily care · no stars'}${c.requires_photo?' · 📷 photo':''}${c.weekdays&&c.weekdays.length?' · '+c.weekdays.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join('/'):''}</small></span><button class="del" data-carec="${c.id}" title="${c.points>0?'Make this daily care (no stars)':'Make this earn stars'}">${c.points>0?'🩵':'⭐'}</button><button class="del" data-delc="${c.id}">🗑️</button></div>`).join(''):'<div class="empty">No chores yet.</div>';
+      <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${c.points>0?('+'+c.points+' pts'):'🩵 Daily care · no stars'}${c.requires_photo?' · 📷 photo':''}${c.cadence==='weekday'&&c.weekdays&&c.weekdays.length?' · '+(c.schedule_mode==='exclude'?'except ':'')+c.weekdays.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join('/'):''}${c.cadence==='oneoff'&&c.occurs_on?' · 📌 '+c.occurs_on:''}${c.cadence==='holiday'?' · 🎉 holidays only':''}</small></span><button class="del" data-carec="${c.id}" title="${c.points>0?'Make this daily care (no stars)':'Make this earn stars'}">${c.points>0?'🩵':'⭐'}</button><button class="del" data-delc="${c.id}">🗑️</button></div>`).join(''):'<div class="empty">No chores yet.</div>';
     document.querySelectorAll('[data-carec]').forEach(el=>el.onclick=async()=>{
       const c=chores.find(x=>x.id===el.dataset.carec);if(!c)return;
       const np=c.points>0?0:5;   // → daily care, or back to a default star value
@@ -2031,10 +2174,29 @@ async function openAdmin(k){
       chores=chores.filter(c=>c.id!==id);
       toast('Rejected');$('#modal').remove();openAdmin(focusKid);
     });
+    // Show the weekday picker / date input for the modes that need them.
+    $('#cCadence').onchange=()=>{
+      const v=$('#cCadence').value;
+      $('#cWeekdays').style.display=(v==='weekday-include'||v==='weekday-exclude')?'flex':'none';
+      $('#cOccursOn').style.display=(v==='oneoff')?'block':'none';
+    };
     $('#addChore').onclick=async()=>{
       const nm=$('#cName').value.trim();if(!nm)return toast('Type a chore name');
       let p=parseInt($('#cPts').value,10);if(isNaN(p))p=5;
-      const {data,error}=await sb.from('chores').insert({family_id:familyId,profile_id:focusKid.id,emoji:$('#cEmo').value.trim()||'⭐',name:nm,points:p,cadence:'daily',requires_photo:$('#cPhoto').checked}).select().single();
+      const mode=$('#cCadence').value;
+      let cadence='daily',schedule_mode='include',weekdays=null,occurs_on=null;
+      if(mode==='weekday-include'||mode==='weekday-exclude'){
+        cadence='weekday';
+        schedule_mode=mode==='weekday-exclude'?'exclude':'include';
+        weekdays=Array.from(document.querySelectorAll('.cWd:checked')).map(el=>+el.value);
+        if(!weekdays.length)return toast('Pick at least one day');
+      }else if(mode==='oneoff'){
+        cadence='oneoff';occurs_on=$('#cDate').value;
+        if(!occurs_on)return toast('Pick a date');
+      }else if(mode==='holiday'){
+        cadence='holiday';
+      }
+      const {data,error}=await sb.from('chores').insert({family_id:familyId,profile_id:focusKid.id,emoji:$('#cEmo').value.trim()||'⭐',name:nm,points:p,cadence,schedule_mode,weekdays,occurs_on,requires_photo:$('#cPhoto').checked}).select().single();
       if(error)return toast('Could not add chore');
       chores.push(data);$('#modal').remove();openAdmin(focusKid);renderMain();toast('Chore added');
     };
