@@ -1125,7 +1125,7 @@ function renderWizChores(){
   app.innerHTML=`
     <div class="center" style="justify-content:flex-start;padding-top:28px">
       <div class="wizard">
-        <div class="steplab">Step 1 of 2 · Kid ${wizActiveKid+1}</div>
+        <div class="steplab">Step 1 of 3 · Kid ${wizActiveKid+1}</div>
         <h2>Here are starter chores</h2>
         <div class="sub">Tap a card to pick it. Basics are set to <b>Daily care</b> (no stars) for older kids — tap the badge to switch whether a task earns stars.</div>
         <div class="agepills" id="agePills">
@@ -1194,7 +1194,7 @@ function renderWizKidDetails(){
   app.innerHTML=`
     <div class="center" style="justify-content:flex-start;padding-top:28px">
       <div class="wizard">
-        <div class="steplab">Step 2 of 2 · Kid ${wizActiveKid+1}</div>
+        <div class="steplab">Step 2 of 3 · Kid ${wizActiveKid+1}</div>
         <h2>Who is this for?</h2>
         <div class="sub">${kid.chores.length} chore${kid.chores.length===1?'':'s'} picked. Just a name to finish.</div>
         <div class="miniform three">
@@ -1208,44 +1208,34 @@ function renderWizKidDetails(){
         </div>
         <div class="wizrow">
           <button class="ghostbtn" id="wizBack2">Back</button>
-          <button class="bigbtn" id="wizNext2">Continue</button>
+          <button class="bigbtn" id="wizNext2">Continue to sign up</button>
         </div>
+        <button class="linkbtn" id="addAnother" style="margin-top:8px">＋ Add another child</button>
         <div style="margin-top:10px">${onboard.kids.map((kk,i)=>kk.name?`<span class="kidpill">${kk.emoji} ${esc(kk.name)}</span>`:'').join('')}</div>
       </div>
     </div>`;
   $('#kWantsPin').onchange=e=>{kid.wantsPin=e.target.checked;$('#kPinWrap').style.display=kid.wantsPin?'':'none';};
   $('#wizBack2').onclick=renderWizChores;
-  $('#wizNext2').onclick=async()=>{
+  // Save this kid's name/emoji/age/PIN; returns false (with a toast) if invalid.
+  const saveKid=async()=>{
     const name=$('#kName').value.trim();
-    if(!name)return toast("Add the child's name");
+    if(!name){toast("Add the child's name");return false;}
     kid.name=name;
     kid.emoji=$('#kEmoji').value.trim()||'🦄';
     kid.age=parseInt($('#kAge').value,10)||kid.age;
     kid.bandKey=bandForAge(kid.age).key;
     if(kid.wantsPin){
       const pin=$('#kPin').value.trim();
-      if(pin && pin.length!==4)return toast('Kid PIN must be 4 digits (or untick to skip)');
+      if(pin && pin.length!==4){toast('Kid PIN must be 4 digits (or untick to skip)');return false;}
       if(pin){kid.pinSalt=genSalt();kid.pinHash=await hashPin(pin,kid.pinSalt);}else{kid.pinHash=null;kid.pinSalt=null;}
     }else{kid.pinHash=null;kid.pinSalt=null;}
-    renderWizAddMore();
+    return true;
   };
-}
-
-function renderWizAddMore(){
-  app.innerHTML=`
-    <div class="center" style="justify-content:flex-start;padding-top:36px">
-      <div class="wizard" style="text-align:center">
-        <h2>Got more kids?</h2>
-        <div class="sub" style="text-align:center">You can always add or edit kids later in Parent settings.</div>
-        <div style="margin:8px 0 4px">${onboard.kids.map(k=>`<span class="kidpill">${k.emoji} ${esc(k.name)}</span>`).join('')}</div>
-        <div class="wizrow">
-          <button class="ghostbtn" id="addKid">＋ Add another child</button>
-          <button class="bigbtn" id="toParent">Done — next</button>
-        </div>
-      </div>
-    </div>`;
-  $('#addKid').onclick=()=>{onboard.kids.push(blankKid());wizActiveKid=onboard.kids.length-1;renderWizChores();};
-  $('#toParent').onclick=renderWizParent;
+  $('#wizNext2').onclick=async()=>{ if(await saveKid())renderWizParent(); };
+  $('#addAnother').onclick=async()=>{
+    if(!await saveKid())return;
+    onboard.kids.push(blankKid());wizActiveKid=onboard.kids.length-1;renderWizChores();
+  };
 }
 
 // Final step: create the parent account. This is where sign-up actually happens.
@@ -1253,7 +1243,7 @@ function renderWizParent(){
   app.innerHTML=`
     <div class="center" style="justify-content:flex-start;padding-top:28px">
       <div class="wizard">
-        <div class="steplab">Last step</div>
+        <div class="steplab">Step 3 of 3</div>
         <h2>Save your board</h2>
         <div class="sub">Create your parent account. You'll log in with this on any device.</div>
         <div class="authcard" style="max-width:none">
@@ -1274,7 +1264,7 @@ function renderWizParent(){
         <button class="linkbtn" id="wizBack3">← Back</button>
       </div>
     </div>`;
-  $('#wizBack3').onclick=renderWizAddMore;
+  $('#wizBack3').onclick=renderWizKidDetails;
   const pw=$('#pPass');
   pw.oninput=()=>{
     const r=pwStrength(pw.value);
