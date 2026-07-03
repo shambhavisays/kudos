@@ -1664,11 +1664,17 @@ function canClaim(r,k){
 }
 
 // Weekly recap strip — pure read of this week's already-loaded completions.
+// Uses the same core (non-stretch) basis as the hero "This Week" bar, and caps
+// the headline star total at the weekly goal so the two never disagree. The
+// sparkline/best-day still use real daily totals so the daily shape is honest.
 function recapHtml(k,accent){
-  const perDay=weekDates.map(d=>weekCompletions.filter(cm=>cm.profile_id===k.id && cm.completed_on===d).reduce((s,cm)=>s+cm.points,0));
-  const weekStars=perDay.reduce((a,b)=>a+b,0);
+  const isStretch=cm=>{const c=chores.find(x=>x.id===cm.chore_id);return c&&c.category==='stretch';};
+  const perDay=weekDates.map(d=>weekCompletions.filter(cm=>cm.profile_id===k.id && cm.completed_on===d && !isStretch(cm)).reduce((s,cm)=>s+cm.points,0));
+  const weekGoal=(k.daily_goal||0)*5;
+  const coreTotal=perDay.reduce((a,b)=>a+b,0);
+  const weekStars=weekGoal?Math.min(coreTotal,weekGoal):coreTotal;   // matches the hero bar
   const choresDone=weekCompletions.filter(cm=>cm.profile_id===k.id && cm.points>=0).length;
-  if(weekStars<=0 && choresDone===0)return '';   // no sad empty card on a fresh week
+  if(coreTotal<=0 && choresDone===0)return '';   // no sad empty card on a fresh week
   const maxDay=Math.max(1,...perDay.map(p=>Math.max(0,p)));
   const labels=['M','T','W','T','F'];
   let bestIdx=-1,bestVal=0;perDay.forEach((p,i)=>{if(p>bestVal){bestVal=p;bestIdx=i;}});
