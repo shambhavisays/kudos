@@ -2257,6 +2257,9 @@ async function openAdmin(k,opts={}){
     let c=parseInt($('#rCost').value,10);if(isNaN(c)||c<0)c=earn?0:50;
     const ownerSel=$('#rOwner').value;
     const toOneKid=ownerSel!=='both';
+    // Block duplicate reward names within the family (case-insensitive).
+    if(rewards.some(r=>!r.archived && !r.pending && (r.name||'').trim().toLowerCase()===nm.toLowerCase()))
+      return toast('A reward with that name already exists');
     const {data,error}=await sb.from('rewards').insert({
       family_id:familyId,
       owner:toOneKid?'profile':'both',
