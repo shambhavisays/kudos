@@ -1105,7 +1105,7 @@ function startOnboarding(){
   document.body.classList.remove('landing');
   onboard={familyName:'',kids:[blankKid()],parent:null};
   wizActiveKid=0;
-  renderWizChores();
+  renderWizKidDetails();
 }
 function blankKid(){
   const b=bandByKey('7-9');
@@ -1113,7 +1113,57 @@ function blankKid(){
           chores:b.chores.map(c=>({...c}))};
 }
 
-// Step 1 + 2 combined: starter chores shown immediately, refine by age inline.
+// Step 1: who is this — avatar, name, age, optional PIN. (Chores come next.)
+function renderWizKidDetails(){
+  const kid=onboard.kids[wizActiveKid];
+  app.innerHTML=`
+    <div class="center" style="justify-content:flex-start;padding-top:28px">
+      <div class="wizard">
+        <div class="steplab">Step 1 of 3${onboard.kids.length>1?` · Kid ${wizActiveKid+1}`:''}</div>
+        <h2>Who is this?</h2>
+        <div class="sub">Give your child a name and a face — you'll pick their chores next.</div>
+        <div class="miniform three">
+          <input id="kEmoji" class="emoji-in" data-kind="person" readonly maxlength="2" value="${esc(kid.emoji)}" placeholder="🦄">
+          <input id="kName" value="${esc(kid.name)}" placeholder="Child's name">
+          <input id="kAge" type="number" min="1" max="18" value="${kid.age}" placeholder="Age">
+        </div>
+        <label class="toggle"><input type="checkbox" id="kWantsPin" ${kid.wantsPin?'checked':''}> Protect this board with a 4-digit PIN (good for older kids on a shared device)</label>
+        <div id="kPinWrap" style="${kid.wantsPin?'':'display:none'}">
+          <div class="miniform"><span></span><input id="kPin" inputmode="numeric" maxlength="4" placeholder="4-digit PIN" value=""></div>
+        </div>
+        <div class="wizrow">
+          <button class="ghostbtn" id="wizBack1">Back</button>
+          <button class="bigbtn" id="wizNext1">Next: pick chores</button>
+        </div>
+        ${onboard.kids.length>1?`<div style="margin-top:10px">${onboard.kids.map(kk=>kk.name?`<span class="kidpill">${kk.emoji} ${esc(kk.name)}</span>`:'').join('')}</div>`:''}
+      </div>
+    </div>`;
+  $('#kWantsPin').onchange=e=>{kid.wantsPin=e.target.checked;$('#kPinWrap').style.display=kid.wantsPin?'':'none';};
+  // Back: for a 2nd+ kid, return to the previous kid's chores; for the first, the landing.
+  $('#wizBack1').onclick=()=>{ if(wizActiveKid>0){wizActiveKid--;renderWizChores();} else renderLanding(); };
+  $('#wizNext1').onclick=async()=>{
+    const name=$('#kName').value.trim();
+    if(!name)return toast("Add the child's name");
+    kid.name=name;
+    kid.emoji=$('#kEmoji').value.trim()||'🦄';
+    kid.age=parseInt($('#kAge').value,10)||kid.age;
+    // Sync the starter chores to the age band (keep valid picks, add band defaults).
+    const b=bandForAge(kid.age);
+    kid.bandKey=b.key;kid.daily_goal=DEFAULT_GOAL_BY_BAND[b.key];
+    const bandPts=new Map(b.chores.map(c=>[c.name,c.points]));
+    const keep=kid.chores.filter(c=>bandPts.has(c.name)).map(c=>({...c,points:bandPts.get(c.name)}));
+    const have=new Set(keep.map(c=>c.name));
+    kid.chores=[...keep,...b.chores.filter(c=>!have.has(c.name))];
+    if(kid.wantsPin){
+      const pin=$('#kPin').value.trim();
+      if(pin && pin.length!==4)return toast('Kid PIN must be 4 digits (or untick to skip)');
+      if(pin){kid.pinSalt=genSalt();kid.pinHash=await hashPin(pin,kid.pinSalt);}else{kid.pinHash=null;kid.pinSalt=null;}
+    }else{kid.pinHash=null;kid.pinSalt=null;}
+    renderWizChores();
+  };
+}
+
+// Step 2: pick this kid's chores — age-tuned, and personalised now the name is set.
 function renderWizChores(){
   const kid=onboard.kids[wizActiveKid];
   const band=bandForAge(kid.age);
@@ -1125,8 +1175,8 @@ function renderWizChores(){
   app.innerHTML=`
     <div class="center" style="justify-content:flex-start;padding-top:28px">
       <div class="wizard">
-        <div class="steplab">Step 1 of 3 · Kid ${wizActiveKid+1}</div>
-        <h2>Here are starter chores</h2>
+        <div class="steplab">Step 2 of 3${onboard.kids.length>1?` · Kid ${wizActiveKid+1}`:''}</div>
+        <h2>Pick ${kid.name?esc(kid.name)+"'s":'their'} chores</h2>
         <div class="sub">Tap a card to pick it. Basics are set to <b>Daily care</b> (no stars) for older kids — tap the badge to switch whether a task earns stars.</div>
         <div class="agepills" id="agePills">
           ${BANDS.map(b=>`<button class="agepill ${b.key===band.key?'on':''}" data-band="${b.key}">${b.label} yrs</button>`).join('')}
@@ -1144,8 +1194,10 @@ function renderWizChores(){
         </div>
         <div class="wizrow">
           <button class="ghostbtn" id="wizBack">Back</button>
-          <button class="bigbtn" id="wizNext">Next: name & PIN</button>
+          <button class="bigbtn" id="wizNext">Continue to sign up</button>
         </div>
+        <button class="linkbtn" id="addAnother" style="margin-top:8px">＋ Add another child</button>
+        ${onboard.kids.length>1?`<div style="margin-top:10px">${onboard.kids.map(kk=>kk.name?`<span class="kidpill">${kk.emoji} ${esc(kk.name)}</span>`:'').join('')}</div>`:''}
       </div>
     </div>`;
   document.querySelectorAll('#agePills .agepill').forEach(el=>el.onclick=()=>{
@@ -1181,60 +1233,14 @@ function renderWizChores(){
     else{const pc=pool.find(x=>x.name===nm);cur.points=(pc&&pc.points>0)?pc.points:5;}
     renderWizChores();
   });
-  $('#wizBack').onclick=()=>{ if(wizActiveKid>0){wizActiveKid--;renderWizChores();} else renderLanding(); };
+  $('#wizBack').onclick=renderWizKidDetails;   // back to this kid's name step
   $('#wizNext').onclick=()=>{
     if(!kid.chores.length)return toast('Pick at least one chore');
-    renderWizKidDetails();
+    renderWizParent();
   };
-}
-
-// Step 2: name, emoji, optional PIN for this kid.
-function renderWizKidDetails(){
-  const kid=onboard.kids[wizActiveKid];
-  app.innerHTML=`
-    <div class="center" style="justify-content:flex-start;padding-top:28px">
-      <div class="wizard">
-        <div class="steplab">Step 2 of 3 · Kid ${wizActiveKid+1}</div>
-        <h2>Who is this for?</h2>
-        <div class="sub">${kid.chores.length} chore${kid.chores.length===1?'':'s'} picked. Just a name to finish.</div>
-        <div class="miniform three">
-          <input id="kEmoji" class="emoji-in" data-kind="person" readonly maxlength="2" value="${esc(kid.emoji)}" placeholder="🦄">
-          <input id="kName" value="${esc(kid.name)}" placeholder="Child's name">
-          <input id="kAge" type="number" min="1" max="18" value="${kid.age}" placeholder="Age">
-        </div>
-        <label class="toggle"><input type="checkbox" id="kWantsPin" ${kid.wantsPin?'checked':''}> Protect this board with a 4-digit PIN (good for older kids on a shared device)</label>
-        <div id="kPinWrap" style="${kid.wantsPin?'':'display:none'}">
-          <div class="miniform"><span></span><input id="kPin" inputmode="numeric" maxlength="4" placeholder="4-digit PIN" value=""></div>
-        </div>
-        <div class="wizrow">
-          <button class="ghostbtn" id="wizBack2">Back</button>
-          <button class="bigbtn" id="wizNext2">Continue to sign up</button>
-        </div>
-        <button class="linkbtn" id="addAnother" style="margin-top:8px">＋ Add another child</button>
-        <div style="margin-top:10px">${onboard.kids.map((kk,i)=>kk.name?`<span class="kidpill">${kk.emoji} ${esc(kk.name)}</span>`:'').join('')}</div>
-      </div>
-    </div>`;
-  $('#kWantsPin').onchange=e=>{kid.wantsPin=e.target.checked;$('#kPinWrap').style.display=kid.wantsPin?'':'none';};
-  $('#wizBack2').onclick=renderWizChores;
-  // Save this kid's name/emoji/age/PIN; returns false (with a toast) if invalid.
-  const saveKid=async()=>{
-    const name=$('#kName').value.trim();
-    if(!name){toast("Add the child's name");return false;}
-    kid.name=name;
-    kid.emoji=$('#kEmoji').value.trim()||'🦄';
-    kid.age=parseInt($('#kAge').value,10)||kid.age;
-    kid.bandKey=bandForAge(kid.age).key;
-    if(kid.wantsPin){
-      const pin=$('#kPin').value.trim();
-      if(pin && pin.length!==4){toast('Kid PIN must be 4 digits (or untick to skip)');return false;}
-      if(pin){kid.pinSalt=genSalt();kid.pinHash=await hashPin(pin,kid.pinSalt);}else{kid.pinHash=null;kid.pinSalt=null;}
-    }else{kid.pinHash=null;kid.pinSalt=null;}
-    return true;
-  };
-  $('#wizNext2').onclick=async()=>{ if(await saveKid())renderWizParent(); };
-  $('#addAnother').onclick=async()=>{
-    if(!await saveKid())return;
-    onboard.kids.push(blankKid());wizActiveKid=onboard.kids.length-1;renderWizChores();
+  $('#addAnother').onclick=()=>{
+    if(!kid.chores.length)return toast('Pick at least one chore');
+    onboard.kids.push(blankKid());wizActiveKid=onboard.kids.length-1;renderWizKidDetails();
   };
 }
 
@@ -1264,7 +1270,7 @@ function renderWizParent(){
         <button class="linkbtn" id="wizBack3">← Back</button>
       </div>
     </div>`;
-  $('#wizBack3').onclick=renderWizKidDetails;
+  $('#wizBack3').onclick=renderWizChores;
   const pw=$('#pPass');
   pw.oninput=()=>{
     const r=pwStrength(pw.value);
