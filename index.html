@@ -560,6 +560,7 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 let currentUser = null;   // Supabase Auth user (the parent who owns the family)
 let familyId = null;
 let family = null;   // full family row (timezone, country, name, …)
+let _editDayDirty = false;   // a past day was edited → refresh the board on close
 let me = null;
 let profiles = [];
 let chores = [];
@@ -2035,6 +2036,80 @@ async function proposeReward(k){
   toast('Sent to parent for approval! 💌');
 }
 
+// ── Parent "Edit a day": backfill a past day's completions for a kid. ─────────
+// Shows the chores scheduled for the chosen date (plus any already logged that
+// day), with a checkbox for done/not-done. Ticking inserts a completion and
+// adds its points; unticking deletes it and subtracts its points.
+async function renderEditDay(){
+  const edKid=$('#edKid'),edDate=$('#edDate'),list=$('#edList'),edTotal=$('#edTotal');
+  if(!edKid||!edDate||!list)return;
+  const kidId=edKid.value,dateStr=edDate.value;
+  const kid=profiles.find(p=>p.id===kidId);
+  if(edTotal&&kid)edTotal.textContent=kid.total_points;
+  if(!kidId||!dateStr){list.innerHTML='<div class="empty">Pick a child and date.</div>';return;}
+  list.innerHTML='<div class="empty">Loading…</div>';
+  const {y,m,d}=ymdParts(dateStr);
+  const dow=dowOfYmd(y,m,d);
+  const {data:comps}=await sb.from('completions').select('id,chore_id,points').eq('profile_id',kidId).eq('completed_on',dateStr);
+  const doneMap=new Map((comps||[]).map(c=>[c.chore_id,c]));
+  // Chores scheduled that date (holiday cadence evaluated for the target date).
+  const scheduled=chores.filter(c=>{
+    if(c.profile_id!==kidId||c.pending)return false;
+    if(c.cadence==='holiday')return familyIsUS()&&isUSFederalHoliday(y,m,d);
+    return choreAppearsToday(c,dow,dateStr);
+  });
+  const schedIds=new Set(scheduled.map(c=>c.id));
+  // Any chore already logged that day but not in the scheduled set (e.g. archived,
+  // or a one-off on another day) — pull its name so it can still be un-ticked.
+  const otherDone=(comps||[]).map(c=>c.chore_id).filter(id=>!schedIds.has(id));
+  const inMem=otherDone.map(id=>chores.find(c=>c.id===id)).filter(Boolean);
+  const missingIds=otherDone.filter(id=>!chores.some(c=>c.id===id));
+  let fetched=[];
+  if(missingIds.length){
+    const {data}=await sb.from('chores').select('id,name,emoji,points').in('id',missingIds);
+    fetched=data||[];
+  }
+  const seen=new Set();
+  const rows=[...scheduled,...inMem,...fetched].filter(c=>{if(seen.has(c.id))return false;seen.add(c.id);return true;});
+  if(!rows.length){list.innerHTML='<div class="empty">No chores for that day.</div>';return;}
+  list.innerHTML=rows.map(c=>{
+    const done=doneMap.has(c.id),pts=c.points||0;
+    return `<label class="item" style="cursor:pointer;align-items:center">
+      <input type="checkbox" class="edChk" data-chore="${c.id}" data-pts="${pts}" ${done?'checked':''} style="width:20px;height:20px;flex:none">
+      <span class="e">${c.emoji||'⭐'}</span>
+      <span class="t">${esc(c.name)}<small>${pts>0?'+'+pts+' ⭐':'Daily care · no stars'}</small></span></label>`;
+  }).join('');
+  document.querySelectorAll('.edChk').forEach(el=>el.onchange=()=>toggleEditDay(kidId,el.dataset.chore,dateStr,el.checked,+el.dataset.pts,el));
+}
+async function toggleEditDay(kidId,choreId,dateStr,checked,pts,el){
+  const kid=profiles.find(p=>p.id===kidId);
+  if(!kid){toast('Child not found');return;}
+  if(el)el.disabled=true;
+  try{
+    if(checked){
+      const {error}=await sb.from('completions').insert({family_id:familyId,profile_id:kidId,chore_id:choreId,points:pts,completed_on:dateStr});
+      if(error){toast('Could not save — try again');if(el)el.checked=false;return;}
+      const nt=Math.max(0,(kid.total_points||0)+pts);
+      await sb.from('profiles').update({total_points:nt}).eq('id',kidId);
+      kid.total_points=nt;
+      toast(pts>0?`+${pts} ⭐ · marked done`:'Marked done');
+    }else{
+      // Subtract the points actually recorded on that completion (not the chore's
+      // current points, in case they changed since).
+      const {data:exRows}=await sb.from('completions').select('points').eq('profile_id',kidId).eq('chore_id',choreId).eq('completed_on',dateStr);
+      const usePts=(exRows&&exRows[0])?exRows[0].points:pts;
+      const {error}=await sb.from('completions').delete().eq('profile_id',kidId).eq('chore_id',choreId).eq('completed_on',dateStr);
+      if(error){toast('Could not save — try again');if(el)el.checked=true;return;}
+      const nt=Math.max(0,(kid.total_points||0)-usePts);
+      await sb.from('profiles').update({total_points:nt}).eq('id',kidId);
+      kid.total_points=nt;
+      toast(usePts>0?`−${usePts} ⭐ · marked not done`:'Marked not done');
+    }
+    _editDayDirty=true;
+    const edTotal=$('#edTotal');if(edTotal)edTotal.textContent=kid.total_points;
+  }finally{ if(el)el.disabled=false; }
+}
+
 async function openAdmin(k,opts={}){
   // k may be null/parent when there are no kids yet — guard the kid-scoped bits.
   const kids=profiles.filter(p=>p.role==='kid');
@@ -2054,6 +2129,8 @@ async function openAdmin(k,opts={}){
   const kidLabel=focusKid?esc(focusKid.name):'—';
   const pendingRewards=rewards.filter(r=>r.pending); // family-wide, any kid
   const approvalCount=pendingChores.length+pendingRewards.length;
+  // Earliest editable day = when the family/account was created.
+  const signupDate=(family&&family.created_at)?localDateStr(new Date(family.created_at)):'2020-01-01';
 
   app.insertAdjacentHTML('beforeend',`
     <div class="modal open" id="modal">
@@ -2061,6 +2138,7 @@ async function openAdmin(k,opts={}){
         <h3><span>⚙️ Parent settings</span><button class="x" id="closeAdmin">✕</button></h3>
         <div class="tabbar">
           <button data-tab="chores" class="on">Chores</button>
+          <button data-tab="editday">Edit a day</button>
           <button data-tab="rewards">Rewards</button>
           <button data-tab="family">Family</button>
           <button data-tab="approvals">Approvals${approvalCount?' ('+approvalCount+')':''}</button>
@@ -2138,13 +2216,24 @@ async function openAdmin(k,opts={}){
           <div class="addform"><input id="fpEmo" class="emoji-in" data-kind="person" readonly placeholder="🧑" maxlength="2"><input id="fpName" placeholder="Name"><input id="fpPin" placeholder="PIN (6)" inputmode="numeric" maxlength="6"></div>
           <button class="addbtn" id="addParentBtn">＋ Add parent</button>
         </div>
+        <div class="panel" id="panel-editday">
+          ${kids.length?`
+          <div class="note">Fix a past day: pick a child and a date, then tick what was actually done. Stars update automatically — unticking a task the kid over-claimed removes its points; ticking one they forgot adds them.</div>
+          <div class="rewardopts">
+            <select id="edKid">${kids.map(k=>`<option value="${k.id}">${esc(k.name)}</option>`).join('')}</select>
+            <input type="date" id="edDate" min="${signupDate}" max="${today()}" value="${today()}">
+          </div>
+          <div class="note" style="margin:6px 4px">Current stars: <b id="edTotal" style="color:var(--accent-deep)">—</b></div>
+          <div id="edList"><div class="empty">Pick a child and date.</div></div>`
+          :'<div class="empty">Add a child in the Family tab first.</div>'}
+        </div>
         <div class="panel" id="panel-pins">
           <div class="note">Change anyone's PIN. Parents use 6 digits, kids 4. Leave blank + Save to remove a kid's PIN.</div>
           <div id="pinList"></div>
         </div>
       </div>
     </div>`);
-  $('#closeAdmin').onclick=()=>$('#modal').remove();
+  $('#closeAdmin').onclick=()=>{ $('#modal').remove(); if(_editDayDirty){_editDayDirty=false;loadKidData().then(renderMain);} };
   if(focusKid)$('#resetTodayBtn').onclick=()=>resetToday(focusKid);
   document.querySelectorAll('.tabbar button').forEach(b=>b.onclick=()=>{
     document.querySelectorAll('.tabbar button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
@@ -2156,6 +2245,15 @@ async function openAdmin(k,opts={}){
   if(opts.focusAddForm && focusKid){
     document.getElementById('cName')?.scrollIntoView({block:'center'});
     document.getElementById('cName')?.focus();
+  }
+
+  // "Edit a day" tab: parent backfill of a past day's chore completions.
+  if(kids.length){
+    const edKid=$('#edKid');
+    if(focusKid)edKid.value=focusKid.id;
+    edKid.onchange=renderEditDay;
+    $('#edDate').onchange=renderEditDay;
+    renderEditDay();
   }
 
   if(focusKid){
