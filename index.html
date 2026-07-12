@@ -2081,18 +2081,32 @@ async function renderEditDay(){
   }).join('');
   document.querySelectorAll('.edChk').forEach(el=>el.onchange=()=>toggleEditDay(kidId,el.dataset.chore,dateStr,el.checked,+el.dataset.pts,el));
 }
+// Recompute a kid's streak from scratch: the longest unbroken run of days with
+// at least one completion, ending at their most recent completion date. Matches
+// the app's live rule (a one-day gap resets the streak). Returns the value and
+// the last active date without writing.
+async function computeStreak(kidId){
+  const {data}=await sb.from('completions').select('completed_on').eq('profile_id',kidId).order('completed_on',{ascending:false});
+  const dates=[...new Set((data||[]).map(r=>r.completed_on))];   // distinct, newest first
+  if(!dates.length)return {streak:0,lastActive:null};
+  let streak=1,cur=dates[0];
+  for(let i=1;i<dates.length;i++){
+    const {y,m,d}=ymdParts(cur);
+    const prev=addDaysYmd(y,m,d,-1);
+    if(dates[i]===ymdString(prev.y,prev.m,prev.d)){streak++;cur=dates[i];}else break;
+  }
+  return {streak,lastActive:dates[0]};
+}
 async function toggleEditDay(kidId,choreId,dateStr,checked,pts,el){
   const kid=profiles.find(p=>p.id===kidId);
   if(!kid){toast('Child not found');return;}
   if(el)el.disabled=true;
   try{
+    let delta=0;
     if(checked){
       const {error}=await sb.from('completions').insert({family_id:familyId,profile_id:kidId,chore_id:choreId,points:pts,completed_on:dateStr});
       if(error){toast('Could not save — try again');if(el)el.checked=false;return;}
-      const nt=Math.max(0,(kid.total_points||0)+pts);
-      await sb.from('profiles').update({total_points:nt}).eq('id',kidId);
-      kid.total_points=nt;
-      toast(pts>0?`+${pts} ⭐ · marked done`:'Marked done');
+      delta=pts;
     }else{
       // Subtract the points actually recorded on that completion (not the chore's
       // current points, in case they changed since).
@@ -2100,13 +2114,16 @@ async function toggleEditDay(kidId,choreId,dateStr,checked,pts,el){
       const usePts=(exRows&&exRows[0])?exRows[0].points:pts;
       const {error}=await sb.from('completions').delete().eq('profile_id',kidId).eq('chore_id',choreId).eq('completed_on',dateStr);
       if(error){toast('Could not save — try again');if(el)el.checked=true;return;}
-      const nt=Math.max(0,(kid.total_points||0)-usePts);
-      await sb.from('profiles').update({total_points:nt}).eq('id',kidId);
-      kid.total_points=nt;
-      toast(usePts>0?`−${usePts} ⭐ · marked not done`:'Marked not done');
+      delta=-usePts;
     }
+    // Points balance + a fresh streak from the real history, in one update.
+    const nt=Math.max(0,(kid.total_points||0)+delta);
+    const {streak,lastActive}=await computeStreak(kidId);
+    await sb.from('profiles').update({total_points:nt,streak,last_active_date:lastActive}).eq('id',kidId);
+    kid.total_points=nt;kid.streak=streak;kid.last_active_date=lastActive;
     _editDayDirty=true;
     const edTotal=$('#edTotal');if(edTotal)edTotal.textContent=kid.total_points;
+    toast(delta>0?`+${delta} ⭐ · done · 🔥 ${streak}`:(delta<0?`−${Math.abs(delta)} ⭐ · not done · 🔥 ${streak}`:`Updated · 🔥 ${streak}`));
   }finally{ if(el)el.disabled=false; }
 }
 
