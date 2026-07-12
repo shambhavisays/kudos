@@ -180,6 +180,10 @@
   .sheet{background:#fff;width:100%;max-width:720px;max-height:88vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:18px 16px 30px}
   .sheet h3{font-family:'Fredoka';font-size:19px;margin:4px 4px 14px;display:flex;align-items:center;justify-content:space-between}
   .sheet h3 .x{border:none;background:var(--bg);border-radius:10px;width:32px;height:32px;font-size:16px;cursor:pointer}
+  .legalbody{font-size:13px;line-height:1.5;color:var(--ink);padding:0 4px}
+  .legalbody h4{font-family:'Fredoka';font-weight:600;font-size:15px;margin:14px 0 4px;color:var(--ink)}
+  .legalbody p{margin:0 0 8px;color:var(--muted)}
+  .legalbody b{color:var(--ink)}
   .tabbar{display:flex;gap:6px;background:var(--bg);padding:5px;border-radius:13px;margin:0 4px 14px;flex-wrap:wrap}
   .tabbar button{flex:1;border:none;background:transparent;padding:9px;border-radius:9px;font-family:'Fredoka';font-weight:600;font-size:13px;cursor:pointer;color:var(--muted);min-width:72px}
   .tabbar button.on{background:#fff;color:var(--ink)}
@@ -962,7 +966,7 @@ function renderLanding(){
         <h2 style="margin:0 0 14px">Why it's <span class="hlw"><span>free</span></span></h2>
         <p class="why-body">Kudos has no ads and no trackers. It's a craft project built by a PM and mom of two who wanted a chore app that respects families and their data. Your family's information stays private to your account, never sold, never shared.</p>
         <div class="why-chips"><span class="why-chip"><span class="d"></span>No ads</span><span class="why-chip"><span class="d"></span>No trackers</span><span class="why-chip"><span class="d"></span>Private by design</span></div>
-        <a class="why-link" href="https://github.com/shambhavisays/kudos/blob/main/PRIVACY.md" target="_blank" rel="noopener">Read the privacy note →</a>
+        <a class="why-link" data-legal="privacy" style="cursor:pointer">Read the privacy note →</a>
       </div>
     </section>
 
@@ -991,7 +995,8 @@ function renderLanding(){
 
     <footer class="lp-foot">
       <div class="links">
-        <a href="https://github.com/shambhavisays/kudos/blob/main/PRIVACY.md" target="_blank" rel="noopener">Privacy</a>
+        <a data-legal="terms" style="cursor:pointer">Terms</a>
+        <a data-legal="privacy" style="cursor:pointer">Privacy</a>
         <a href="https://github.com/shambhavisays/kudos" target="_blank" rel="noopener">GitHub</a>
         <a id="fbLink">Share feedback</a>
       </div>
@@ -1250,6 +1255,71 @@ function renderWizChores(){
   };
 }
 
+// ── Legal: Terms of Service + Privacy Policy (in-app pages). DRAFT — reviewed
+// by counsel before public launch. [[STATE]] and [[CONTACT EMAIL]] are
+// placeholders to fill in before sharing.
+const LEGAL_TERMS=`
+<p><b>Last updated: July 2026.</b></p>
+<p>Kudos ("the Service") is operated by <b>AI Product Leverage LLC</b> ("we", "us", "our"). By creating an account or using the Service, you agree to these Terms of Service. If you do not agree, do not use the Service.</p>
+<h4>1. Who may use Kudos</h4>
+<p>You must be at least 18 and the parent or legal guardian of any child whose information you add. By using the Service you confirm you have authority to provide that information and to consent to its use as described in our Privacy Policy.</p>
+<h4>2. Your account</h4>
+<p>One account is intended per household. You are responsible for keeping your login and Parent PIN confidential and for all activity under your account, and for telling us promptly of any unauthorised use.</p>
+<h4>3. Acceptable use</h4>
+<p>Kudos is for personal, family use. You agree not to misuse the Service, attempt to access other families' data, disrupt it, or use it unlawfully.</p>
+<h4>4. Your content</h4>
+<p>You keep ownership of the information you enter (children's names, chores, rewards, notes, and any photos). You grant us a limited licence to store and process it solely to operate the Service for you. We do not sell your data or use it for advertising.</p>
+<h4>5. Children's information</h4>
+<p>Kudos is designed to be set up and managed by a parent or guardian. You provide any child's information and consent to its processing as described in the Privacy Policy. You may review, correct, or delete it at any time; deleting a profile or your account removes the associated data.</p>
+<h4>6. Provided "as is"</h4>
+<p>Kudos is provided free and "as is", without warranties of any kind. We do not guarantee it will be uninterrupted, error-free, or that data will never be lost. Keep your own records of anything important.</p>
+<h4>7. Limitation of liability</h4>
+<p>To the fullest extent permitted by law, AI Product Leverage LLC will not be liable for any indirect, incidental, or consequential damages, or loss of data, arising from your use of the Service. Our total liability will not exceed the amount you paid us (which, for a free service, is zero).</p>
+<h4>8. Termination</h4>
+<p>You may stop using Kudos and delete your account at any time. We may suspend or end access if these Terms are breached or if we discontinue the Service.</p>
+<h4>9. Changes</h4>
+<p>We may update these Terms. Material changes are shown by the "last updated" date; continued use after a change means you accept it.</p>
+<h4>10. Governing law</h4>
+<p>These Terms are governed by the laws of the State of <b>[[STATE]]</b>, USA, without regard to its conflict-of-law rules.</p>
+<h4>11. Contact</h4>
+<p>Questions? Contact AI Product Leverage LLC at <b>[[CONTACT EMAIL]]</b>.</p>`;
+
+const LEGAL_PRIVACY=`
+<p><b>Last updated: July 2026.</b></p>
+<p>This Privacy Policy explains how <b>AI Product Leverage LLC</b> ("we") handles information in Kudos. We built Kudos to respect families: no ads, no third-party trackers, and we never sell your data.</p>
+<h4>Information we collect</h4>
+<p><b>Parent account:</b> your email (for sign-in) and, with Google sign-in, the basic profile Google shares. <b>Child profiles you create:</b> first name or nickname, age, emoji/colour, and an optional PIN (stored only as a salted hash). <b>Activity:</b> the chores, rewards, points, notes, and optional proof photos you and your children record. We ask only for what the Service needs.</p>
+<h4>How it is collected</h4>
+<p>All of it is entered by you, the parent, or by a child tapping their own board on your device. Children do not create accounts and are not asked for contact information.</p>
+<h4>Children's privacy (COPPA)</h4>
+<p>Kudos is intended to be set up and controlled by a parent or legal guardian, who provides and consents to any child's information. We collect the minimum needed to run the chore board, never use it for advertising, and never sell or share it for others' marketing. You can review, correct, or delete your child's information at any time in Parent settings; deleting a profile or your account deletes the associated data. To make a request, contact us at <b>[[CONTACT EMAIL]]</b>.</p>
+<h4>How we use information</h4>
+<p>Only to provide the Service — showing each child's board, tracking stars and streaks, and letting you manage the family. We do not build advertising profiles.</p>
+<h4>Where it is stored</h4>
+<p>With our hosting providers (Supabase for the database and file storage, Vercel for the web app, Google for optional sign-in). Each family's data is isolated by row-level security so no other family can see it, and proof photos live in a private storage bucket accessible only to your account.</p>
+<h4>Data retention</h4>
+<p>We keep detailed daily activity for about 13 months, then roll older activity into small monthly summaries. You can delete data sooner by removing profiles or your account.</p>
+<h4>Your choices</h4>
+<p>You can access, correct, or delete your family's data at any time. Deleting your account permanently removes your family's information from active systems.</p>
+<h4>Changes</h4>
+<p>We may update this policy; the "last updated" date shows the latest version.</p>
+<h4>Contact</h4>
+<p>AI Product Leverage LLC — <b>[[CONTACT EMAIL]]</b>.</p>`;
+
+function openLegal(which){
+  const title=which==='terms'?'Terms of Service':'Privacy Policy';
+  const body=which==='terms'?LEGAL_TERMS:LEGAL_PRIVACY;
+  const wrap=document.createElement('div');
+  wrap.className='modal open';
+  wrap.style.zIndex='90';
+  wrap.innerHTML=`<div class="sheet"><h3><span>${title}</span><button class="x">✕</button></h3><div class="legalbody">${body}</div></div>`;
+  wrap.querySelector('.x').onclick=()=>wrap.remove();
+  wrap.onclick=e=>{if(e.target===wrap)wrap.remove();};
+  document.body.appendChild(wrap);
+}
+// Any element with data-legal="terms|privacy" opens the matching page.
+document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closest('[data-legal]');if(el){e.preventDefault();openLegal(el.dataset.legal);}});
+
 // Final step: create the parent account. This is where sign-up actually happens.
 function renderWizParent(){
   app.innerHTML=`
@@ -1263,6 +1333,7 @@ function renderWizParent(){
           <input id="pName" placeholder="e.g. Mom, Dad, Priya">
           <label>Parent PIN (6 digits) — locks Parent settings</label>
           <input id="pPin" inputmode="numeric" maxlength="6" placeholder="6-digit PIN">
+          <label class="toggle" style="margin:12px 0 2px;align-items:flex-start;font-size:12px;line-height:1.35;font-weight:700"><input type="checkbox" id="agreeTerms" style="margin-top:2px;flex:none;width:18px;height:18px"> <span>I'm the parent or legal guardian, 18 or older, and I agree to the <a data-legal="terms" style="color:var(--accent-deep);font-weight:800;text-decoration:underline;cursor:pointer">Terms</a> &amp; <a data-legal="privacy" style="color:var(--accent-deep);font-weight:800;text-decoration:underline;cursor:pointer">Privacy Policy</a>, and consent to entering my child's information.</span></label>
           <button class="gbtn" id="googleBtn" style="margin-top:12px">${GOOGLE_SVG}Sign up with Google</button>
           <div class="authdiv">or with email &amp; password</div>
           <label>Email</label>
@@ -1301,6 +1372,7 @@ function renderWizParent(){
     const pin=$('#pPin').value.trim();
     if(!name)return toast('Add your name first');
     if(pin.length!==6)return toast('Set a 6-digit Parent PIN first');
+    if(!$('#agreeTerms').checked)return toast('Please accept the Terms & Privacy to continue');
     await stashParent(name,pin);
     signInWithGoogle($('#googleBtn'));
   };
@@ -1314,6 +1386,7 @@ function renderWizParent(){
     if(!email||!pass)return toast('Email and password are required');
     if(pass.length<6)return toast('Password needs at least 6 characters');
     if(pin.length!==6)return toast('Parent PIN must be 6 digits');
+    if(!$('#agreeTerms').checked)return toast('Please accept the Terms & Privacy to continue');
 
     await stashParent(name,pin);
 
