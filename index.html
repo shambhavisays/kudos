@@ -729,6 +729,11 @@ function greeting(){
 // A little varied praise when a positive chore is completed.
 const CHEERS=['Nice one! 👏','You\'re on fire! 🔥','Superstar! 🌟','Boom — done! 💥','Way to go! 🎉','Crushing it! 💪','Love it! 💛','High five! ✋'];
 const pickCheer=()=>CHEERS[Math.floor(Math.random()*CHEERS.length)];
+// Gentle, non-shaming acknowledgements for a "slip" chore that loses stars.
+const OOPS=['Oops — {n} ⭐ off. Fresh start! 💛','−{n} ⭐. Tomorrow\'s a new day 🌱','Noted — {n} ⭐ off. You\'ve got this 💪','That\'s {n} ⭐ off. Shake it off 🌈'];
+const pickOops=(n)=>OOPS[Math.floor(Math.random()*OOPS.length)].replace('{n}',n);
+// A chore's sentiment from its points: 1 win, 0 daily-care, -1 slip.
+const choreSentiment=pts=>pts>0?1:(pts<0?-1:0);
 
 // Two kinds of starter reward:
 //  • earn=true → banks a credit each day the child finishes all their chores
@@ -1822,9 +1827,15 @@ function renderMain(){
   }
   document.querySelectorAll('.chore').forEach(el=>el.onclick=async()=>{
     const willComplete=!doneToday.has(el.dataset.c);
+    const chore=chores.find(x=>x.id===el.dataset.c);
+    const sent=choreSentiment(chore?chore.points:0);
     const rect=el.getBoundingClientRect();
     const ok=await toggleChore(k,el.dataset.c);
-    if(willComplete && ok)burst(rect.left+rect.width/2,rect.top+rect.height/2,['⭐','✨',k.emoji,'🎉']);
+    // Celebrate a win; a gentle sparkle for daily-care; nothing for a slip.
+    if(willComplete && ok){
+      if(sent>0)burst(rect.left+rect.width/2,rect.top+rect.height/2,['⭐','✨',k.emoji,'🎉']);
+      else if(sent===0)burst(rect.left+rect.width/2,rect.top+rect.height/2,['💙','✨'],6);
+    }
   });
 
   // Two clear reward categories, by how you earn them:
@@ -1940,6 +1951,8 @@ async function toggleChore(k,choreId){
     doneToday.delete(choreId);
     k.total_points=Math.max(0,k.total_points-c.points);
     weekCompletions=weekCompletions.filter(cm=>!(cm.chore_id===choreId && cm.completed_on===today()));
+    // Un-taking a slip gives the stars back; un-taking a win removes them.
+    toast(c.points<0?`Phew — ${Math.abs(c.points)} ⭐ back 💛`:'Un-done ↩️');
   }else{
     let note=null;
     if(c.prompts_note){
@@ -1957,7 +1970,7 @@ async function toggleChore(k,choreId){
     const {error}=await sb.from('completions').insert({family_id:familyId,profile_id:k.id,chore_id:choreId,points:c.points,completed_on:today(),note:note||null,photo_path:photoPath});
     if(error){toast('Could not save — try again');return false;}
     doneToday.add(choreId);
-    toast(c.points>0?pickCheer():'Nice — that\'s done ✓');
+    toast(c.points>0?pickCheer():(c.points<0?pickOops(Math.abs(c.points)):'Nice — that\'s done ✓'));
     k.total_points=Math.max(0,k.total_points+c.points);
     weekCompletions.push({profile_id:k.id,chore_id:choreId,points:c.points,completed_on:today(),note});
     // Any completed task keeps the streak alive — daily-care tasks count too, even
@@ -2077,7 +2090,7 @@ async function renderEditDay(){
     return `<label class="item" style="cursor:pointer;align-items:center">
       <input type="checkbox" class="edChk" data-chore="${c.id}" data-pts="${pts}" ${done?'checked':''} style="width:20px;height:20px;flex:none">
       <span class="e">${c.emoji||'⭐'}</span>
-      <span class="t">${esc(c.name)}<small>${pts>0?'+'+pts+' ⭐':'Daily care · no stars'}</small></span></label>`;
+      <span class="t">${esc(c.name)}<small>${pts>0?'+'+pts+' ⭐':(pts<0?pts+' ⭐ · slip':'Daily care · no stars')}</small></span></label>`;
   }).join('');
   document.querySelectorAll('.edChk').forEach(el=>el.onchange=()=>toggleEditDay(kidId,el.dataset.chore,dateStr,el.checked,+el.dataset.pts,el));
 }
@@ -2123,7 +2136,10 @@ async function toggleEditDay(kidId,choreId,dateStr,checked,pts,el){
     kid.total_points=nt;kid.streak=streak;kid.last_active_date=lastActive;
     _editDayDirty=true;
     const edTotal=$('#edTotal');if(edTotal)edTotal.textContent=kid.total_points;
-    toast(delta>0?`+${delta} ⭐ · done · 🔥 ${streak}`:(delta<0?`−${Math.abs(delta)} ⭐ · not done · 🔥 ${streak}`:`Updated · 🔥 ${streak}`));
+    // Done/not-done comes from the checkbox; the ⭐ change comes from the delta
+    // (a slip marked done SUBTRACTS, so the two can point opposite ways).
+    const starPart=delta===0?'':` · ${delta>0?'+':'−'}${Math.abs(delta)} ⭐`;
+    toast(`${checked?'✓ Marked done':'✗ Marked not done'}${starPart} · 🔥 ${streak}`);
   }finally{ if(el)el.disabled=false; }
 }
 
@@ -2308,7 +2324,7 @@ async function openAdmin(k,opts={}){
   if(focusKid){
     const allHerChores=chores.filter(c=>c.profile_id===focusKid.id && !c.pending);
     $('#choreList').innerHTML=allHerChores.length?allHerChores.map(c=>`
-      <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${c.points>0?('+'+c.points+' pts'):'🩵 Daily care · no stars'}${c.requires_photo?' · 📷 photo':''}${c.cadence==='weekday'&&c.weekdays&&c.weekdays.length?' · '+(c.schedule_mode==='exclude'?'except ':'')+c.weekdays.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join('/'):''}${c.cadence==='oneoff'&&c.occurs_on?' · 📌 '+c.occurs_on:''}${c.cadence==='holiday'?' · 🎉 holidays only':''}</small></span><button class="del" data-carec="${c.id}" title="${c.points>0?'Make this daily care (no stars)':'Make this earn stars'}">${c.points>0?'🩵':'⭐'}</button><button class="del" data-delc="${c.id}">🗑️</button></div>`).join(''):'<div class="empty">No chores yet.</div>';
+      <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${c.points>0?('+'+c.points+' pts'):(c.points<0?('📉 '+c.points+' pts · slip'):'🩵 Daily care · no stars')}${c.requires_photo?' · 📷 photo':''}${c.cadence==='weekday'&&c.weekdays&&c.weekdays.length?' · '+(c.schedule_mode==='exclude'?'except ':'')+c.weekdays.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join('/'):''}${c.cadence==='oneoff'&&c.occurs_on?' · 📌 '+c.occurs_on:''}${c.cadence==='holiday'?' · 🎉 holidays only':''}</small></span><button class="del" data-carec="${c.id}" title="${c.points>0?'Make this daily care (no stars)':'Make this earn stars'}">${c.points>0?'🩵':'⭐'}</button><button class="del" data-delc="${c.id}">🗑️</button></div>`).join(''):'<div class="empty">No chores yet.</div>';
     document.querySelectorAll('[data-carec]').forEach(el=>el.onclick=async()=>{
       const c=chores.find(x=>x.id===el.dataset.carec);if(!c)return;
       const np=c.points>0?0:5;   // → daily care, or back to a default star value
