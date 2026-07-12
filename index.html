@@ -162,8 +162,8 @@
   .chore.neg.done .tick{background:var(--bad);border-color:var(--bad)}
   .tierlab{color:var(--ink);font-weight:800;font-size:13px;margin:14px 4px 6px}
   .tierlab small{display:block;color:var(--muted);font-weight:700;font-size:11px;margin-top:1px}
-  .rewards{display:flex;gap:11px;overflow-x:auto;padding:4px 2px 6px}
-  .reward{flex:none;width:148px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:6px}
+  .rewards{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:11px;padding:4px 2px 6px}
+  .reward{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:6px;min-width:0}
   .reward .emo{font-size:26px}
   .reward .nm{font-family:'Fredoka';font-weight:600;font-size:14px;line-height:1.15}
   .reward .cost{font-weight:800;font-size:12px;color:var(--gold)}
