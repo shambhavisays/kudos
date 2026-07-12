@@ -2162,6 +2162,7 @@ async function openAdmin(k,opts={}){
           <button data-tab="notes">Notes</button>
           <button data-tab="pins">PINs</button>
         </div>
+        <div style="font-size:11px;font-weight:800;color:var(--good);margin:0 4px 8px">✓ Changes save automatically</div>
         <div class="panel on" id="panel-chores">
           ${focusKid?'':'<div class="empty">Add a child in the Family tab first.</div>'}
           ${focusKid?`
@@ -2169,7 +2170,11 @@ async function openAdmin(k,opts={}){
           <div id="gradList">${graduationCandidates.map(c=>`
             <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${counts[c.id]} days done</small></span>
             <button class="del" style="background:var(--good-bg);color:var(--good)" data-grad="${c.id}">🎉</button></div>`).join('')}</div>`:''}
-          <div class="note">Editing chores for <b>${kidLabel}</b>${kids.length>1?' — switch kid in the Family tab':''}.</div>
+          <div class="rewardopts">
+            ${kids.length>1?`<select id="choreKid">${kids.map(kk=>`<option value="${kk.id}" ${focusKid&&kk.id===focusKid.id?'selected':''}>${esc(kk.name)}</option>`).join('')}</select>`:'<div></div>'}
+            <input id="choreSearch" placeholder="🔍 Search chores" style="border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;font-family:'Nunito';color:var(--ink);width:100%">
+          </div>
+          <div class="note">Editing chores for <b>${kidLabel}</b>.</div>
           <div id="choreList"></div>
           <div class="addform"><input id="cEmo" class="emoji-in" data-kind="chore" readonly placeholder="⭐" maxlength="2"><input id="cName" placeholder="Chore name"><input id="cPts" inputmode="numeric" placeholder="+5"></div>
           <div style="margin:6px 4px 4px"><select id="cCadence" style="width:100%;border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;background:#fff;font-family:'Nunito';color:var(--ink)">
@@ -2207,6 +2212,10 @@ async function openAdmin(k,opts={}){
             <div class="item"><span class="e">📖</span><span class="t">${n.completed_on} — ${esc(n.choreName)}<small>${esc(n.note)}</small></span></div>`).join(''):'<div class="empty">No notes yet.</div>'}</div>
         </div>
         <div class="panel" id="panel-rewards">
+          <div class="rewardopts">
+            <select id="rewardKid"><option value="all" selected>All kids</option>${kids.map(kk=>`<option value="${kk.id}">${esc(kk.name)}</option>`).join('')}</select>
+            <input id="rewardSearch" placeholder="🔍 Search rewards" style="border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;font-family:'Nunito';color:var(--ink);width:100%">
+          </div>
           <div class="note">Rewards are shared across all kids unless tied to one.</div>
           <div id="rewardList"></div>
           <div class="addform"><input id="rEmo" class="emoji-in" data-kind="reward" readonly placeholder="🎁" maxlength="2"><input id="rName" placeholder="Reward name"><input id="rCost" inputmode="numeric" placeholder="Cost ⭐"></div>
@@ -2273,6 +2282,29 @@ async function openAdmin(k,opts={}){
     renderEditDay();
   }
 
+  // Open on a specific tab when asked (e.g. after switching kid).
+  if(opts.tab){const tb=document.querySelector(`.tabbar button[data-tab="${opts.tab}"]`);if(tb)tb.click();}
+
+  // Chores tab: switch kid (re-opens focused on them) + live name search.
+  if($('#choreKid'))$('#choreKid').onchange=e=>{const kk=profiles.find(p=>p.id===e.target.value);$('#modal').remove();openAdmin(kk,{tab:'chores'});};
+  if($('#choreSearch'))$('#choreSearch').oninput=()=>{
+    const q=$('#choreSearch').value.trim().toLowerCase();
+    $('#choreList').querySelectorAll('.item').forEach(it=>{it.style.display=(!q||it.textContent.toLowerCase().includes(q))?'':'none';});
+  };
+  // Rewards tab: filter the list by kid (shared always shown) + live name search.
+  const filterRewards=()=>{
+    const kidVal=$('#rewardKid')?$('#rewardKid').value:'all';
+    const q=$('#rewardSearch')?$('#rewardSearch').value.trim().toLowerCase():'';
+    $('#rewardList').querySelectorAll('.item').forEach(it=>{
+      const owner=it.dataset.owner||'both';
+      const kidOk=kidVal==='all'||owner==='both'||owner===kidVal;
+      const qOk=!q||it.textContent.toLowerCase().includes(q);
+      it.style.display=(kidOk&&qOk)?'':'none';
+    });
+  };
+  if($('#rewardKid'))$('#rewardKid').onchange=filterRewards;
+  if($('#rewardSearch'))$('#rewardSearch').oninput=filterRewards;
+
   if(focusKid){
     const allHerChores=chores.filter(c=>c.profile_id===focusKid.id && !c.pending);
     $('#choreList').innerHTML=allHerChores.length?allHerChores.map(c=>`
@@ -2338,7 +2370,8 @@ async function openAdmin(k,opts={}){
   const liveRewards=rewards.filter(r=>!r.pending);
   $('#rewardList').innerHTML=liveRewards.length?liveRewards.map(r=>{
     const ownerLabel=r.owner==='profile'?((profiles.find(p=>p.id===r.owner_profile_id)||{}).name||'one kid')+' only':'shared';
-    return `<div class="item"><span class="e">${r.emoji}</span><span class="t">${esc(r.name)}<small>${r.cost} pts · ${r.tier} · ${esc(ownerLabel)}</small></span><button class="del" data-delr="${r.id}">🗑️</button></div>`;
+    const cat=isGated(r)?'🌟 earn by finishing day':`${r.cost} ⭐`;
+    return `<div class="item" data-owner="${r.owner==='both'?'both':(r.owner_profile_id||'both')}"><span class="e">${r.emoji}</span><span class="t">${esc(r.name)}<small>${cat} · ${esc(ownerLabel)}</small></span><button class="del" data-delr="${r.id}">🗑️</button></div>`;
   }).join(''):'<div class="empty">No rewards yet.</div>';
   document.querySelectorAll('[data-delr]').forEach(el=>el.onclick=async()=>{
     await sb.from('rewards').update({archived:true}).eq('id',el.dataset.delr);
