@@ -2192,7 +2192,12 @@ async function openAdmin(k,opts={}){
           </div>
           <div class="note">Editing chores for <b>${kidLabel}</b>.</div>
           <div id="choreList"></div>
-          <div class="addform"><input id="cEmo" class="emoji-in" data-kind="chore" readonly placeholder="⭐" maxlength="2"><input id="cName" placeholder="Chore name"><input id="cPts" inputmode="numeric" placeholder="+5"></div>
+          <div class="addform"><input id="cEmo" class="emoji-in" data-kind="chore" readonly placeholder="⭐" maxlength="2"><input id="cName" placeholder="Chore name"><input id="cPts" inputmode="numeric" placeholder="Stars, e.g. 5"></div>
+          <div style="margin:6px 4px 4px"><select id="cScore" style="width:100%;border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;background:#fff;font-family:'Nunito';color:var(--ink)">
+            <option value="earn" selected>⭐ Earns stars</option>
+            <option value="care">🩵 Daily care (no stars)</option>
+            <option value="lose">📉 Loses stars (penalty)</option>
+          </select></div>
           <div style="margin:6px 4px 4px"><select id="cCadence" style="width:100%;border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;background:#fff;font-family:'Nunito';color:var(--ink)">
             <option value="daily" selected>📅 Every day</option>
             <option value="weekday-include">🗓️ Specific days of the week</option>
@@ -2202,7 +2207,7 @@ async function openAdmin(k,opts={}){
           </select></div>
           <div id="cWeekdays" class="cWeekdays" style="display:none">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d,i)=>`<label><input type="checkbox" class="cWd" value="${i}"> ${d}</label>`).join('')}</div>
           <div id="cOccursOn" style="display:none;margin:2px 4px 8px"><input type="date" id="cDate" style="width:100%;border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;font-family:'Nunito';color:var(--ink)"></div>
-          <div class="note" style="margin:0 4px 4px;color:var(--muted)">Tip: set points to <b>0</b> for a <b>daily-care</b> task — tapped off and streak-building, but no stars. Flip any task later with the 🩵/⭐ button.</div>
+          <div class="note" style="margin:0 4px 4px;color:var(--muted)"><b>Earns stars</b>: enter how many. <b>Daily care</b>: tapped off, builds the streak, no stars. <b>Loses stars</b>: enter how many are taken away (a penalty like whining).</div>
           <label class="toggle" style="margin:2px 4px 4px"><input type="checkbox" id="cPhoto"> 📷 Require a photo to complete</label>
           <button class="addbtn" id="addChore">＋ Add chore</button>
           <div class="rowbtns"><button class="danger" id="resetTodayBtn">↺ Reset ${kidLabel}'s today</button></div>`:''}
@@ -2361,9 +2366,19 @@ async function openAdmin(k,opts={}){
       $('#cWeekdays').style.display=(v==='weekday-include'||v==='weekday-exclude')?'flex':'none';
       $('#cOccursOn').style.display=(v==='oneoff')?'block':'none';
     };
+    // Score type: hide the number for daily-care, relabel it for a penalty.
+    $('#cScore').onchange=()=>{
+      const s=$('#cScore').value;
+      $('#cPts').style.display=s==='care'?'none':'';
+      $('#cPts').placeholder=s==='lose'?'Stars lost, e.g. 5':'Stars, e.g. 5';
+    };
     $('#addChore').onclick=async()=>{
       const nm=$('#cName').value.trim();if(!nm)return toast('Type a chore name');
-      let p=parseInt($('#cPts').value,10);if(isNaN(p))p=5;
+      // Points come from the score-type selector: care=0, lose=negative, earn=positive.
+      const scoreType=$('#cScore').value;
+      let p;
+      if(scoreType==='care'){p=0;}
+      else{let n=parseInt($('#cPts').value,10);if(isNaN(n))n=5;n=Math.abs(n);p=scoreType==='lose'?-n:n;}
       const mode=$('#cCadence').value;
       let cadence='daily',schedule_mode='include',weekdays=null,occurs_on=null;
       if(mode==='weekday-include'||mode==='weekday-exclude'){
