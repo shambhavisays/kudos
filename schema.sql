@@ -304,3 +304,20 @@ create policy "chore photos insert" on storage.objects for insert to authenticat
   with check (bucket_id='chore-photos' and (storage.foldername(name))[1] in (select id::text from families where owner_user_id=auth.uid()));
 create policy "chore photos delete" on storage.objects for delete to authenticated
   using (bucket_id='chore-photos' and (storage.foldername(name))[1] in (select id::text from families where owner_user_id=auth.uid()));
+
+-- ── Account self-deletion (privacy/compliance) ───────────────────────────────
+-- A signed-in parent can erase their own account and ALL associated data in one
+-- call: proof photos, then the auth user (which cascades to families and every
+-- family-scoped table). Only ever deletes the caller (auth.uid()).
+create or replace function delete_my_account()
+returns void language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid();
+begin
+  if uid is null then raise exception 'Not authenticated'; end if;
+  delete from storage.objects o
+   where o.bucket_id = 'chore-photos'
+     and (storage.foldername(o.name))[1] in (select f.id::text from families f where f.owner_user_id = uid);
+  delete from auth.users where id = uid;
+end; $$;
+revoke all on function delete_my_account() from public, anon;
+grant execute on function delete_my_account() to authenticated;

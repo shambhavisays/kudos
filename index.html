@@ -2122,6 +2122,21 @@ async function proposeReward(k){
   toast('Sent to parent for approval! 💌');
 }
 
+// Parent self-service: permanently delete the account and ALL data. Two
+// confirmations (irreversible), then a single RPC erases everything server-side
+// — photos, family, profiles, chores, history, and the login itself.
+async function deleteAccount(){
+  if(!confirm("Delete your Kudos account and ALL data?\n\nThis permanently erases every child profile, chore, star, reward, photo, and all history across our databases, and removes your login. It cannot be undone."))return;
+  if(!confirm("Last check — delete everything now? This is final and cannot be recovered."))return;
+  const {error}=await sb.rpc('delete_my_account');
+  if(error){toast('Could not delete — please try again or email support');return;}
+  try{ await sb.auth.signOut(); }catch(e){}
+  localStorage.removeItem('kudos:onboard');
+  currentUser=null;family=null;familyId=null;me=null;window._activeKid=null;profiles=[];chores=[];rewards=[];
+  toast('Your account and all data were deleted.');
+  renderLanding();
+}
+
 // ── Parent "Edit a day": backfill a past day's completions for a kid. ─────────
 // Shows the chores scheduled for the chosen date (plus any already logged that
 // day), with a checkbox for done/not-done. Ticking inserts a completion and
@@ -2335,6 +2350,11 @@ async function openAdmin(k,opts={}){
           <div class="note" style="margin-top:12px;color:var(--ink);font-weight:800">Add a parent</div>
           <div class="addform"><input id="fpEmo" class="emoji-in" data-kind="person" readonly placeholder="🧑" maxlength="2"><input id="fpName" placeholder="Name"><input id="fpPin" placeholder="PIN (6)" inputmode="numeric" maxlength="6"></div>
           <button class="addbtn" id="addParentBtn">＋ Add parent</button>
+          <div style="margin-top:18px;border-top:1px solid var(--line);padding-top:14px">
+            <div class="note" style="color:var(--bad);font-weight:800">Danger zone</div>
+            <div class="note" style="margin:0 4px 8px;color:var(--muted)">Permanently delete this account and <b>all</b> data — every child, chore, star, reward, photo, and history — across our databases. This cannot be undone.</div>
+            <button class="danger" id="deleteAccountBtn">🗑️ Delete my account &amp; all data</button>
+          </div>
         </div>
         <div class="panel" id="panel-editday">
           ${kids.length?`
@@ -2566,6 +2586,7 @@ async function openAdmin(k,opts={}){
     if(error)return toast('Could not add parent');
     profiles.push(data);$('#modal').remove();openAdmin(focusKid);renderMain();toast(`${nm} added`);
   };
+  $('#deleteAccountBtn').onclick=deleteAccount;
 
   // ── PINs tab ──
   $('#pinList').innerHTML=profiles.map(p=>{
