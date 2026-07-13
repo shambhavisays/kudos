@@ -1256,7 +1256,7 @@ function renderWizChores(){
 }
 
 // ── Legal: Terms of Service + Privacy Policy (in-app pages). DRAFT — reviewed
-// by counsel before public launch. [[STATE]] and [[CONTACT EMAIL]] are
+// by counsel before public launch. [[STATE]] and aiproductleverage@gmail.com are
 // placeholders to fill in before sharing.
 const LEGAL_TERMS=`
 <p><b>Last updated: July 2026.</b></p>
@@ -1280,19 +1280,19 @@ const LEGAL_TERMS=`
 <h4>9. Changes</h4>
 <p>We may update these Terms. Material changes are shown by the "last updated" date; continued use after a change means you accept it.</p>
 <h4>10. Governing law</h4>
-<p>These Terms are governed by the laws of the State of <b>[[STATE]]</b>, USA, without regard to its conflict-of-law rules.</p>
+<p>These Terms are governed by the laws of the State of <b>Texas</b>, USA, without regard to its conflict-of-law rules.</p>
 <h4>11. Contact</h4>
-<p>Questions? Contact AI Product Leverage LLC at <b>[[CONTACT EMAIL]]</b>.</p>`;
+<p>Questions? Contact AI Product Leverage LLC at <b>aiproductleverage@gmail.com</b>.</p>`;
 
 const LEGAL_PRIVACY=`
 <p><b>Last updated: July 2026.</b></p>
 <p>This Privacy Policy explains how <b>AI Product Leverage LLC</b> ("we") handles information in Kudos. We built Kudos to respect families: no ads, no third-party trackers, and we never sell your data.</p>
 <h4>Information we collect</h4>
-<p><b>Parent account:</b> your email (for sign-in) and, with Google sign-in, the basic profile Google shares. <b>Child profiles you create:</b> first name or nickname, age, emoji/colour, and an optional PIN (stored only as a salted hash). <b>Activity:</b> the chores, rewards, points, notes, and optional proof photos you and your children record. We ask only for what the Service needs.</p>
+<p><b>Parent account:</b> your email (for sign-in) and, with Google sign-in, the basic profile Google shares. <b>Child profiles you create:</b> first name or nickname, age, emoji/colour, and an optional PIN (stored only as a salted hash). <b>Activity:</b> the chores, rewards, stars, notes, and optional proof photos you and your children record. We ask only for what the Service needs.</p>
 <h4>How it is collected</h4>
 <p>All of it is entered by you, the parent, or by a child tapping their own board on your device. Children do not create accounts and are not asked for contact information.</p>
 <h4>Children's privacy (COPPA)</h4>
-<p>Kudos is intended to be set up and controlled by a parent or legal guardian, who provides and consents to any child's information. We collect the minimum needed to run the chore board, never use it for advertising, and never sell or share it for others' marketing. You can review, correct, or delete your child's information at any time in Parent settings; deleting a profile or your account deletes the associated data. To make a request, contact us at <b>[[CONTACT EMAIL]]</b>.</p>
+<p>Kudos is intended to be set up and controlled by a parent or legal guardian, who provides and consents to any child's information. We collect the minimum needed to run the chore board, never use it for advertising, and never sell or share it for others' marketing. You can review, correct, or delete your child's information at any time in Parent settings; deleting a profile or your account deletes the associated data. To make a request, contact us at <b>aiproductleverage@gmail.com</b>.</p>
 <h4>How we use information</h4>
 <p>Only to provide the Service — showing each child's board, tracking stars and streaks, and letting you manage the family. We do not build advertising profiles.</p>
 <h4>Where it is stored</h4>
@@ -1304,7 +1304,7 @@ const LEGAL_PRIVACY=`
 <h4>Changes</h4>
 <p>We may update this policy; the "last updated" date shows the latest version.</p>
 <h4>Contact</h4>
-<p>AI Product Leverage LLC — <b>[[CONTACT EMAIL]]</b>.</p>`;
+<p>AI Product Leverage LLC — <b>aiproductleverage@gmail.com</b>.</p>`;
 
 function openLegal(which){
   const title=which==='terms'?'Terms of Service':'Privacy Policy';
@@ -2003,7 +2003,7 @@ async function openHistory(k){
           ${items.map(c=>{
             const chore=chores.find(x=>x.id===c.chore_id);
             const purl=c.photo_path&&photoUrls[c.photo_path];
-            return `<div class="item"><span class="e">${chore?chore.emoji:'⭐'}</span><span class="t">${c.points>=0?'✅ ':''}${chore?esc(chore.name):'(removed chore)'}<small>${c.points>0?'+':''}${c.points} pts${c.note?' — '+esc(c.note):''}</small></span>${purl?`<img class="histphoto" src="${purl}" data-full="${purl}" alt="proof">`:''}</div>`;
+            return `<div class="item"><span class="e">${chore?chore.emoji:'⭐'}</span><span class="t">${c.points>=0?'✅ ':''}${chore?esc(chore.name):'(removed chore)'}<small>${c.points>0?'+':''}${c.points} ⭐${c.note?' — '+esc(c.note):''}</small></span>${purl?`<img class="histphoto" src="${purl}" data-full="${purl}" alt="proof">`:''}</div>`;
           }).join('')}`;
         }).join(''):'<div class="empty">No recent history yet.</div>'}
         ${earlier.length?`<div class="note" style="font-weight:800;color:var(--ink);margin-top:18px">Earlier months</div>
@@ -2066,7 +2066,7 @@ async function toggleChore(k,choreId){
 }
 
 async function resetToday(k){
-  if(!confirm(`Reset ${k.name}'s checklist for today? This removes today's checkmarks and today's points only.`))return;
+  if(!confirm(`Reset ${k.name}'s checklist for today? This removes today's checkmarks and today's stars only.`))return;
   const {data:comp}=await sb.from('completions').select('points').eq('profile_id',k.id).eq('completed_on',today());
   const pts=(comp||[]).reduce((s,c)=>s+c.points,0);
   k.total_points=Math.max(0,k.total_points-pts);
@@ -2105,7 +2105,7 @@ async function proposeChore(k){
   const nm=prompt("What chore do you want to propose?");
   if(!nm||!nm.trim())return;
   const emo=prompt("Pick an emoji for it (optional):","⭐")||'⭐';
-  const pts=parseInt(prompt("How many points should it be worth?","5"),10)||5;
+  const pts=parseInt(prompt("How many stars should it be worth?","5"),10)||5;
   const {error}=await sb.from('chores').insert({family_id:familyId,profile_id:k.id,emoji:emo,name:nm.trim(),points:pts,cadence:'daily',pending:true,proposed_by:k.id});
   if(error){toast('Could not send that — try again');return;}
   toast('Sent to parent for approval! 💌');
@@ -2288,7 +2288,7 @@ async function openAdmin(k,opts={}){
         <div class="panel" id="panel-approvals">
           <div class="note" style="color:var(--ink);font-weight:800">Proposed chores</div>
           <div id="pendingList">${pendingChores.length?pendingChores.map(c=>`
-            <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${c.points} pts proposed</small></span>
+            <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${c.points} ⭐ proposed</small></span>
             <button class="del" style="background:var(--good-bg);color:var(--good)" data-approve="${c.id}">✓</button>
             <button class="del" data-reject="${c.id}">✕</button></div>`).join(''):'<div class="empty">No pending chores.</div>'}</div>
           <div class="note" style="color:var(--ink);font-weight:800;margin-top:12px">Proposed rewards <span style="font-weight:700;color:var(--muted)">— set a cost, then approve</span></div>
@@ -2338,7 +2338,7 @@ async function openAdmin(k,opts={}){
         </div>
         <div class="panel" id="panel-editday">
           ${kids.length?`
-          <div class="note">Fix a past day: pick a child and a date, then tick what was actually done. Stars update automatically — unticking a task the kid over-claimed removes its points; ticking one they forgot adds them.</div>
+          <div class="note">Fix a past day: pick a child and a date, then tick what was actually done. Stars update automatically — unticking a task the kid over-claimed removes its stars; ticking one they forgot adds them.</div>
           <div class="rewardopts">
             <select id="edKid">${kids.map(k=>`<option value="${k.id}">${esc(k.name)}</option>`).join('')}</select>
             <input type="date" id="edDate" min="${signupDate}" max="${today()}" value="${today()}">
@@ -2402,7 +2402,7 @@ async function openAdmin(k,opts={}){
   if(focusKid){
     const allHerChores=chores.filter(c=>c.profile_id===focusKid.id && !c.pending);
     $('#choreList').innerHTML=allHerChores.length?allHerChores.map(c=>`
-      <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${c.points>0?('+'+c.points+' pts'):(c.points<0?('📉 '+c.points+' pts · slip'):'🩵 Daily care · no stars')}${c.requires_photo?' · 📷 photo':''}${c.cadence==='weekday'&&c.weekdays&&c.weekdays.length?' · '+(c.schedule_mode==='exclude'?'except ':'')+c.weekdays.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join('/'):''}${c.cadence==='oneoff'&&c.occurs_on?' · 📌 '+c.occurs_on:''}${c.cadence==='holiday'?' · 🎉 holidays only':''}</small></span><button class="del" data-carec="${c.id}" title="${c.points>0?'Make this daily care (no stars)':'Make this earn stars'}">${c.points>0?'🩵':'⭐'}</button><button class="del" data-delc="${c.id}">🗑️</button></div>`).join(''):'<div class="empty">No chores yet.</div>';
+      <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${c.points>0?('+'+c.points+' ⭐'):(c.points<0?('📉 '+c.points+' ⭐ · slip'):'🩵 Daily care · no stars')}${c.requires_photo?' · 📷 photo':''}${c.cadence==='weekday'&&c.weekdays&&c.weekdays.length?' · '+(c.schedule_mode==='exclude'?'except ':'')+c.weekdays.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join('/'):''}${c.cadence==='oneoff'&&c.occurs_on?' · 📌 '+c.occurs_on:''}${c.cadence==='holiday'?' · 🎉 holidays only':''}</small></span><button class="del" data-carec="${c.id}" title="${c.points>0?'Make this daily care (no stars)':'Make this earn stars'}">${c.points>0?'🩵':'⭐'}</button><button class="del" data-delc="${c.id}">🗑️</button></div>`).join(''):'<div class="empty">No chores yet.</div>';
     document.querySelectorAll('[data-carec]').forEach(el=>el.onclick=async()=>{
       const c=chores.find(x=>x.id===el.dataset.carec);if(!c)return;
       const np=c.points>0?0:5;   // → daily care, or back to a default star value
