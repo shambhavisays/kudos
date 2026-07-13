@@ -2126,8 +2126,14 @@ async function proposeReward(k){
 // confirmations (irreversible), then a single RPC erases everything server-side
 // — photos, family, profiles, chores, history, and the login itself.
 async function deleteAccount(){
-  if(!confirm("Delete your Kudos account and ALL data?\n\nThis permanently erases every child profile, chore, star, reward, photo, and all history across our databases, and removes your login. It cannot be undone."))return;
-  if(!confirm("Last check — delete everything now? This is final and cannot be recovered."))return;
+  if(!confirm("Delete your Kudos account and ALL data?\n\nThis permanently erases every child profile, chore, star, reward, photo, and all history, and removes your login. It cannot be undone."))return;
+  // Re-authenticate: re-enter the Parent PIN before anything is erased.
+  const parent=(me&&me.role==='parent'&&me.pin_hash)?me:profiles.find(p=>p.role==='parent'&&p.pin_hash);
+  if(parent){
+    const pin=prompt('Enter your Parent PIN to permanently delete your account:');
+    if(pin===null)return;                        // cancelled
+    if(!(await pinMatches(parent,pin.trim()))){toast('Incorrect PIN — deletion cancelled');return;}
+  }else if(!confirm('Last check — delete everything now? This cannot be undone.'))return;
   const {error}=await sb.rpc('delete_my_account');
   if(error){toast('Could not delete — please try again or email support');return;}
   try{ await sb.auth.signOut(); }catch(e){}
