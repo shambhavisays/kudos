@@ -2265,6 +2265,7 @@ async function openAdmin(k,opts={}){
           <button data-tab="approvals">Approvals${approvalCount?' ('+approvalCount+')':''}</button>
           <button data-tab="notes">Notes</button>
           <button data-tab="pins">PINs</button>
+          <button data-tab="account">Account</button>
         </div>
         <div style="font-size:11px;font-weight:800;color:var(--good);margin:0 4px 8px">✓ Changes save automatically</div>
         <div class="panel on" id="panel-chores">
@@ -2350,6 +2351,10 @@ async function openAdmin(k,opts={}){
           <div class="note" style="margin-top:12px;color:var(--ink);font-weight:800">Add a parent</div>
           <div class="addform"><input id="fpEmo" class="emoji-in" data-kind="person" readonly placeholder="🧑" maxlength="2"><input id="fpName" placeholder="Name"><input id="fpPin" placeholder="PIN (6)" inputmode="numeric" maxlength="6"></div>
           <button class="addbtn" id="addParentBtn">＋ Add parent</button>
+        </div>
+        <div class="panel" id="panel-account">
+          <div class="note" style="color:var(--ink);font-weight:800">Signed in as</div>
+          <div class="item"><span class="e">📧</span><span class="t">${esc((currentUser&&currentUser.email)||'—')}<small>${currentUser&&currentUser.app_metadata&&currentUser.app_metadata.provider==='google'?'Google sign-in':'Email &amp; password'}</small></span></div>
           <div style="margin-top:18px;border-top:1px solid var(--line);padding-top:14px">
             <div class="note" style="color:var(--bad);font-weight:800">Danger zone</div>
             <div class="note" style="margin:0 4px 8px;color:var(--muted)">Permanently delete this account and <b>all</b> data — every child, chore, star, reward, photo, and history — across our databases. This cannot be undone.</div>
