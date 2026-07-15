@@ -1,9 +1,11 @@
 # Kudos — Privacy Note
 
 Kudos is a family chore tracker. A parent creates an account and adds their own
-children's profiles. This note explains what's stored and how it's protected.
-It is written for a small, household-use app — not a legal privacy policy for a
-public commercial service.
+children's profiles. This note is a technical companion to the app's actual
+**Terms of Service** and **Privacy Policy** (in-app, linked from the landing
+page footer and the signup consent checkbox) — those are the governing
+documents; this file just explains what's stored and how it's protected, for
+anyone reading the code.
 
 ## What we store
 
@@ -34,12 +36,17 @@ than needed. Lifetime totals (stars, streaks) are kept on the profile.
 
 - A parent can remove a profile at any time (Parent settings → Family), which
   deletes that person's chores and history.
-- To delete an entire family and account, the account owner can do so from
-  Supabase Auth, or contact the app operator.
+- A parent can delete their entire account and family at any time from Parent
+  settings → Account. This is self-service and immediate: it erases proof
+  photos, then the login itself, which cascades to remove every family-scoped
+  record (profiles, chores, completions, rewards, credits, devices, summaries).
 
-## A note for anyone deploying this
+## A note on the legal pages
 
-If you run Kudos for families beyond your own household, children's data is
-regulated (e.g. COPPA in the US, GDPR-K in the EU). You would need verifiable
-parental consent, a full privacy policy, and a clear deletion process before
-offering it publicly.
+The in-app Terms of Service and Privacy Policy (including the parental-consent
+checkbox at signup) were self-drafted for a free side project — they have not
+been reviewed by an attorney. That's a deliberate choice given the scope: no
+ads, no third-party trackers, no data sale, and a working deletion path. Anyone
+running this for a larger or monetized audience should get those pages
+reviewed by counsel first, particularly for COPPA (US) and GDPR-K (EU)
+compliance.
