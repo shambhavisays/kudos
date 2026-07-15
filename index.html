@@ -279,7 +279,9 @@
   .lp-bm-row{display:flex;align-items:center;gap:9px;background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:6px}
   .lp-bm-row .e{font-size:17px}
   .lp-bm-row .t{flex:1;font-family:'Fredoka';font-weight:600;font-size:12.5px}
-  .lp-bm-row .ck{font-weight:800;font-size:11px;color:var(--gold)}
+  .lp-bm-row .ck{font-weight:800;font-size:11px;color:var(--gold);white-space:nowrap}
+  .lp-bm-row .ck.care{color:var(--accent-deep);font-size:10px}
+  .lp-bm-row .ck.penalty{color:var(--bad)}
   .lp-bm-row.done{border-color:var(--good);background:var(--good-bg)}
   .lp-bm-row.done .ck{width:19px;height:19px;border-radius:50%;background:var(--good);color:#fff;display:grid;place-items:center;font-size:11px}
   /* Parent setup view (second device) */
@@ -290,7 +292,13 @@
   .lp-pm-row .e{font-size:16px}
   .lp-pm-row .t{flex:1;font-family:'Fredoka';font-weight:600;font-size:12px;line-height:1.15}
   .lp-pm-row .t small{display:block;font-family:'Nunito';font-weight:700;font-size:10px;color:var(--muted)}
-  .lp-pm-row .pt{font-weight:800;font-size:11px;color:var(--gold)}
+  .lp-pm-row .pt{font-weight:800;font-size:10.5px;color:var(--gold);white-space:nowrap}
+  .lp-pm-row .pt.care{color:var(--accent-deep)}
+  .lp-pm-row .pt.penalty{color:var(--bad)}
+  .lp-pm-addhd{font-family:'Fredoka';font-weight:600;font-size:11px;color:var(--muted);margin:11px 0 7px;padding-top:11px;border-top:1px dashed var(--line)}
+  .lp-pm-scoresel{display:flex;gap:6px;flex-wrap:wrap}
+  .lp-pm-scoresel .sel{font-weight:700;font-size:10px;padding:6px 9px;border-radius:9px;border:1.5px solid var(--line);color:var(--muted);background:#fff}
+  .lp-pm-scoresel .sel.on{background:var(--accent);color:#fff;border-color:var(--accent)}
   /* Parent-oversight section — Family board overview */
   .lp-split{display:flex;flex-direction:column;gap:26px;align-items:center}
   .lp-split-copy{max-width:480px}
@@ -887,7 +895,9 @@ function renderLanding(){
             <div class="lp-bm-row done"><span class="e">📚</span><span class="t">Homework</span><span class="ck">✓</span></div>
             <div class="lp-bm-row"><span class="e">🧸</span><span class="t">Tidy toys</span><span class="ck">+5</span></div>
             <div class="lp-bm-sec">🌙 Evening</div>
-            <div class="lp-bm-row"><span class="e">🛁</span><span class="t">Bath time</span><span class="ck">+5</span></div>
+            <div class="lp-bm-row"><span class="e">🛁</span><span class="t">Bath time</span><span class="ck care">🩵 care</span></div>
+            <div class="lp-bm-sec">📌 Anytime</div>
+            <div class="lp-bm-row"><span class="e">😤</span><span class="t">Whining</span><span class="ck penalty">−3</span></div>
           </div></div>
         </div>
 
@@ -896,11 +906,13 @@ function renderLanding(){
           <div class="lp-phone"><div class="scr">
             <div class="lp-pm-head"><b>Manage chores</b><span class="add">＋ Add</span></div>
             <div class="lp-pm-row"><span class="e">🛏️</span><span class="t">Make bed<small>Morning · daily</small></span><span class="pt">+3 ⭐</span></div>
-            <div class="lp-pm-row"><span class="e">🪥</span><span class="t">Brush teeth<small>Morning · daily</small></span><span class="pt">+3 ⭐</span></div>
+            <div class="lp-pm-row"><span class="e">🪥</span><span class="t">Brush teeth<small>Morning · daily</small></span><span class="pt care">🩵 Daily care</span></div>
             <div class="lp-pm-row"><span class="e">📚</span><span class="t">Homework<small>Afternoon · weekdays</small></span><span class="pt">+10 ⭐</span></div>
             <div class="lp-pm-row"><span class="e">🧸</span><span class="t">Tidy toys<small>Afternoon · daily</small></span><span class="pt">+5 ⭐</span></div>
-            <div class="lp-pm-row"><span class="e">🛁</span><span class="t">Bath time<small>Evening · daily</small></span><span class="pt">+5 ⭐</span></div>
+            <div class="lp-pm-row"><span class="e">😤</span><span class="t">Whining<small>Anytime · daily</small></span><span class="pt penalty">−3 ⭐</span></div>
             <div class="lp-pm-row"><span class="e">📖</span><span class="t">Read 20 min<small>Evening · 📷 photo</small></span><span class="pt">+10 ⭐</span></div>
+            <div class="lp-pm-addhd">＋ Add a chore · How does it score?</div>
+            <div class="lp-pm-scoresel"><span class="sel on">⭐ Earns stars</span><span class="sel">🩵 Daily care</span><span class="sel">📉 Loses stars</span></div>
           </div></div>
         </div>
       </div>
@@ -924,12 +936,12 @@ function renderLanding(){
             <div class="lp-kcard">
               <div class="top"><div class="nm">🦄 Maya</div><div class="mt"><span>⭐ 120</span><span>🔥 5</span></div></div>
               <div class="lp-kbar"><div class="lp-kfill" style="width:80%;background:var(--accent)"></div></div>
-              <div class="lp-kdots"><span class="d done">🛏️</span><span class="d done">🪥</span><span class="d done">📚</span><span class="d done">🧸</span><span class="d">🛁</span></div>
+              <div class="lp-kdots"><span class="d done" style="border-color:#378ADD;background:#378ADD22">🛏️</span><span class="d done" style="border-color:#378ADD;background:#378ADD22">🪥</span><span class="d done" style="border-color:#378ADD;background:#378ADD22">📚</span><span class="d done" style="border-color:#378ADD;background:#378ADD22">🧸</span><span class="d">🛁</span></div>
             </div>
             <div class="lp-kcard">
               <div class="top"><div class="nm">🚀 Leo</div><div class="mt"><span>⭐ 85</span><span>🔥 3</span></div></div>
               <div class="lp-kbar"><div class="lp-kfill" style="width:50%;background:var(--good)"></div></div>
-              <div class="lp-kdots"><span class="d done">🛏️</span><span class="d done">🦷</span><span class="d">📖</span><span class="d">🧹</span></div>
+              <div class="lp-kdots"><span class="d done" style="border-color:#1f9d57;background:#1f9d5722">🛏️</span><span class="d done" style="border-color:#1f9d57;background:#1f9d5722">🦷</span><span class="d">📖</span><span class="d">🧹</span></div>
             </div>
           </div></div>
         </div>
