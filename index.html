@@ -299,12 +299,8 @@
   .lp-pm-scoresel{display:flex;gap:6px;flex-wrap:wrap}
   .lp-pm-scoresel .sel{font-weight:700;font-size:10px;padding:6px 9px;border-radius:9px;border:1.5px solid var(--line);color:var(--muted);background:#fff}
   .lp-pm-scoresel .sel.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-  /* Parent-oversight section — Family board overview */
-  .lp-split{display:flex;flex-direction:column;gap:26px;align-items:center}
-  .lp-split-copy{max-width:480px}
-  .lp-checks{list-style:none;padding:0;margin:14px 0 0;display:flex;flex-direction:column;gap:8px}
-  .lp-checks li{font-weight:700;font-size:13.5px;color:var(--ink)}
-  .lp-famframe{width:300px;max-width:86vw;margin:0 auto;background:#1d2b3a;border-radius:26px;padding:11px;box-shadow:0 26px 50px -20px rgba(29,43,58,.55)}
+  /* Family board mockup, part of the showcase row */
+  .lp-famframe{width:280px;max-width:86vw;margin:0 auto;background:#1d2b3a;border-radius:26px;padding:11px;box-shadow:0 26px 50px -20px rgba(29,43,58,.55)}
   .lp-famscr{background:var(--bg);border-radius:18px;padding:13px 12px}
   .lp-famhd{font-family:'Fredoka';font-weight:600;font-size:13px;color:var(--ink);margin:1px 2px 10px;display:flex;align-items:center;gap:6px}
   .lp-kcard{background:#fff;border:2px solid var(--line);border-radius:15px;padding:11px 12px;margin-bottom:10px}
@@ -318,11 +314,6 @@
   .lp-kdots .d{width:23px;height:23px;border-radius:7px;display:grid;place-items:center;font-size:12px;background:var(--bg);border:2px solid var(--line);opacity:.4}
   .lp-kdots .d.done{opacity:1;border-color:var(--good);background:var(--good-bg)}
   @media(min-width:760px){
-    .lp-split{flex-direction:row;gap:54px;align-items:center}
-    .lp-split-copy{flex:1}
-    .lp-split-copy h2{text-align:left}
-    .lp-split-copy .lead{text-align:left;margin-left:0;margin-right:0;max-width:none}
-    .lp-split-art{flex:none}
     .lp-hero{padding:50px 8px 14px}
     .lp-hero h1{font-size:38px}
     .lp-showcase{gap:54px;margin-top:34px}
@@ -402,6 +393,7 @@
   .tile-purple{background:#EDE7FB!important}.tile-orange{background:#FEEBD6!important}.tile-teal{background:#DCF4F4!important}
   /* purple label pill for the "parents set up" view */
   .lp-tag.par{color:#6D51C4;background:#EEE8FB}
+  .lp-tag.fam{color:#1b7d80;background:#DCF4F4}
   /* how-it-works: colored number badge + emoji */
   .lp-step .step-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
   .lp-step .step-num{font-family:'Fredoka';font-weight:600;font-size:18px;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;color:#fff}
@@ -879,10 +871,10 @@ function renderLanding(){
       </div>
     </section>
 
-    <!-- Real-app proof: kid board + parent setup, both the actual Kudos UI in code. -->
-    <section class="lp-sec lp-warm">
-      <h2>Two views of one <span class="hlw"><span>board</span></span></h2>
-      <p class="lead">Kids tap chores off as they go. Parents set them up once. Same board, same stars.</p>
+    <!-- Real-app proof: kid board, parent setup, and family board, all the actual Kudos UI in code. -->
+    <section class="lp-sec">
+      <h2>One board, every <span class="hlw"><span>screen</span></span></h2>
+      <p class="lead">Kids tap through their day, you set it up once, and the whole family checks in at a glance.</p>
       <div class="lp-showcase">
         <div class="lp-dev">
           <div class="lp-tag">👧 What kids see</div>
@@ -915,22 +907,9 @@ function renderLanding(){
             <div class="lp-pm-scoresel"><span class="sel on">⭐ Earns stars</span><span class="sel">🩵 Daily care</span><span class="sel">📉 Loses stars</span></div>
           </div></div>
         </div>
-      </div>
-    </section>
 
-    <!-- Parent oversight: see every kid's progress on one shared board. -->
-    <section class="lp-sec">
-      <div class="lp-split">
-        <div class="lp-split-copy">
-          <h2>See how everyone's doing, at a <span class="hlw"><span>glance</span></span></h2>
-          <p class="lead">The Family board shows every kid's stars, streak, and today's progress on one shared screen. No nagging, no asking. Just look up.</p>
-          <ul class="lp-checks">
-            <li>⭐ Stars and streaks for each kid, side by side</li>
-            <li>✅ Today's chores ticking off in real time</li>
-            <li>📺 Fridge- or TV-ready board the whole family sees</li>
-          </ul>
-        </div>
-        <div class="lp-split-art">
+        <div class="lp-dev">
+          <div class="lp-tag fam">📺 What everyone sees</div>
           <div class="lp-famframe"><div class="lp-famscr">
             <div class="lp-famhd">📺 Family board · Today</div>
             <div class="lp-kcard">
@@ -946,6 +925,7 @@ function renderLanding(){
           </div></div>
         </div>
       </div>
+      <div class="lp-cap">Even a penalty can be undone, anytime. Nothing here is permanent.</div>
     </section>
 
     <section class="lp-sec lp-warm" id="lpHow">
