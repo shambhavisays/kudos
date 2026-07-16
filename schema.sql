@@ -91,7 +91,11 @@ create table completions (
 create table rewards (
   id uuid primary key default gen_random_uuid(),
   family_id uuid not null references families(id) on delete cascade,
-  owner text not null default 'both' check (owner in ('both','profile')),
+  -- 'both'  — shown to every kid, each spends their OWN stars.
+  -- 'profile' — tied to one kid via owner_profile_id.
+  -- 'joint' — one family goal: every kid's stars count toward it together, and
+  --           claiming spends from the pool (deducted proportionally).
+  owner text not null default 'both' check (owner in ('both','profile','joint')),
   owner_profile_id uuid references profiles(id) on delete cascade,
   emoji text not null default '🎁',
   name text not null,

@@ -1693,8 +1693,15 @@ function visibleChores(profileId){
   return list;
 }
 function visibleRewards(profileId){
-  return rewards.filter(r=>!r.pending && (r.owner==='both' || r.owner_profile_id===profileId));
+  return rewards.filter(r=>!r.pending && (r.owner==='both' || r.owner==='joint' || r.owner_profile_id===profileId));
 }
+// ── Joint rewards: one family goal every kid's stars count toward together.
+const kidProfiles=()=>profiles.filter(p=>p.role==='kid');
+const isJoint=r=>r.owner==='joint';
+const jointTotal=()=>kidProfiles().reduce((s,p)=>s+Math.max(0,p.total_points||0),0);
+// Stars available toward a reward: the pooled family total for a joint goal,
+// otherwise just this kid's balance.
+const availableFor=(r,k)=>isJoint(r)?jointTotal():(k.total_points||0);
 function todayPoints(profileId){
   return visibleChores(profileId).reduce((s,c)=>s+(doneToday.has(c.id)?c.points:0),0);
 }
@@ -1774,9 +1781,9 @@ function canClaim(r,k){
   if(isGated(r)){
     if(getCredits(r,k)<=0)return false;
     if(r.allowed_weekdays && r.allowed_weekdays.length && !r.allowed_weekdays.includes(todayDow()))return false;
-    return k.total_points>=r.cost;
+    return availableFor(r,k)>=r.cost;
   }
-  return k.total_points>=r.cost;
+  return availableFor(r,k)>=r.cost;
 }
 
 // Weekly recap strip — pure read of this week's already-loaded completions.
@@ -1814,17 +1821,20 @@ function goalHtml(k,accent){
   if(!k.goal_reward_id)return '';
   const r=rewards.find(x=>x.id===k.goal_reward_id && !x.archived && !x.pending);
   if(!r)return '';
-  const have=k.total_points,cost=r.cost;
+  const joint=isJoint(r);
+  const have=availableFor(r,k),cost=r.cost;      // pooled total for a joint goal
   const pct=Math.max(0,Math.min(100,cost?(have/cost)*100:100));
   const ready=have>=cost;
   const togo=Math.max(0,cost-have);
+  // For a joint goal, show who has put in what so both kids see the teamwork.
+  const shares=joint?kidProfiles().map(p=>`${p.emoji} ${esc(p.name)} ${Math.max(0,p.total_points||0)}`).join(' · '):'';
   return `<div class="goalstrip ${ready?'ready':''}" ${ready?`data-goalclaim="${r.id}"`:''}>
     <div class="gtop"><span class="emo">${r.emoji}</span>
-      <span class="lab">Saving up for ${esc(r.name)}<small>${ready?'Ready to claim! 🎉':togo+' ⭐ to go'}</small></span>
+      <span class="lab">${joint?'👫 Joint goal — saving together for':'Saving up for'} ${esc(r.name)}<small>${ready?'Ready to claim! 🎉':togo+' ⭐ to go'}${joint&&shares?' · '+shares:''}</small></span>
       <button class="pin on" data-goalunpin="1" title="Remove goal">📌</button>
     </div>
     <div class="gbar"><div class="gfill" style="width:${pct}%;background:${accent}"></div></div>
-    <div class="gnum"><span>${have} ⭐ saved</span><span>${cost} ⭐ goal</span></div>
+    <div class="gnum"><span>${have} ⭐ ${joint?'together':'saved'}</span><span>${cost} ⭐ goal</span></div>
   </div>`;
 }
 async function setGoal(k,rewardId){
@@ -1966,22 +1976,27 @@ function renderMain(){
     if(!items.length)return '';
     return `<div class="tierlab">${label}<small>${sub}</small></div><div class="rewards">${items.map(r=>{
       const gated=isGated(r);
+      const joint=isJoint(r);
       const eligible=canClaim(r,k);
       const credits=gated?getCredits(r,k):0;
-      const shortBy=Math.max(0,r.cost-k.total_points);
+      const have=availableFor(r,k);                 // pooled total for a joint goal
+      const shortBy=Math.max(0,r.cost-have);
       const weekdayBlocked=gated && r.allowed_weekdays && r.allowed_weekdays.length && !r.allowed_weekdays.includes(todayDow());
       let costLabel,btnLabel;
       if(gated){
         const credLabel=credits>0?credits+' credit'+(credits===1?'':'s')+' to claim':'No credits yet';
         costLabel=(r.cost>0?r.cost+' ⭐ · ':'')+credLabel+(weekdayBlocked && credits>0?' (Fri/Sat only)':'');
         btnLabel=eligible?'Claim':(credits>0?(weekdayBlocked?'Wait for Fri/Sat':'Need '+shortBy+' more ⭐'):'Locked');
+      }else if(joint){
+        costLabel=`${have}/${r.cost} ⭐ together`;
+        btnLabel=eligible?'Claim together':'Need '+shortBy;
       }else{
         costLabel=r.cost+' ⭐';
         btnLabel=eligible?'Redeem':'Need '+shortBy;
       }
       return `<div class="reward">
         <button class="pin ${k.goal_reward_id===r.id?'on':''}" data-pin="${r.id}" title="Set as goal">📌</button>
-        <div class="emo">${r.emoji}</div><div class="nm">${esc(r.name)}</div><div class="cost">${costLabel}</div>
+        <div class="emo">${r.emoji}</div><div class="nm">${esc(r.name)}${joint?' <span class="stretchtag">👫 Joint goal</span>':''}</div><div class="cost">${costLabel}</div>
         <button data-r="${r.id}" ${eligible?'':'disabled'}>${btnLabel}</button>
       </div>`;
     }).join('')}</div>`;
@@ -2118,8 +2133,35 @@ async function resetToday(k){
 
 async function redeem(k,rewardId){
   const r=rewards.find(x=>x.id===rewardId);if(!r||!canClaim(r,k))return;
-  k.total_points=Math.max(0,k.total_points-r.cost);
-  await sb.from('profiles').update({total_points:k.total_points}).eq('id',k.id);
+  if(isJoint(r)){
+    // Joint goal: spend from the pool, taking each kid's share in proportion to
+    // what they saved, then mopping up any rounding shortfall.
+    const kids=kidProfiles();
+    const pool=jointTotal();
+    const take={};
+    let remaining=r.cost;
+    for(const p of kids){
+      if(remaining<=0)break;
+      const bal=Math.max(0,p.total_points||0);
+      if(!bal||!pool)continue;
+      const share=Math.min(bal,Math.round(r.cost*(bal/pool)),remaining);
+      take[p.id]=share;remaining-=share;
+    }
+    for(const p of kids){                     // rounding shortfall
+      if(remaining<=0)break;
+      const left=Math.max(0,(p.total_points||0)-(take[p.id]||0));
+      const extra=Math.min(left,remaining);
+      if(extra>0){take[p.id]=(take[p.id]||0)+extra;remaining-=extra;}
+    }
+    for(const p of kids){
+      const t=take[p.id];if(!t)continue;
+      p.total_points=Math.max(0,(p.total_points||0)-t);
+      await sb.from('profiles').update({total_points:p.total_points}).eq('id',p.id);
+    }
+  }else{
+    k.total_points=Math.max(0,k.total_points-r.cost);
+    await sb.from('profiles').update({total_points:k.total_points}).eq('id',k.id);
+  }
   if(isGated(r)){
     const key=creditKey(r.id,k.id);
     const row=rewardCredits[key];
@@ -2128,12 +2170,14 @@ async function redeem(k,rewardId){
     if(row)row.credits=newCredits;
   }
   // Claiming the pinned goal completes it — clear so a new goal can be set.
-  if(k.goal_reward_id===r.id){
-    k.goal_reward_id=null;
-    const prof=profiles.find(p=>p.id===k.id);if(prof)prof.goal_reward_id=null;
-    await sb.from('profiles').update({goal_reward_id:null}).eq('id',k.id);
+  // A joint goal may be pinned by several kids, so clear it for all of them.
+  const pinnedBy=isJoint(r)?profiles.filter(p=>p.goal_reward_id===r.id):(k.goal_reward_id===r.id?[k]:[]);
+  for(const p of pinnedBy){
+    p.goal_reward_id=null;
+    const prof=profiles.find(x=>x.id===p.id);if(prof)prof.goal_reward_id=null;
+    await sb.from('profiles').update({goal_reward_id:null}).eq('id',p.id);
   }
-  toast(`${k.name} redeemed ${r.name}! ${r.emoji}`);
+  toast(isJoint(r)?`Joint goal claimed — ${r.name}! ${r.emoji}`:`${k.name} redeemed ${r.name}! ${r.emoji}`);
   await sb.from('redemptions').insert({family_id:familyId,profile_id:k.id,reward_id:r.id,cost:r.cost});
   renderMain();
 }
@@ -2385,7 +2429,8 @@ async function openAdmin(k,opts={}){
               <option value="earn">🌟 Earn by finishing the day</option>
             </select>
             <select id="rOwner">
-              <option value="both" selected>Shared — all kids</option>
+              <option value="both" selected>Shared — each kid earns their own</option>
+              <option value="joint">👫 Joint goal — kids pool stars together</option>
               ${kids.map(kk=>`<option value="${kk.id}">${esc(kk.name)} only</option>`).join('')}
             </select>
           </div>
@@ -2609,9 +2654,9 @@ async function openAdmin(k,opts={}){
 
   const liveRewards=rewards.filter(r=>!r.pending);
   $('#rewardList').innerHTML=liveRewards.length?liveRewards.map(r=>{
-    const ownerLabel=r.owner==='profile'?((profiles.find(p=>p.id===r.owner_profile_id)||{}).name||'one kid')+' only':'shared';
+    const ownerLabel=r.owner==='profile'?((profiles.find(p=>p.id===r.owner_profile_id)||{}).name||'one kid')+' only':(r.owner==='joint'?'👫 joint — pooled':'shared');
     const cat=isGated(r)?'🌟 earn by finishing day':`${r.cost} ⭐`;
-    return `<div class="item" data-owner="${r.owner==='both'?'both':(r.owner_profile_id||'both')}"><span class="e">${r.emoji}</span><span class="t">${esc(r.name)}<small>${cat} · ${esc(ownerLabel)}</small></span><button class="del" data-delr="${r.id}">🗑️</button></div>`;
+    return `<div class="item" data-owner="${(r.owner==='both'||r.owner==='joint')?'both':(r.owner_profile_id||'both')}"><span class="e">${r.emoji}</span><span class="t">${esc(r.name)}<small>${cat} · ${esc(ownerLabel)}</small></span><button class="del" data-delr="${r.id}">🗑️</button></div>`;
   }).join(''):'<div class="empty">No rewards yet.</div>';
   document.querySelectorAll('[data-delr]').forEach(el=>el.onclick=async()=>{
     await sb.from('rewards').update({archived:true}).eq('id',el.dataset.delr);
@@ -2644,13 +2689,13 @@ async function openAdmin(k,opts={}){
     const earn=$('#rType').value==='earn';
     let c=parseInt($('#rCost').value,10);if(isNaN(c)||c<0)c=earn?0:50;
     const ownerSel=$('#rOwner').value;
-    const toOneKid=ownerSel!=='both';
+    const toOneKid=ownerSel!=='both' && ownerSel!=='joint';
     // Block duplicate reward names within the family (case-insensitive).
     if(rewards.some(r=>!r.archived && !r.pending && (r.name||'').trim().toLowerCase()===nm.toLowerCase()))
       return toast('A reward with that name already exists');
     const {data,error}=await sb.from('rewards').insert({
       family_id:familyId,
-      owner:toOneKid?'profile':'both',
+      owner:toOneKid?'profile':ownerSel,          // 'profile' | 'both' | 'joint'
       owner_profile_id:toOneKid?ownerSel:null,
       emoji:$('#rEmo').value.trim()||'🎁',name:nm,
       cost:earn?0:c,tier:earn?'instant':'weekly',
