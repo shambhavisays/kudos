@@ -2342,6 +2342,11 @@ async function openAdmin(k,opts={}){
           <div id="cOccursOn" style="display:none;margin:2px 4px 8px"><input type="date" id="cDate" style="width:100%;border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;font-family:'Nunito';color:var(--ink)"></div>
           <div class="note" style="margin:0 4px 4px;color:var(--muted)"><b>Earns stars</b>: enter how many. <b>Daily care</b>: tapped off, builds the streak, no stars. <b>Loses stars</b>: enter how many are taken away (a penalty like whining).</div>
           <label class="toggle" style="margin:2px 4px 4px"><input type="checkbox" id="cPhoto"> 📷 Require a photo to complete</label>
+          <div id="cApplyFrom" style="display:none;margin:8px 4px;padding:10px;border:1px dashed var(--line);border-radius:12px">
+            <label class="toggle" style="align-items:flex-start;font-size:12px;line-height:1.4;margin:0"><input type="checkbox" id="cBackfill" style="margin-top:2px;flex:none">
+              <span>Also apply the new star value to completions <b>already logged</b>, from the date below onward. Their stars and the child's total are adjusted to match. Leave unticked and the change only affects future completions.</span></label>
+            <input type="date" id="cBackfillDate" min="${signupDate}" max="${today()}" value="${today()}" style="margin-top:8px;width:100%;border:2px solid var(--line);border-radius:11px;padding:9px;font-weight:700;font-size:14px;font-family:'Nunito';color:var(--ink)">
+          </div>
           <button class="addbtn" id="addChore">＋ Add chore</button>
           <button class="linkbtn" id="cancelEdit" style="display:none;margin-top:4px">Cancel edit</button>
           <div class="rowbtns"><button class="danger" id="resetTodayBtn">↺ Reset ${kidLabel}'s today</button></div>`:''}
@@ -2494,6 +2499,8 @@ async function openAdmin(k,opts={}){
       $('#cPhoto').checked=!!c.requires_photo;
       $('#addChore').textContent='💾 Save changes';
       $('#cancelEdit').style.display='';
+      $('#cApplyFrom').style.display='';        // retro-pricing option, edit mode only
+      $('#cBackfill').checked=false;
       $('#cName').scrollIntoView({block:'center'});
     });
     document.querySelectorAll('[data-carec]').forEach(el=>el.onclick=async()=>{
@@ -2560,13 +2567,37 @@ async function openAdmin(k,opts={}){
       }
       const fields={emoji:$('#cEmo').value.trim()||'⭐',name:nm,points:p,cadence,schedule_mode,weekdays,occurs_on,requires_photo:$('#cPhoto').checked};
       if(_editChoreId){
-        // Editing: only future completions use the new value — past completions
-        // keep the stars they were recorded with, so history stays honest.
+        // By default only future completions use the new value — past ones keep
+        // the stars they were recorded with. Ticking "apply from" re-prices the
+        // already-logged completions from that date and corrects the kid's total.
+        const before=chores.find(x=>x.id===_editChoreId)||{};
+        const oldPts=before.points;
         const {data,error}=await sb.from('chores').update(fields).eq('id',_editChoreId).select().single();
         if(error)return toast('Could not save changes');
         const i=chores.findIndex(x=>x.id===_editChoreId);if(i>=0)chores[i]=data;
+        let extra='';
+        if($('#cBackfill').checked && p!==oldPts){
+          const fromDate=$('#cBackfillDate').value;
+          if(!fromDate){toast('Pick a date to apply from');return;}
+          const {data:comps}=await sb.from('completions').select('id,points').eq('chore_id',_editChoreId).gte('completed_on',fromDate);
+          const rows=comps||[];
+          const delta=rows.reduce((s,cm)=>s+(p-cm.points),0);
+          if(rows.length){
+            const {error:ue}=await sb.from('completions').update({points:p}).eq('chore_id',_editChoreId).gte('completed_on',fromDate);
+            if(ue){toast('Chore saved, but back-dating failed');}
+            else{
+              const kid=profiles.find(pr=>pr.id===(before.profile_id||focusKid.id));
+              if(kid&&delta!==0){
+                const nt=Math.max(0,(kid.total_points||0)+delta);
+                await sb.from('profiles').update({total_points:nt}).eq('id',kid.id);
+                kid.total_points=nt;
+              }
+              extra=` · ${rows.length} past ${rows.length===1?'entry':'entries'} re-priced (${delta>=0?'+':'−'}${Math.abs(delta)} ⭐)`;
+            }
+          }else{ extra=' · no logged entries on/after that date'; }
+        }
         _editChoreId=null;
-        $('#modal').remove();openAdmin(focusKid);renderMain();toast('Chore updated');
+        $('#modal').remove();openAdmin(focusKid);renderMain();toast('Chore updated'+extra);
       }else{
         const {data,error}=await sb.from('chores').insert({family_id:familyId,profile_id:focusKid.id,...fields}).select().single();
         if(error)return toast('Could not add chore');
