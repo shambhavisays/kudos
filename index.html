@@ -227,6 +227,7 @@
   .emojibtn:active{transform:scale(.9)}
   /* ── Landing / marketing page ── */
   .lp{max-width:680px;margin:0 auto}
+  .twemoji{height:1em;width:1em;margin:0 .05em;vertical-align:-.15em}
   .lp-nav{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 0}
   .lp-nav .b{display:flex;align-items:center;gap:9px}
   .lp-nav .b img{width:32px;height:32px;border-radius:9px;display:block}
@@ -798,6 +799,42 @@ async function loadProfiles(){
 }
 
 // ── Landing (signed out) ──────────────────────────────────────────────────────
+// Self-hosted Twemoji swap for the landing page only: raw OS emoji render
+// differently per platform (Windows/Apple/Android glyphs all differ), which
+// makes the page look inconsistent depending on who's viewing it. Swapping
+// the fixed set of emoji actually used in the landing copy for local SVGs
+// makes rendering identical everywhere. Scoped to .lp, not the whole app.
+const LP_EMOJI_ICONS={
+  '⭐':'2b50','🍿':'1f37f','👧':'1f467','🦄':'1f984','☀️':'2600','🛏️':'1f6cf','🪥':'1faa5','🌤️':'1f324',
+  '📚':'1f4da','🧸':'1f9f8','🌙':'1f319','🛁':'1f6c1','🩵':'1fa75','📌':'1f4cc','😤':'1f624','🛠️':'1f6e0',
+  '📖':'1f4d6','📷':'1f4f7','📉':'1f4c9','📺':'1f4fa','🔥':'1f525','🚀':'1f680','🦷':'1f9b7','🧹':'1f9f9',
+  '🧩':'1f9e9','🎁':'1f381','🗓️':'1f5d3','🎯':'1f3af','🎚️':'1f39a','💛':'1f49b','📬':'1f4ec'
+};
+function twemojifyLanding(root){
+  const keys=Object.keys(LP_EMOJI_ICONS).sort((a,b)=>b.length-a.length);
+  const re=new RegExp(keys.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|'),'g');
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  const nodes=[];
+  let n;
+  while((n=walker.nextNode()))if(re.test(n.nodeValue))nodes.push(n);
+  nodes.forEach(node=>{
+    const text=node.nodeValue;
+    re.lastIndex=0;
+    const frag=document.createDocumentFragment();
+    let last=0,m;
+    while((m=re.exec(text))){
+      if(m.index>last)frag.appendChild(document.createTextNode(text.slice(last,m.index)));
+      const img=document.createElement('img');
+      img.src='./icons/twemoji/'+LP_EMOJI_ICONS[m[0]]+'.svg';
+      img.alt=m[0];
+      img.className='twemoji';
+      frag.appendChild(img);
+      last=m.index+m[0].length;
+    }
+    if(last<text.length)frag.appendChild(document.createTextNode(text.slice(last)));
+    node.parentNode.replaceChild(frag,node);
+  });
+}
 function renderLanding(){
   document.body.classList.add('landing');
   app.innerHTML=`
@@ -1004,6 +1041,7 @@ function renderLanding(){
   document.querySelectorAll('[data-scroll]').forEach(b=>b.onclick=()=>{const t=document.getElementById(b.dataset.scroll);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});});
   $('#navLogin').onclick=renderLogin;
   $('#fbLink').onclick=openFeedback;
+  twemojifyLanding(document.querySelector('.lp'));
   loadTestimonials();
 }
 
