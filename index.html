@@ -576,6 +576,7 @@ let currentUser = null;   // Supabase Auth user (the parent who owns the family)
 let familyId = null;
 let family = null;   // full family row (timezone, country, name, …)
 let _editDayDirty = false;   // a past day was edited → refresh the board on close
+let _editChoreId = null;     // chore being edited in the Chores form (null = adding)
 let me = null;
 let profiles = [];
 let chores = [];
@@ -2274,6 +2275,7 @@ async function toggleEditDay(kidId,choreId,dateStr,checked,pts,el){
 }
 
 async function openAdmin(k,opts={}){
+  _editChoreId=null;   // always open the Chores form in "add" mode
   // k may be null/parent when there are no kids yet — guard the kid-scoped bits.
   const kids=profiles.filter(p=>p.role==='kid');
   const focusKid=(k&&k.role==='kid')?k:kids[0]||null;
@@ -2341,6 +2343,7 @@ async function openAdmin(k,opts={}){
           <div class="note" style="margin:0 4px 4px;color:var(--muted)"><b>Earns stars</b>: enter how many. <b>Daily care</b>: tapped off, builds the streak, no stars. <b>Loses stars</b>: enter how many are taken away (a penalty like whining).</div>
           <label class="toggle" style="margin:2px 4px 4px"><input type="checkbox" id="cPhoto"> 📷 Require a photo to complete</label>
           <button class="addbtn" id="addChore">＋ Add chore</button>
+          <button class="linkbtn" id="cancelEdit" style="display:none;margin-top:4px">Cancel edit</button>
           <div class="rowbtns"><button class="danger" id="resetTodayBtn">↺ Reset ${kidLabel}'s today</button></div>`:''}
         </div>
         <div class="panel" id="panel-approvals">
@@ -2469,7 +2472,30 @@ async function openAdmin(k,opts={}){
   if(focusKid){
     const allHerChores=chores.filter(c=>c.profile_id===focusKid.id && !c.pending);
     $('#choreList').innerHTML=allHerChores.length?allHerChores.map(c=>`
-      <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${c.points>0?('+'+c.points+' ⭐'):(c.points<0?('📉 '+c.points+' ⭐ · slip'):'🩵 Daily care · no stars')}${c.requires_photo?' · 📷 photo':''}${c.cadence==='weekday'&&c.weekdays&&c.weekdays.length?' · '+(c.schedule_mode==='exclude'?'except ':'')+c.weekdays.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join('/'):''}${c.cadence==='oneoff'&&c.occurs_on?' · 📌 '+c.occurs_on:''}${c.cadence==='holiday'?' · 🎉 holidays only':''}</small></span><button class="del" data-carec="${c.id}" title="${c.points>0?'Make this daily care (no stars)':'Make this earn stars'}">${c.points>0?'🩵':'⭐'}</button><button class="del" data-delc="${c.id}">🗑️</button></div>`).join(''):'<div class="empty">No chores yet.</div>';
+      <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${c.points>0?('+'+c.points+' ⭐'):(c.points<0?('📉 '+c.points+' ⭐ · slip'):'🩵 Daily care · no stars')}${c.requires_photo?' · 📷 photo':''}${c.cadence==='weekday'&&c.weekdays&&c.weekdays.length?' · '+(c.schedule_mode==='exclude'?'except ':'')+c.weekdays.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join('/'):''}${c.cadence==='oneoff'&&c.occurs_on?' · 📌 '+c.occurs_on:''}${c.cadence==='holiday'?' · 🎉 holidays only':''}</small></span><button class="del" data-editc="${c.id}" title="Edit this chore">✏️</button><button class="del" data-carec="${c.id}" title="${c.points>0?'Make this daily care (no stars)':'Make this earn stars'}">${c.points>0?'🩵':'⭐'}</button><button class="del" data-delc="${c.id}">🗑️</button></div>`).join(''):'<div class="empty">No chores yet.</div>';
+    // ✏️ — load a chore into the form below and switch it to edit mode.
+    document.querySelectorAll('[data-editc]').forEach(el=>el.onclick=()=>{
+      const c=chores.find(x=>x.id===el.dataset.editc);if(!c)return;
+      _editChoreId=c.id;
+      const pts=c.points||0;
+      $('#cEmo').value=c.emoji||'';
+      $('#cName').value=c.name||'';
+      $('#cScore').value=pts>0?'earn':(pts<0?'lose':'care');
+      $('#cPts').value=pts===0?'':Math.abs(pts);
+      $('#cScore').onchange();
+      let mode='daily';
+      if(c.cadence==='weekday')mode=(c.schedule_mode==='exclude')?'weekday-exclude':'weekday-include';
+      else if(c.cadence==='oneoff')mode='oneoff';
+      else if(c.cadence==='holiday')mode='holiday';
+      $('#cCadence').value=mode;
+      $('#cCadence').onchange();
+      document.querySelectorAll('.cWd').forEach(w=>{w.checked=(c.weekdays||[]).includes(+w.value);});
+      $('#cDate').value=c.occurs_on||'';
+      $('#cPhoto').checked=!!c.requires_photo;
+      $('#addChore').textContent='💾 Save changes';
+      $('#cancelEdit').style.display='';
+      $('#cName').scrollIntoView({block:'center'});
+    });
     document.querySelectorAll('[data-carec]').forEach(el=>el.onclick=async()=>{
       const c=chores.find(x=>x.id===el.dataset.carec);if(!c)return;
       const np=c.points>0?0:5;   // → daily care, or back to a default star value
@@ -2532,10 +2558,22 @@ async function openAdmin(k,opts={}){
       }else if(mode==='holiday'){
         cadence='holiday';
       }
-      const {data,error}=await sb.from('chores').insert({family_id:familyId,profile_id:focusKid.id,emoji:$('#cEmo').value.trim()||'⭐',name:nm,points:p,cadence,schedule_mode,weekdays,occurs_on,requires_photo:$('#cPhoto').checked}).select().single();
-      if(error)return toast('Could not add chore');
-      chores.push(data);$('#modal').remove();openAdmin(focusKid);renderMain();toast('Chore added');
+      const fields={emoji:$('#cEmo').value.trim()||'⭐',name:nm,points:p,cadence,schedule_mode,weekdays,occurs_on,requires_photo:$('#cPhoto').checked};
+      if(_editChoreId){
+        // Editing: only future completions use the new value — past completions
+        // keep the stars they were recorded with, so history stays honest.
+        const {data,error}=await sb.from('chores').update(fields).eq('id',_editChoreId).select().single();
+        if(error)return toast('Could not save changes');
+        const i=chores.findIndex(x=>x.id===_editChoreId);if(i>=0)chores[i]=data;
+        _editChoreId=null;
+        $('#modal').remove();openAdmin(focusKid);renderMain();toast('Chore updated');
+      }else{
+        const {data,error}=await sb.from('chores').insert({family_id:familyId,profile_id:focusKid.id,...fields}).select().single();
+        if(error)return toast('Could not add chore');
+        chores.push(data);$('#modal').remove();openAdmin(focusKid);renderMain();toast('Chore added');
+      }
     };
+    $('#cancelEdit').onclick=()=>{_editChoreId=null;$('#modal').remove();openAdmin(focusKid);};
   }
 
   const liveRewards=rewards.filter(r=>!r.pending);
