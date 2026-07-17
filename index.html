@@ -577,6 +577,7 @@ let familyId = null;
 let family = null;   // full family row (timezone, country, name, …)
 let _editDayDirty = false;   // a past day was edited → refresh the board on close
 let _editChoreId = null;     // chore being edited in the Chores form (null = adding)
+let _editRewardId = null;    // reward being edited in the Rewards form (null = adding)
 let me = null;
 let profiles = [];
 let chores = [];
@@ -2319,7 +2320,7 @@ async function toggleEditDay(kidId,choreId,dateStr,checked,pts,el){
 }
 
 async function openAdmin(k,opts={}){
-  _editChoreId=null;   // always open the Chores form in "add" mode
+  _editChoreId=null;_editRewardId=null;   // always open the forms in "add" mode
   // k may be null/parent when there are no kids yet — guard the kid-scoped bits.
   const kids=profiles.filter(p=>p.role==='kid');
   const focusKid=(k&&k.role==='kid')?k:kids[0]||null;
@@ -2436,6 +2437,7 @@ async function openAdmin(k,opts={}){
           </div>
           <div class="note" id="rTypeNote" style="margin:0 4px 4px;color:var(--muted)">Bought with saved-up stars.</div>
           <button class="addbtn" id="addReward">＋ Add reward</button>
+          <button class="linkbtn" id="cancelEditReward" style="display:none;margin-top:4px">Cancel edit</button>
         </div>
         <div class="panel" id="panel-family">
           <div class="note">Add or remove kids and parents. Each kid gets their own chore board.</div>
@@ -2656,8 +2658,22 @@ async function openAdmin(k,opts={}){
   $('#rewardList').innerHTML=liveRewards.length?liveRewards.map(r=>{
     const ownerLabel=r.owner==='profile'?((profiles.find(p=>p.id===r.owner_profile_id)||{}).name||'one kid')+' only':(r.owner==='joint'?'👫 joint — pooled':'shared');
     const cat=isGated(r)?'🌟 earn by finishing day':`${r.cost} ⭐`;
-    return `<div class="item" data-owner="${(r.owner==='both'||r.owner==='joint')?'both':(r.owner_profile_id||'both')}"><span class="e">${r.emoji}</span><span class="t">${esc(r.name)}<small>${cat} · ${esc(ownerLabel)}</small></span><button class="del" data-delr="${r.id}">🗑️</button></div>`;
+    return `<div class="item" data-owner="${(r.owner==='both'||r.owner==='joint')?'both':(r.owner_profile_id||'both')}"><span class="e">${r.emoji}</span><span class="t">${esc(r.name)}<small>${cat} · ${esc(ownerLabel)}</small></span><button class="del" data-editr="${r.id}" title="Edit this reward">✏️</button><button class="del" data-delr="${r.id}">🗑️</button></div>`;
   }).join(''):'<div class="empty">No rewards yet.</div>';
+  // ✏️ — load a reward into the form below and switch it to edit mode.
+  document.querySelectorAll('[data-editr]').forEach(el=>el.onclick=()=>{
+    const r=rewards.find(x=>x.id===el.dataset.editr);if(!r)return;
+    _editRewardId=r.id;
+    $('#rEmo').value=r.emoji||'';
+    $('#rName').value=r.name||'';
+    $('#rType').value=isGated(r)?'earn':'spend';
+    $('#rCost').value=r.cost||'';
+    $('#rType').onchange();
+    $('#rOwner').value=r.owner==='profile'?(r.owner_profile_id||'both'):r.owner;   // both | joint | <kidId>
+    $('#addReward').textContent='💾 Save changes';
+    $('#cancelEditReward').style.display='';
+    $('#rName').scrollIntoView({block:'center'});
+  });
   document.querySelectorAll('[data-delr]').forEach(el=>el.onclick=async()=>{
     await sb.from('rewards').update({archived:true}).eq('id',el.dataset.delr);
     rewards=rewards.filter(r=>r.id!==el.dataset.delr);$('#modal').remove();openAdmin(focusKid);
@@ -2690,20 +2706,39 @@ async function openAdmin(k,opts={}){
     let c=parseInt($('#rCost').value,10);if(isNaN(c)||c<0)c=earn?0:50;
     const ownerSel=$('#rOwner').value;
     const toOneKid=ownerSel!=='both' && ownerSel!=='joint';
-    // Block duplicate reward names within the family (case-insensitive).
-    if(rewards.some(r=>!r.archived && !r.pending && (r.name||'').trim().toLowerCase()===nm.toLowerCase()))
+    // Block duplicate reward names within the family (ignoring the one being edited).
+    if(rewards.some(r=>!r.archived && !r.pending && r.id!==_editRewardId && (r.name||'').trim().toLowerCase()===nm.toLowerCase()))
       return toast('A reward with that name already exists');
-    const {data,error}=await sb.from('rewards').insert({
-      family_id:familyId,
+    const base={
       owner:toOneKid?'profile':ownerSel,          // 'profile' | 'both' | 'joint'
       owner_profile_id:toOneKid?ownerSel:null,
       emoji:$('#rEmo').value.trim()||'🎁',name:nm,
-      cost:earn?0:c,tier:earn?'instant':'weekly',
-      requires_all_today:earn
-    }).select().single();
-    if(error)return toast('Could not add reward');
-    rewards.push(data);$('#modal').remove();openAdmin(focusKid);renderMain();toast('Reward added');
+      cost:earn?0:c,tier:earn?'instant':'weekly'
+    };
+    // 'joint' needs migration-09; say so plainly instead of a vague failure.
+    const explain=e=>(/owner/i.test(e.message||'')||/constraint/i.test(e.message||''))&&ownerSel==='joint'
+      ?'Joint goals need migration-09 — run it in Supabase first'
+      :null;
+    if(_editRewardId){
+      const before=rewards.find(x=>x.id===_editRewardId)||{};
+      const wasGated=isGated(before);
+      // Only touch the gating when the earn/spend type actually changes, so an
+      // existing condition (e.g. "full points excluding stretch") isn't clobbered.
+      let gate={};
+      if(earn && !wasGated)gate={requires_all_today:true};
+      else if(!earn && wasGated)gate={requires_all_today:false,requires_perfect_week:false,requires_full_points_excluding:null,requires_chore_names:null};
+      const {data,error}=await sb.from('rewards').update({...base,...gate}).eq('id',_editRewardId).select().single();
+      if(error)return toast(explain(error)||'Could not save changes');
+      const i=rewards.findIndex(x=>x.id===_editRewardId);if(i>=0)rewards[i]=data;
+      _editRewardId=null;
+      $('#modal').remove();openAdmin(focusKid);renderMain();toast('Reward updated');
+    }else{
+      const {data,error}=await sb.from('rewards').insert({family_id:familyId,...base,requires_all_today:earn}).select().single();
+      if(error)return toast(explain(error)||'Could not add reward');
+      rewards.push(data);$('#modal').remove();openAdmin(focusKid);renderMain();toast('Reward added');
+    }
   };
+  $('#cancelEditReward').onclick=()=>{_editRewardId=null;$('#modal').remove();openAdmin(focusKid);};
 
   // ── Family tab: manage profiles ──
   $('#familyList').innerHTML=profiles.map(p=>{
