@@ -578,6 +578,7 @@ let family = null;   // full family row (timezone, country, name, …)
 let _editDayDirty = false;   // a past day was edited → refresh the board on close
 let _editChoreId = null;     // chore being edited in the Chores form (null = adding)
 let _editRewardId = null;    // reward being edited in the Rewards form (null = adding)
+let _rEmoAuto = true;        // reward emoji still auto-picked from the name?
 let me = null;
 let profiles = [];
 let chores = [];
@@ -751,6 +752,31 @@ const OOPS=['Oops — {n} ⭐ off. Fresh start! 💛','−{n} ⭐. Tomorrow\'s a
 const pickOops=(n)=>OOPS[Math.floor(Math.random()*OOPS.length)].replace('{n}',n);
 // A chore's sentiment from its points: 1 win, 0 daily-care, -1 slip.
 const choreSentiment=pts=>pts>0?1:(pts<0?-1:0);
+
+// ── Emoji inference: pick a fitting icon from a reward's name so parents don't
+// end up with a generic 🎁 on everything. Ordered — the most specific phrases
+// come first so "bunk bed" beats "bed" and "special permission" beats "treat".
+const EMOJI_HINTS=[
+  [/permission|privilege/,'🌟'],[/sleep\s?over/,'🛌'],[/bunk|\bbed\b|bedroom/,'🛏️'],
+  [/ice\s?cream/,'🍦'],[/screen|\btv\b|television|youtube|netflix|tablet|ipad/,'📺'],
+  [/movie|cinema|film/,'🎬'],[/video\s?game|gaming|xbox|playstation|nintendo|\bgame\b/,'🎮'],
+  [/lego/,'🧱'],[/\btoy/,'🧸'],[/book|reading/,'📚'],[/pizza/,'🍕'],[/popcorn/,'🍿'],
+  [/cake|birthday/,'🎂'],[/bake|baking|cook/,'🧁'],[/candy|sweet|chocolate|dessert|treat/,'🍫'],
+  [/dinner|menu|meal|restaurant|eat\s?out|lunch|breakfast/,'🍽️'],
+  [/playground|\bpark\b/,'🛝'],[/\bzoo\b/,'🦁'],[/beach/,'🏖️'],[/swim|pool/,'🏊'],
+  [/scooter/,'🛴'],[/skate/,'🛹'],[/bike|cycle|cycling/,'🚲'],
+  [/money|allowance|cash|pocket/,'💵'],[/stay\s?up|late|bedtime/,'🌙'],
+  [/friend|playdate/,'👫'],[/outing|trip|travel|vacation|drive/,'🚗'],
+  [/phone|mobile/,'📱'],[/music|song|spotify/,'🎵'],[/art|paint|draw|craft/,'🎨'],
+  [/sport|soccer|football|\bball\b/,'⚽'],[/puppy|\bdog\b|\bpet\b/,'🐕'],[/kitten|\bcat\b/,'🐈'],
+  [/camp/,'🏕️'],[/concert|show/,'🎤'],[/clothes|dress|shopping/,'👗'],[/shoe|sneaker/,'👟'],
+  [/headphone|earbud/,'🎧'],[/computer|laptop/,'💻'],[/party/,'🎉'],[/picnic/,'🧺'],
+];
+function guessEmoji(name){
+  const n=(name||'').toLowerCase();
+  for(const [re,em] of EMOJI_HINTS)if(re.test(n))return em;
+  return '';
+}
 
 // Two kinds of starter reward:
 //  • earn=true → banks a credit each day the child finishes all their chores
@@ -2320,7 +2346,7 @@ async function toggleEditDay(kidId,choreId,dateStr,checked,pts,el){
 }
 
 async function openAdmin(k,opts={}){
-  _editChoreId=null;_editRewardId=null;   // always open the forms in "add" mode
+  _editChoreId=null;_editRewardId=null;_rEmoAuto=true;   // always open the forms in "add" mode
   // k may be null/parent when there are no kids yet — guard the kid-scoped bits.
   const kids=profiles.filter(p=>p.role==='kid');
   const focusKid=(k&&k.role==='kid')?k:kids[0]||null;
@@ -2664,7 +2690,9 @@ async function openAdmin(k,opts={}){
   document.querySelectorAll('[data-editr]').forEach(el=>el.onclick=()=>{
     const r=rewards.find(x=>x.id===el.dataset.editr);if(!r)return;
     _editRewardId=r.id;
-    $('#rEmo').value=r.emoji||'';
+    // Keep a deliberately-chosen emoji; re-guess if it's blank or the generic 🎁.
+    _rEmoAuto=(!r.emoji||r.emoji==='🎁');
+    $('#rEmo').value=_rEmoAuto?(guessEmoji(r.name)||r.emoji||''):r.emoji;
     $('#rName').value=r.name||'';
     $('#rType').value=isGated(r)?'earn':'spend';
     $('#rCost').value=r.cost||'';
@@ -2692,6 +2720,9 @@ async function openAdmin(k,opts={}){
     rewards=rewards.filter(r=>r.id!==id);
     toast('Reward declined');$('#modal').remove();openAdmin(focusKid);
   });
+    // Suggest an emoji from the reward's name until the parent picks their own.
+    $('#rName').oninput=()=>{ if(_rEmoAuto)$('#rEmo').value=guessEmoji($('#rName').value); };
+    $('#rEmo').addEventListener('click',()=>{_rEmoAuto=false;});   // they're choosing deliberately
     // Reward-type toggle: hide the star cost when it's earned by finishing the day.
     $('#rType').onchange=()=>{
       const earn=$('#rType').value==='earn';
@@ -2712,7 +2743,7 @@ async function openAdmin(k,opts={}){
     const base={
       owner:toOneKid?'profile':ownerSel,          // 'profile' | 'both' | 'joint'
       owner_profile_id:toOneKid?ownerSel:null,
-      emoji:$('#rEmo').value.trim()||'🎁',name:nm,
+      emoji:$('#rEmo').value.trim()||guessEmoji(nm)||'🎁',name:nm,
       cost:earn?0:c,tier:earn?'instant':'weekly'
     };
     // 'joint' needs migration-09; say so plainly instead of a vague failure.
