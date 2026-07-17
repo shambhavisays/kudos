@@ -579,6 +579,7 @@ let _editDayDirty = false;   // a past day was edited → refresh the board on c
 let _editChoreId = null;     // chore being edited in the Chores form (null = adding)
 let _editRewardId = null;    // reward being edited in the Rewards form (null = adding)
 let _rEmoAuto = true;        // reward emoji still auto-picked from the name?
+let _cEmoAuto = true;        // chore emoji still auto-picked from the name?
 let me = null;
 let profiles = [];
 let chores = [];
@@ -776,6 +777,30 @@ function guessEmoji(name){
   const n=(name||'').toLowerCase();
   for(const [re,em] of EMOJI_HINTS)if(re.test(n))return em;
   return '';
+}
+// Chores have their own vocabulary; check these first, then fall back to the
+// reward hints (and 🌟 for the common "special task"). Ordered — specific first.
+const CHORE_HINTS=[
+  [/brush.*(teeth|tooth)|teeth|tooth/,'🪥'],[/floss/,'🦷'],[/wash.*hand|hand.*wash|sanitiz/,'🧼'],
+  [/shower|bath/,'🛁'],[/hair|comb|brush hair/,'💇'],[/cream|lotion|moistur|sunscreen/,'🧴'],
+  [/nail/,'💅'],[/make.*bed|bed made/,'🛏️'],[/get dressed|dress|clothes ready/,'👕'],
+  [/homework|study|school work|revision/,'📚'],[/read|reading log/,'📖'],
+  [/math|english|spelling|tutor/,'📐'],[/piano|violin|music practice|instrument/,'🎹'],
+  [/laundry|fold|washing/,'🧺'],[/dish|dishwasher/,'🍽️'],[/vacuum|hoover/,'🧹'],
+  [/tidy|clean.*room|clean.*house|organize|declutter/,'🧹'],[/wipe|table/,'🧽'],
+  [/trash|garbage|rubbish|bin\b/,'🗑️'],[/recycl/,'♻️'],[/water.*plant|plant/,'🪴'],
+  [/feed|pet|dog\b/,'🐕'],[/cat\b/,'🐈'],[/pack.*bag|school bag|backpack/,'🎒'],
+  [/shoe|sneaker/,'👟'],[/veg|vegetable|greens|salad/,'🥦'],[/fruit/,'🍎'],
+  [/milk/,'🥛'],[/water bottle|drink water|hydrate/,'💧'],[/breakfast/,'🍳'],
+  [/lunch|dinner|eat|meal|snack/,'🍽️'],[/pill|medicine|vitamin/,'💊'],
+  [/swim/,'🏊'],[/taekwondo|karate|martial/,'🥋'],[/dance/,'💃'],[/exercise|workout|run/,'🏃'],
+  [/special task|stretch|bonus/,'🌟'],[/whin|tantrum|hit|yell/,'😢'],
+  [/towel|hang/,'🧺'],[/plate|sink/,'🍽️'],[/pray|meditat/,'🙏'],[/chore|help/,'🧹'],
+];
+function guessChoreEmoji(name){
+  const n=(name||'').toLowerCase();
+  for(const [re,em] of CHORE_HINTS)if(re.test(n))return em;
+  return guessEmoji(name);
 }
 
 // Two kinds of starter reward:
@@ -2230,6 +2255,36 @@ async function proposeReward(k){
   toast('Sent to parent for approval! 💌');
 }
 
+// Data portability: download everything in this account as one JSON file.
+async function exportData(){
+  const btn=$('#exportDataBtn');if(btn){btn.disabled=true;btn.textContent='Gathering…';}
+  try{
+    const t=n=>sb.from(n).select('*').eq('family_id',familyId);
+    const [fam,profs,ch,comp,rew,red,cred,sums]=await Promise.all([
+      sb.from('families').select('*').eq('id',familyId),
+      t('profiles'),t('chores'),t('completions'),t('rewards'),
+      t('redemptions'),t('reward_credits'),t('monthly_summaries')
+    ]);
+    const strip=rows=>(rows.data||[]).map(r=>{const{pin_hash,pin_salt,...rest}=r;return rest;}); // never export PIN hashes
+    const bundle={
+      exported_at:new Date().toISOString(),
+      account_email:(currentUser&&currentUser.email)||null,
+      family:(fam.data||[])[0]||null,
+      profiles:strip(profs),chores:ch.data||[],completions:comp.data||[],
+      rewards:rew.data||[],redemptions:red.data||[],reward_credits:cred.data||[],
+      monthly_summaries:sums.data||[]
+    };
+    const blob=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=`kudos-data-${today()}.json`;
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    toast('Your data was downloaded 📄');
+  }catch(e){ console.error(e); toast('Export failed — please try again'); }
+  finally{ if(btn){btn.disabled=false;btn.textContent='⬇️ Download my data';} }
+}
+
 // Parent self-service: permanently delete the account and ALL data. Two
 // confirmations (irreversible), then a single RPC erases everything server-side
 // — photos, family, profiles, chores, history, and the login itself.
@@ -2346,7 +2401,7 @@ async function toggleEditDay(kidId,choreId,dateStr,checked,pts,el){
 }
 
 async function openAdmin(k,opts={}){
-  _editChoreId=null;_editRewardId=null;_rEmoAuto=true;   // always open the forms in "add" mode
+  _editChoreId=null;_editRewardId=null;_rEmoAuto=true;_cEmoAuto=true;   // forms open in "add" mode
   // k may be null/parent when there are no kids yet — guard the kid-scoped bits.
   const kids=profiles.filter(p=>p.role==='kid');
   const focusKid=(k&&k.role==='kid')?k:kids[0]||null;
@@ -2479,6 +2534,11 @@ async function openAdmin(k,opts={}){
           <div class="note" style="color:var(--ink);font-weight:800">Signed in as</div>
           <div class="item"><span class="e">📧</span><span class="t">${esc((currentUser&&currentUser.email)||'—')}<small>${currentUser&&currentUser.app_metadata&&currentUser.app_metadata.provider==='google'?'Google sign-in':'Email &amp; password'}</small></span></div>
           <div style="margin-top:18px;border-top:1px solid var(--line);padding-top:14px">
+            <div class="note" style="color:var(--ink);font-weight:800">Your data</div>
+            <div class="note" style="margin:0 4px 8px;color:var(--muted)">Download a copy of everything in your account — profiles, chores, rewards, and full history — as a JSON file.</div>
+            <button class="addbtn" id="exportDataBtn">⬇️ Download my data</button>
+          </div>
+          <div style="margin-top:18px;border-top:1px solid var(--line);padding-top:14px">
             <div class="note" style="color:var(--ink);font-weight:800">Delete account</div>
             <div class="note" style="margin:0 4px 8px;color:var(--muted)">Permanently delete this account and <b>all</b> data — every child, chore, star, reward, photo, and history. This cannot be undone.</div>
             <button class="danger" id="deleteAccountBtn">🗑️ Delete my account &amp; all data</button>
@@ -2556,7 +2616,9 @@ async function openAdmin(k,opts={}){
       const c=chores.find(x=>x.id===el.dataset.editc);if(!c)return;
       _editChoreId=c.id;
       const pts=c.points||0;
-      $('#cEmo').value=c.emoji||'';
+      // Keep a deliberate emoji; re-guess if blank or the generic ⭐.
+      _cEmoAuto=(!c.emoji||c.emoji==='⭐');
+      $('#cEmo').value=_cEmoAuto?(guessChoreEmoji(c.name)||c.emoji||''):c.emoji;
       $('#cName').value=c.name||'';
       $('#cScore').value=pts>0?'earn':(pts<0?'lose':'care');
       $('#cPts').value=pts===0?'':Math.abs(pts);
@@ -2606,6 +2668,9 @@ async function openAdmin(k,opts={}){
       chores=chores.filter(c=>c.id!==id);
       toast('Rejected');$('#modal').remove();openAdmin(focusKid);
     });
+    // Suggest an emoji from the chore's name until the parent picks their own.
+    $('#cName').oninput=()=>{ if(_cEmoAuto)$('#cEmo').value=guessChoreEmoji($('#cName').value); };
+    $('#cEmo').addEventListener('click',()=>{_cEmoAuto=false;});
     // Show the weekday picker / date input for the modes that need them.
     $('#cCadence').onchange=()=>{
       const v=$('#cCadence').value;
@@ -2638,7 +2703,7 @@ async function openAdmin(k,opts={}){
       }else if(mode==='holiday'){
         cadence='holiday';
       }
-      const fields={emoji:$('#cEmo').value.trim()||'⭐',name:nm,points:p,cadence,schedule_mode,weekdays,occurs_on,requires_photo:$('#cPhoto').checked};
+      const fields={emoji:$('#cEmo').value.trim()||guessChoreEmoji(nm)||'⭐',name:nm,points:p,cadence,schedule_mode,weekdays,occurs_on,requires_photo:$('#cPhoto').checked};
       if(_editChoreId){
         // By default only future completions use the new value — past ones keep
         // the stars they were recorded with. Ticking "apply from" re-prices the
@@ -2814,6 +2879,7 @@ async function openAdmin(k,opts={}){
     profiles.push(data);$('#modal').remove();openAdmin(focusKid);renderMain();toast(`${nm} added`);
   };
   $('#deleteAccountBtn').onclick=deleteAccount;
+  $('#exportDataBtn').onclick=exportData;
 
   // ── PINs tab ──
   $('#pinList').innerHTML=profiles.map(p=>{
