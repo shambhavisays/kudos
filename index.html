@@ -834,7 +834,17 @@ window.addEventListener('popstate',(e)=>{
   switch(state.kudosView){
     case 'landing': renderLanding(); break;
     case 'login': renderLogin(); break;
-    case 'onboarding': startOnboarding(); break;
+    case 'onboarding': {
+      // Missing `onboard` = the tab was reloaded mid-wizard and in-memory state is
+      // gone - only then is a fresh start correct. Otherwise reuse the existing
+      // onboard object so going back never wipes what was already typed in.
+      if(!onboard){startOnboarding();break;}
+      wizActiveKid=typeof state.kidIndex==='number'?state.kidIndex:0;
+      if(state.step==='chores')renderWizChores();
+      else if(state.step==='parent')renderWizParent();
+      else renderWizKidDetails();
+      break;
+    }
     case 'profilePicker': renderProfilePicker(); break;
     case 'pin': {
       const p=profiles.find(pr=>pr.id===state.profileId);
@@ -1124,7 +1134,7 @@ function renderLanding(){
       <div class="copy" style="margin-top:7px">📬 Subscribe to <a href="https://productwithshambhavi.substack.com/" target="_blank" rel="noopener" style="color:var(--accent-deep);font-weight:800">Unpacking AI &amp; Product</a></div>
     </footer>
   </div>`;
-  document.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>navTo('onboarding',startOnboarding));
+  document.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>navTo('onboarding',startOnboarding,{step:'kidDetails',kidIndex:0}));
   document.querySelectorAll('[data-scroll]').forEach(b=>b.onclick=()=>{const t=document.getElementById(b.dataset.scroll);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});});
   $('#navLogin').onclick=()=>navTo('login',renderLogin);
   $('#fbLink').onclick=openFeedback;
@@ -1272,7 +1282,7 @@ function renderWizKidDetails(){
     </div>`;
   $('#kWantsPin').onchange=e=>{kid.wantsPin=e.target.checked;$('#kPinWrap').style.display=kid.wantsPin?'':'none';};
   // Back: for a 2nd+ kid, return to the previous kid's chores; for the first, the landing.
-  $('#wizBack1').onclick=()=>{ if(wizActiveKid>0){wizActiveKid--;renderWizChores();} else navTo('landing',renderLanding); };
+  $('#wizBack1').onclick=()=>{ if(wizActiveKid>0){wizActiveKid--;navTo('onboarding',renderWizChores,{step:'chores',kidIndex:wizActiveKid});} else navTo('landing',renderLanding); };
   $('#wizNext1').onclick=async()=>{
     const name=$('#kName').value.trim();
     if(!name)return toast("Add the child's name");
@@ -1291,7 +1301,7 @@ function renderWizKidDetails(){
       if(pin && pin.length!==4)return toast('Kid PIN must be 4 digits (or untick to skip)');
       if(pin){kid.pinSalt=genSalt();kid.pinHash=await hashPin(pin,kid.pinSalt);}else{kid.pinHash=null;kid.pinSalt=null;}
     }else{kid.pinHash=null;kid.pinSalt=null;}
-    renderWizChores();
+    navTo('onboarding',renderWizChores,{step:'chores',kidIndex:wizActiveKid});
   };
 }
 
@@ -1365,14 +1375,15 @@ function renderWizChores(){
     else{const pc=pool.find(x=>x.name===nm);cur.points=(pc&&pc.points>0)?pc.points:5;}
     renderWizChores();
   });
-  $('#wizBack').onclick=renderWizKidDetails;   // back to this kid's name step
+  $('#wizBack').onclick=()=>navTo('onboarding',renderWizKidDetails,{step:'kidDetails',kidIndex:wizActiveKid});   // back to this kid's name step
   $('#wizNext').onclick=()=>{
     if(!kid.chores.length)return toast('Pick at least one chore');
-    renderWizParent();
+    navTo('onboarding',renderWizParent,{step:'parent'});
   };
   $('#addAnother').onclick=()=>{
     if(!kid.chores.length)return toast('Pick at least one chore');
-    onboard.kids.push(blankKid());wizActiveKid=onboard.kids.length-1;renderWizKidDetails();
+    onboard.kids.push(blankKid());wizActiveKid=onboard.kids.length-1;
+    navTo('onboarding',renderWizKidDetails,{step:'kidDetails',kidIndex:wizActiveKid});
   };
 }
 
@@ -1469,7 +1480,7 @@ function renderWizParent(){
         <button class="linkbtn" id="wizBack3">← Back</button>
       </div>
     </div>`;
-  $('#wizBack3').onclick=renderWizChores;
+  $('#wizBack3').onclick=()=>navTo('onboarding',renderWizChores,{step:'chores',kidIndex:wizActiveKid});
   const pw=$('#pPass');
   pw.oninput=()=>{
     const r=pwStrength(pw.value);
@@ -1593,7 +1604,7 @@ function renderEmptyFamilySetup(){
       <button class="bigbtn" id="setupBtn">Set up my family</button>
       <button class="linkbtn" id="signOut">Sign out</button>
     </div>`;
-  $('#setupBtn').onclick=()=>navTo('onboarding',startOnboarding);
+  $('#setupBtn').onclick=()=>navTo('onboarding',startOnboarding,{step:'kidDetails',kidIndex:0});
   $('#signOut').onclick=async()=>{await sb.auth.signOut();currentUser=null;familyId=null;navTo('landing',renderLanding);};
 }
 
