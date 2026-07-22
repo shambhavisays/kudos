@@ -816,11 +816,43 @@ const STARTER_REWARDS=[
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Navigation: browser back/forward for the handful of real top-level screens
+// (landing, login, onboarding, profile picker, PIN entry, main, wallboard).
+// Everything else (tab switches, post-mutation re-renders) calls its render
+// function directly and does NOT touch history - only real navigation does.
+// ─────────────────────────────────────────────────────────────────────────────
+function navTo(view,renderFn,extra){
+  history.pushState(Object.assign({kudosView:view},extra||{}),'',location.pathname+location.search);
+  renderFn();
+}
+function navReplace(view,extra){
+  history.replaceState(Object.assign({kudosView:view},extra||{}),'',location.pathname+location.search);
+}
+window.addEventListener('popstate',(e)=>{
+  const state=e.state;
+  if(!state||!state.kudosView){renderLanding();return;}
+  switch(state.kudosView){
+    case 'landing': renderLanding(); break;
+    case 'login': renderLogin(); break;
+    case 'onboarding': startOnboarding(); break;
+    case 'profilePicker': renderProfilePicker(); break;
+    case 'pin': {
+      const p=profiles.find(pr=>pr.id===state.profileId);
+      if(p)askPin(p); else renderProfilePicker();
+      break;
+    }
+    case 'main': familyId?renderMain():renderProfilePicker(); break;
+    case 'wallboard': renderWallboard(); break;
+    default: renderLanding();
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Boot / auth
 // ─────────────────────────────────────────────────────────────────────────────
 async function boot(){
   const {data:{session}}=await sb.auth.getSession();
-  if(!session){renderLanding();return;}
+  if(!session){navReplace('landing');renderLanding();return;}
   document.body.classList.remove('landing');
   currentUser=session.user;
 
@@ -840,6 +872,7 @@ async function boot(){
   family=fam;familyId=fam.id;
   await loadProfiles();
   if(!profiles.length){renderEmptyFamilySetup();return;}
+  navReplace('profilePicker');
   renderProfilePicker();
 }
 
@@ -1091,9 +1124,9 @@ function renderLanding(){
       <div class="copy" style="margin-top:7px">📬 Subscribe to <a href="https://productwithshambhavi.substack.com/" target="_blank" rel="noopener" style="color:var(--accent-deep);font-weight:800">Unpacking AI &amp; Product</a></div>
     </footer>
   </div>`;
-  document.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>startOnboarding());
+  document.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>navTo('onboarding',startOnboarding));
   document.querySelectorAll('[data-scroll]').forEach(b=>b.onclick=()=>{const t=document.getElementById(b.dataset.scroll);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});});
-  $('#navLogin').onclick=renderLogin;
+  $('#navLogin').onclick=()=>navTo('login',renderLogin);
   $('#fbLink').onclick=openFeedback;
   twemojifyLanding(document.querySelector('.lp'));
   loadTestimonials();
@@ -1181,7 +1214,7 @@ function renderLogin(){
       </div>
       <button class="linkbtn" id="toStart">New here? Sign up free</button>
     </div>`;
-  $('#toStart').onclick=renderLanding;
+  $('#toStart').onclick=()=>navTo('landing',renderLanding);
   $('#googleBtn').onclick=()=>signInWithGoogle($('#googleBtn'));
   const submit=async()=>{
     const email=$('#logEmail').value.trim(), pass=$('#logPass').value;
@@ -1239,7 +1272,7 @@ function renderWizKidDetails(){
     </div>`;
   $('#kWantsPin').onchange=e=>{kid.wantsPin=e.target.checked;$('#kPinWrap').style.display=kid.wantsPin?'':'none';};
   // Back: for a 2nd+ kid, return to the previous kid's chores; for the first, the landing.
-  $('#wizBack1').onclick=()=>{ if(wizActiveKid>0){wizActiveKid--;renderWizChores();} else renderLanding(); };
+  $('#wizBack1').onclick=()=>{ if(wizActiveKid>0){wizActiveKid--;renderWizChores();} else navTo('landing',renderLanding); };
   $('#wizNext1').onclick=async()=>{
     const name=$('#kName').value.trim();
     if(!name)return toast("Add the child's name");
@@ -1501,7 +1534,7 @@ function renderConfirmEmail(email){
       <p class="tagline">We sent a confirmation link to <b>${esc(email)}</b>. Tap it, then come back and log in — your board will be waiting.</p>
       <button class="bigbtn" id="toLogin2">I've confirmed — log in</button>
     </div>`;
-  $('#toLogin2').onclick=renderLogin;
+  $('#toLogin2').onclick=()=>navTo('login',renderLogin);
 }
 
 // Build the family from a wizard payload (runs authenticated, RLS-scoped to us).
@@ -1560,8 +1593,8 @@ function renderEmptyFamilySetup(){
       <button class="bigbtn" id="setupBtn">Set up my family</button>
       <button class="linkbtn" id="signOut">Sign out</button>
     </div>`;
-  $('#setupBtn').onclick=()=>startOnboarding();
-  $('#signOut').onclick=async()=>{await sb.auth.signOut();currentUser=null;familyId=null;renderLanding();};
+  $('#setupBtn').onclick=()=>navTo('onboarding',startOnboarding);
+  $('#signOut').onclick=async()=>{await sb.auth.signOut();currentUser=null;familyId=null;navTo('landing',renderLanding);};
 }
 
 // ── Profile picker + PIN ──────────────────────────────────────────────────────
@@ -1577,8 +1610,8 @@ function renderProfilePicker(){
   $('#plist').innerHTML=profiles.map(p=>`
     <div class="profile" data-p="${p.id}"><span class="av">${p.emoji}</span><span class="nm">${esc(p.name)}</span></div>`).join('');
   document.querySelectorAll('.profile').forEach(el=>el.onclick=()=>enterProfile(profiles.find(p=>p.id===el.dataset.p)));
-  $('#wallBtn').onclick=renderWallboard;
-  $('#signOut').onclick=async()=>{await sb.auth.signOut();currentUser=null;familyId=null;me=null;renderLanding();};
+  $('#wallBtn').onclick=()=>navTo('wallboard',renderWallboard);
+  $('#signOut').onclick=async()=>{await sb.auth.signOut();currentUser=null;familyId=null;me=null;navTo('landing',renderLanding);};
 }
 
 // Read-only family display — all kids at once, no PIN (safe: it can't change
@@ -1607,7 +1640,7 @@ async function renderWallboard(){
     </div>
     ${kids.length?`<div class="wallgrid">${kids.map(k=>wallCard(k)).join('')}</div>`
       :`<div class="empty" style="padding:50px 20px">👨‍👩‍👧 No kids yet.<br>Add your kids in Parent settings to see them here.</div>`}`;
-  $('#wallBack').onclick=renderProfilePicker;
+  $('#wallBack').onclick=()=>navTo('profilePicker',renderProfilePicker);
   $('#wallRefresh').onclick=renderWallboard;
 }
 function wallCard(k){
@@ -1639,10 +1672,10 @@ async function enterProfile(p){
   if(!p.pin_hash){
     me=p;await loadKidData();
     for(const kid of profiles.filter(pr=>pr.role==='kid'))await reconcileCredits(kid);
-    renderMain();
+    navTo('main',renderMain);
     return;
   }
-  askPin(p);
+  navTo('pin',()=>askPin(p),{profileId:p.id});
 }
 
 const pinAttempts={};
@@ -1656,7 +1689,7 @@ function askPin(p){
       <button class="bigbtn" id="pinBtn">Unlock</button>
       <button class="logout" id="backBtn" style="width:auto;padding:0 16px">← Back</button>
     </div>`;
-  $('#backBtn').onclick=renderProfilePicker;
+  $('#backBtn').onclick=()=>navTo('profilePicker',renderProfilePicker);
   $('#pinBtn').onclick=async()=>{
     const lock=pinAttempts[p.id];
     if(lock && lock.until>Date.now()){
@@ -1682,7 +1715,7 @@ function askPin(p){
     pinAttempts[p.id]={count:0,until:0};
     me=p;await loadKidData();
     for(const kid of profiles.filter(pr=>pr.role==='kid'))await reconcileCredits(kid);
-    renderMain();
+    navTo('main',renderMain);
   };
   $('#pin').addEventListener('keydown',e=>{if(e.key==='Enter')$('#pinBtn').click();});
 }
@@ -1914,7 +1947,7 @@ function renderMain(){
       <button class="bigbtn" id="openFam">Add a child</button></div>`;
     $('#gear').onclick=()=>openAdmin(me);
     $('#openFam').onclick=()=>openAdmin(me);
-    $('#logoutBtn').onclick=()=>{me=null;window._activeKid=null;renderProfilePicker();};
+    $('#logoutBtn').onclick=()=>{me=null;window._activeKid=null;navTo('profilePicker',renderProfilePicker);};
     return;
   }
   const activeKid=switchable.find(p=>window._activeKid && p.id===window._activeKid.id)||switchable[0];
@@ -2065,7 +2098,7 @@ function renderMain(){
     $('#proposeRewardBtn').onclick=()=>proposeReward(k);
   }
 
-  $('#logoutBtn').onclick=()=>{me=null;window._activeKid=null;renderProfilePicker();};
+  $('#logoutBtn').onclick=()=>{me=null;window._activeKid=null;navTo('profilePicker',renderProfilePicker);};
   $('#historyBtn').onclick=()=>openHistory(k);
   if(isParent)$('#gear').onclick=()=>openAdmin(k);
   if(isParent)$('#quickAddChore').onclick=()=>openAdmin(k,{focusAddForm:true});
@@ -2303,6 +2336,7 @@ async function deleteAccount(){
   localStorage.removeItem('kudos:onboard');
   currentUser=null;family=null;familyId=null;me=null;window._activeKid=null;profiles=[];chores=[];rewards=[];
   toast('Your account and all data were deleted.');
+  navReplace('landing');
   renderLanding();
 }
 
