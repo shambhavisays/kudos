@@ -47,7 +47,7 @@
   .brand .logo{width:34px;height:34px;border-radius:9px;display:block;flex:none}
   .brand h1{font-family:'Manrope';font-weight:600;font-size:20px;margin:0}
   .brand .dateline{font-size:11px;font-weight:800;color:var(--muted);margin-top:1px}
-  .gear,.logout{appearance:none;border:none;background:#fff;border:1px solid var(--line);color:var(--ink);width:40px;height:40px;border-radius:13px;font-size:18px;cursor:pointer}
+  .gear,.logout{appearance:none;border:none;background:#fff;border:1px solid var(--line);color:var(--ink);width:40px;height:40px;border-radius:13px;font-size:18px;cursor:pointer;display:grid;place-items:center}
   .gear:active,.logout:active{transform:scale(.92)}
   .center{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;text-align:center}
   .center h2{font-family:'Manrope';font-size:22px;margin:0}
@@ -133,7 +133,8 @@
   .reward .pin.on{opacity:1}
   .reward{position:relative}
   .wallhead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 4px 14px}
-  .wallhead h2{font-family:'Manrope';font-weight:600;font-size:20px;margin:0}
+  .wallhead h2{font-family:'Manrope';font-weight:600;font-size:20px;margin:0;display:flex;align-items:center;gap:7px}
+  .wallhead h2 svg{color:var(--accent);flex:none}
   .wallhead .sub{font-size:11px;font-weight:800;color:var(--muted)}
   .wallgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
   .wallcard{background:#fff;border:2px solid var(--line);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:7px}
@@ -153,7 +154,8 @@
   #lightbox.open{display:flex}
   #lightbox img{max-width:100%;max-height:90vh;border-radius:14px}
   .sectionhd{display:flex;align-items:center;justify-content:space-between;margin:20px 4px 10px}
-  .sectionhd h2{font-family:'Manrope';font-weight:600;font-size:17px;margin:0}
+  .sectionhd h2{font-family:'Manrope';font-weight:600;font-size:17px;margin:0;display:flex;align-items:center;gap:6px}
+  .sectionhd h2 svg{color:var(--accent);flex:none}
   .sectionhd .hint{font-size:12px;font-weight:700;color:var(--muted)}
   .periodgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;margin-bottom:4px}
   @media(min-width:560px){.periodgrid{grid-template-columns:repeat(3,1fr)}}
@@ -207,6 +209,9 @@
   .item .t{flex:1;font-weight:700;font-size:14px}
   .item .t small{display:block;color:var(--muted);font-weight:700;font-size:11px}
   .item .del{border:none;background:var(--bad-bg);color:var(--bad);border-radius:8px;width:30px;height:30px;font-size:14px;cursor:pointer}
+  .score-toggle{border:none;border-radius:999px;width:30px;height:30px;font-size:14px;cursor:pointer}
+  .score-toggle.is-star{background:#FFF3D6}
+  .score-toggle.is-care{background:#E7F1FC}
   .addform{display:grid;grid-template-columns:50px 1fr 65px;gap:7px;margin:6px 4px 4px}
   .addform input{border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;width:100%}
   .addform.four{grid-template-columns:50px 1fr 56px 64px}
@@ -909,11 +914,12 @@ async function loadProfiles(){
   profiles=data||[];
 }
 
-// ── Landing (signed out) ──────────────────────────────────────────────────────
-// Line-icon set for landing UI chrome (2026-07 redesign): the design system
-// reserves emoji for actual chore/reward/avatar content only - decorative UI
-// (feature tiles, step badges, tags, trust chips, FAQ toggle) uses simple
-// stroke icons instead. 24x24 viewBox, currentColor stroke, matches spec.
+// ── Icon set (2026-07 design-system redesign) ──────────────────────────────────
+// Line icons for UI chrome, used app-wide (not just landing - the name is a
+// holdover from where this was first built). The design system reserves
+// emoji for actual chore/reward/avatar content only; decorative UI chrome
+// (nav, headers, tabs, tags, toggles) uses these instead. 24x24 viewBox,
+// currentColor stroke, matches spec.
 const LP_ICONS={
   calendar:'<rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
   star:'<polygon points="12,2 15,9 22,9 16.5,13.5 18.5,21 12,17 5.5,21 7.5,13.5 2,9 9,9"/>',
@@ -928,7 +934,12 @@ const LP_ICONS={
   person:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/>',
   gear:'<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M3 12h3M18 12h3M4.9 19.1l2.1-2.1M17 7l2.1-2.1"/>',
   chevron:'<polyline points="6,9 12,15 18,9"/>',
-  speed:'<polygon points="13,2 4,14 11,14 9,22 20,10 13,10" fill="currentColor" stroke="none"/>'
+  speed:'<polygon points="13,2 4,14 11,14 9,22 20,10 13,10" fill="currentColor" stroke="none"/>',
+  refresh:'<path d="M3 12a9 9 0 0 1 15.5-6.3M21 12a9 9 0 0 1-15.5 6.3"/><polyline points="18,3 18.5,6.3 15.2,6"/><polyline points="6,21 5.5,17.7 8.8,18"/>',
+  arrowLeft:'<line x1="20" y1="12" x2="4" y2="12"/><polyline points="10,6 4,12 10,18"/>',
+  history:'<circle cx="12" cy="13" r="8"/><polyline points="12,9 12,13 15,15"/><path d="M9 2h6"/>',
+  bolt:'<polygon points="13,2 4,14 11,14 9,22 20,10 13,10"/>',
+  plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>'
 };
 function lpIcon(name,size){
   size=size||24;
@@ -1657,7 +1668,7 @@ function renderProfilePicker(){
       <img src="./icons/icon-192.png" alt="Kudos" style="width:60px;height:60px;border-radius:16px">
       <h2>Who's this?</h2>
       <div class="profiles" id="plist"></div>
-      <button class="ghostbtn" id="wallBtn" style="margin-top:6px">📺 Family board</button>
+      <button class="ghostbtn" id="wallBtn" style="margin-top:6px;display:inline-flex;align-items:center;gap:6px">${lpIcon('monitor',17)} Family board</button>
       <button class="linkbtn" id="signOut" style="margin-top:4px">Sign out of this account</button>
     </div>`;
   $('#plist').innerHTML=profiles.map(p=>`
@@ -1685,10 +1696,10 @@ async function renderWallboard(){
   const dateline=new Date().toLocaleDateString(undefined,{timeZone:TZ,weekday:'long',day:'numeric',month:'long'});
   app.innerHTML=`
     <div class="wallhead">
-      <div><h2>📺 Family board</h2><div class="sub">${dateline}</div></div>
+      <div><h2>${lpIcon('monitor',20)} Family board</h2><div class="sub">${dateline}</div></div>
       <div style="display:flex;gap:8px">
-        <button class="gear" id="wallRefresh" title="Refresh">🔄</button>
-        <button class="logout" id="wallBack" title="Back">↩️</button>
+        <button class="gear" id="wallRefresh" title="Refresh">${lpIcon('refresh',18)}</button>
+        <button class="logout" id="wallBack" title="Back">${lpIcon('arrowLeft',18)}</button>
       </div>
     </div>
     ${kids.length?`<div class="wallgrid">${kids.map(k=>wallCard(k)).join('')}</div>`
@@ -1991,8 +2002,8 @@ function renderMain(){
       <header class="top">
         <div class="brand"><img class="logo" src="./icons/icon-192.png" alt=""><div><h1>Kudos</h1></div></div>
         <div style="display:flex;gap:8px">
-          <button class="gear" id="gear" title="Parent settings">⚙️</button>
-          <button class="logout" id="logoutBtn" title="Switch profile">↩️</button>
+          <button class="gear" id="gear" title="Parent settings">${lpIcon('gear',18)}</button>
+          <button class="logout" id="logoutBtn" title="Switch profile">${lpIcon('arrowLeft',18)}</button>
         </div>
       </header>
       <div class="center"><span style="font-size:38px">🙂</span><h2>No kids yet</h2>
@@ -2029,9 +2040,9 @@ function renderMain(){
     <header class="top">
       <div class="brand"><img class="logo" src="./icons/icon-192.png" alt=""><div><h1>Kudos</h1><div class="dateline">${new Date().toLocaleDateString(undefined,{timeZone:TZ,weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div></div></div>
       <div style="display:flex;gap:8px">
-        <button class="gear" id="historyBtn" title="History">📜</button>
-        ${isParent?'<button class="gear" id="gear" title="Parent settings">⚙️</button>':''}
-        <button class="logout" id="logoutBtn" title="Switch profile">↩️</button>
+        <button class="gear" id="historyBtn" title="History">${lpIcon('history',18)}</button>
+        ${isParent?`<button class="gear" id="gear" title="Parent settings">${lpIcon('gear',18)}</button>`:''}
+        <button class="logout" id="logoutBtn" title="Switch profile">${lpIcon('arrowLeft',18)}</button>
       </div>
     </header>
     <div class="kids" id="kidTabs"></div>
@@ -2057,7 +2068,7 @@ function renderMain(){
       </div>
     </div>
     ${goalHtml(k,accent)}
-    <div class="sectionhd"><h2>🎯 Today's chores</h2><span class="hint">Tap to complete</span></div>
+    <div class="sectionhd"><h2>${lpIcon('target',18)} Today's chores</h2><span class="hint">Tap to complete</span></div>
     <div id="grid"></div>
     ${recapHtml(k,accent)}
     <div id="rewardsRow"></div>
@@ -2513,7 +2524,7 @@ async function openAdmin(k,opts={}){
   app.insertAdjacentHTML('beforeend',`
     <div class="modal open" id="modal">
       <div class="sheet">
-        <h3><span>⚙️ Parent settings</span><button class="x" id="closeAdmin">✕</button></h3>
+        <h3><span style="display:inline-flex;align-items:center;gap:7px">${lpIcon('gear',18)} Parent settings</span><button class="x" id="closeAdmin">✕</button></h3>
         <div class="tabbar">
           <button data-tab="chores" class="on">Chores</button>
           <button data-tab="rewards">Rewards</button>
@@ -2534,7 +2545,7 @@ async function openAdmin(k,opts={}){
             <button class="del" style="background:var(--good-bg);color:var(--good)" data-grad="${c.id}">🎉</button></div>`).join('')}</div>`:''}
           <div class="rewardopts">
             ${kids.length>1?`<select id="choreKid">${kids.map(kk=>`<option value="${kk.id}" ${focusKid&&kk.id===focusKid.id?'selected':''}>${esc(kk.name)}</option>`).join('')}</select>`:'<div></div>'}
-            <input id="choreSearch" placeholder="🔍 Search chores" style="border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;font-family:'Manrope';color:var(--ink);width:100%">
+            <input id="choreSearch" placeholder="Search chores" style="border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;font-family:'Manrope';color:var(--ink);width:100%">
           </div>
           <div class="note">Editing chores for <b>${kidLabel}</b>.</div>
           <div id="choreList"></div>
@@ -2587,7 +2598,7 @@ async function openAdmin(k,opts={}){
         <div class="panel" id="panel-rewards">
           <div class="rewardopts">
             <select id="rewardKid"><option value="all" selected>All kids</option>${kids.map(kk=>`<option value="${kk.id}">${esc(kk.name)}</option>`).join('')}</select>
-            <input id="rewardSearch" placeholder="🔍 Search rewards" style="border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;font-family:'Manrope';color:var(--ink);width:100%">
+            <input id="rewardSearch" placeholder="Search rewards" style="border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;font-family:'Manrope';color:var(--ink);width:100%">
           </div>
           <div class="note">Rewards are shared across all kids unless tied to one.</div>
           <div id="rewardList"></div>
@@ -2697,7 +2708,7 @@ async function openAdmin(k,opts={}){
   if(focusKid){
     const allHerChores=chores.filter(c=>c.profile_id===focusKid.id && !c.pending);
     $('#choreList').innerHTML=allHerChores.length?allHerChores.map(c=>`
-      <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${c.points>0?('+'+c.points+' ⭐'):(c.points<0?('📉 '+c.points+' ⭐ · slip'):'🩵 Daily care · no stars')}${c.requires_photo?' · 📷 photo':''}${c.cadence==='weekday'&&c.weekdays&&c.weekdays.length?' · '+(c.schedule_mode==='exclude'?'except ':'')+c.weekdays.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join('/'):''}${c.cadence==='oneoff'&&c.occurs_on?' · 📌 '+c.occurs_on:''}${c.cadence==='holiday'?' · 🎉 holidays only':''}</small></span><button class="del" data-editc="${c.id}" title="Edit this chore">✏️</button><button class="del" data-carec="${c.id}" title="${c.points>0?'Make this daily care (no stars)':'Make this earn stars'}">${c.points>0?'🩵':'⭐'}</button><button class="del" data-delc="${c.id}">🗑️</button></div>`).join(''):'<div class="empty">No chores yet.</div>';
+      <div class="item"><span class="e">${c.emoji}</span><span class="t">${esc(c.name)}<small>${c.points>0?('+'+c.points+' ⭐'):(c.points<0?('📉 '+c.points+' ⭐ · slip'):'🩵 Daily care · no stars')}${c.requires_photo?' · 📷 photo':''}${c.cadence==='weekday'&&c.weekdays&&c.weekdays.length?' · '+(c.schedule_mode==='exclude'?'except ':'')+c.weekdays.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join('/'):''}${c.cadence==='oneoff'&&c.occurs_on?' · 📌 '+c.occurs_on:''}${c.cadence==='holiday'?' · 🎉 holidays only':''}</small></span><button class="del" data-editc="${c.id}" title="Edit this chore">✏️</button><button class="score-toggle ${c.points>0?'is-care':'is-star'}" data-carec="${c.id}" title="${c.points>0?'Make this daily care (no stars)':'Make this earn stars'}">${c.points>0?'🩵':'⭐'}</button><button class="del" data-delc="${c.id}">🗑️</button></div>`).join(''):'<div class="empty">No chores yet.</div>';
     // ✏️ — load a chore into the form below and switch it to edit mode.
     document.querySelectorAll('[data-editc]').forEach(el=>el.onclick=()=>{
       const c=chores.find(x=>x.id===el.dataset.editc);if(!c)return;
