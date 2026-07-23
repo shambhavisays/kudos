@@ -249,7 +249,10 @@
   .lp-actions{display:flex;flex-direction:column;align-items:center;gap:11px}
   .lp-actions .bigbtn{font-size:17px;padding:15px 30px}
   .lp-trust{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:18px}
-  .lp-trust span{display:inline-flex;align-items:center;gap:5px;font-weight:800;font-size:12px;color:var(--good-deep);background:var(--good-bg);border-radius:999px;padding:5px 11px}
+  .lp-trust span{display:inline-flex;align-items:center;gap:5px;font-weight:700;font-size:12px;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 13px}
+  .lp-trust span:nth-child(1) svg{color:var(--good)}
+  .lp-trust span:nth-child(2) svg{color:var(--accent)}
+  .lp-trust span:nth-child(3) svg{color:#E0A83A}
   .lp-trust svg{flex:none}
   .lp-sec{padding:34px 4px 0;margin-top:34px;border-top:1px solid var(--line)}
   .lp-sec h2{font-family:'Manrope';font-weight:600;font-size:26px;letter-spacing:-.4px;margin:0 0 6px;text-align:center}
@@ -1065,7 +1068,7 @@ function renderLanding(){
     </section>
 
     <!-- Real-app proof: kid board, parent setup, and family board, all the actual Kudos UI in code. -->
-    <section class="lp-sec">
+    <section class="lp-sec lp-warm">
       <h2 style="margin-bottom:24px">Tiny wins every day become confidence that lasts.</h2>
       <div class="lp-showcase">
         <div class="lp-dev">
@@ -1103,23 +1106,23 @@ function renderLanding(){
         <div class="lp-dev">
           <div class="lp-tag fam">${lpIcon('monitor',15)} What everyone sees</div>
           <div class="lp-famframe"><div class="lp-famscr">
-            <div class="lp-famhd">📺 Family board · Today</div>
+            <div class="lp-famhd">${lpIcon('monitor',16)} Family board · Today</div>
             <div class="lp-kcard">
               <div class="top"><div class="nm">🦄 Maya</div><div class="mt"><span>⭐ 120</span><span>🔥 5</span></div></div>
               <div class="lp-kbar"><div class="lp-kfill" style="width:80%;background:var(--accent)"></div></div>
-              <div class="lp-kdots"><span class="d done" style="border-color:#378ADD;background:#378ADD22">🛏️</span><span class="d done" style="border-color:#378ADD;background:#378ADD22">🪥</span><span class="d done" style="border-color:#378ADD;background:#378ADD22">📚</span><span class="d done" style="border-color:#378ADD;background:#378ADD22">🧸</span><span class="d">🛁</span></div>
+              <div class="lp-kdots"><span class="d done" style="border-color:#2E6FCB;background:rgba(46,111,203,.13)">🛏️</span><span class="d done" style="border-color:#2E6FCB;background:rgba(46,111,203,.13)">🪥</span><span class="d done" style="border-color:#2E6FCB;background:rgba(46,111,203,.13)">📚</span><span class="d done" style="border-color:#2E6FCB;background:rgba(46,111,203,.13)">🧸</span><span class="d">🛁</span></div>
             </div>
             <div class="lp-kcard">
               <div class="top"><div class="nm">🚀 Leo</div><div class="mt"><span>⭐ 85</span><span>🔥 3</span></div></div>
               <div class="lp-kbar"><div class="lp-kfill" style="width:50%;background:var(--good)"></div></div>
-              <div class="lp-kdots"><span class="d done" style="border-color:#1f9d57;background:#1f9d5722">🛏️</span><span class="d done" style="border-color:#1f9d57;background:#1f9d5722">🦷</span><span class="d">📖</span><span class="d">🧹</span></div>
+              <div class="lp-kdots"><span class="d done" style="border-color:#45C48A;background:rgba(69,196,138,.15)">🛏️</span><span class="d done" style="border-color:#45C48A;background:rgba(69,196,138,.15)">🦷</span><span class="d">📖</span><span class="d">🧹</span></div>
             </div>
           </div></div>
         </div>
       </div>
     </section>
 
-    <section class="lp-sec lp-warm" id="lpHow">
+    <section class="lp-sec" id="lpHow">
       <h2 style="margin-bottom:6px">How it works</h2>
       <p class="lead">Three steps from "who's doing the dishes?" to a board that runs itself.</p>
       <div class="lp-steps">
@@ -1129,7 +1132,7 @@ function renderLanding(){
       </div>
     </section>
 
-    <section class="lp-sec" id="lpFeat">
+    <section class="lp-sec lp-warm" id="lpFeat">
       <h2 style="margin-bottom:24px">Built for real family routines</h2>
       <p class="lead">Built for real households: multiple kids, different ages, one shared screen.</p>
       <div class="lp-cards">
@@ -1142,7 +1145,7 @@ function renderLanding(){
       </div>
     </section>
 
-    <section class="lp-sec lp-warm">
+    <section class="lp-sec">
       <div class="lp-why">
         <svg class="why-star" viewBox="0 0 100 100" aria-hidden="true"><path d="M50,12 L61.17,34.63 L86.14,38.26 L68.07,55.87 L72.34,80.74 L50,69 L27.66,80.74 L31.93,55.87 L13.86,38.26 L38.83,34.63 Z" fill="#FFD24A" stroke="#FFD24A" stroke-width="9" stroke-linejoin="round"></path><circle cx="41" cy="46" r="4" fill="#378ADD"></circle><circle cx="59" cy="46" r="4" fill="#378ADD"></circle><path d="M41,56 Q50,64 59,56" stroke="#378ADD" stroke-width="4.6" fill="none" stroke-linecap="round"></path></svg>
         <h2 style="margin:0 0 14px">Built because I needed it too</h2>
@@ -1152,7 +1155,7 @@ function renderLanding(){
       </div>
     </section>
 
-    <section class="lp-sec">
+    <section class="lp-sec lp-warm">
       <h2>Questions</h2>
       <div class="lp-faq">
         <details open><summary><span>Is it really free?</span>${lpIcon('chevron',18)}</summary><p>Yes. No paid tiers, no credit card, no ads. It's built to stay that way.</p></details>
