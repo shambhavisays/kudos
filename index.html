@@ -25,7 +25,7 @@
 <link rel="apple-touch-startup-image" href="./icons/icon-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#F4F6FB; --card:#ffffff; --ink:#1d2b3a; --muted:#5c6d87;
@@ -227,42 +227,56 @@
   .emojibtn{border:none;background:var(--bg);border-radius:12px;font-size:24px;padding:8px 0;cursor:pointer;line-height:1}
   .emojibtn:active{transform:scale(.9)}
   /* ── Landing / marketing page ── */
-  .lp{max-width:680px;margin:0 auto}
+  /* Design-system tokens (2026-07 redesign), scoped to .lp only — the app
+     screens haven't been redesigned yet, so these must not leak globally. */
+  .lp{
+    max-width:680px;margin:0 auto;
+    --accent:#2E6FCB; --accent-deep:#1F4E96;
+    --gold-mark:#FFD24A; --gold:#F2B63C;
+    --ink:#21304A; --muted:#78716A;
+    --bg:#FFFFFF; --surface:#F5F3F0; --cream:#FBF4E9; --cream-line:#EAE3D6; --line:#EAE3D6;
+    --good:#45C48A; --good-bg:#E7F8F0; --good-deep:#2E9A6B;
+    --purple:#9B7BE8; --purple-bg:#EFE9FC;
+    font-family:'Manrope',system-ui,sans-serif;
+    color:var(--ink);
+  }
+  .lp h1,.lp h2,.lp h3,.lp .lp-nav .b b{font-family:'Manrope',system-ui,sans-serif}
   .twemoji{height:1em;width:1em;margin:0 .05em;vertical-align:-.15em}
   .lp-nav{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 0}
   .lp-nav .b{display:flex;align-items:center;gap:9px}
   .lp-nav .b img{width:32px;height:32px;border-radius:9px;display:block}
-  .lp-nav .b b{font-family:'Fredoka';font-weight:600;font-size:19px}
+  .lp-nav .b b{font-family:'Manrope';font-weight:600;font-size:19px}
   .lp-hero{text-align:center;padding:30px 8px 6px}
   .lp-hero img.mark{width:76px;height:76px;border-radius:19px;margin-bottom:16px}
-  .lp-hero h1{font-family:'Fredoka';font-weight:600;font-size:30px;line-height:1.14;margin:0 0 12px}
+  .lp-hero h1{font-family:'Manrope';font-weight:600;font-size:30px;line-height:1.14;margin:0 0 12px}
   .lp-hero .sub{color:var(--muted);font-weight:700;font-size:16px;max-width:440px;margin:0 auto 22px;line-height:1.45}
   .lp-actions{display:flex;flex-direction:column;align-items:center;gap:11px}
   .lp-actions .bigbtn{font-size:17px;padding:15px 30px}
   .lp-trust{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:18px}
-  .lp-trust span{font-weight:800;font-size:12px;color:var(--good-deep);background:var(--good-bg);border-radius:999px;padding:5px 11px}
+  .lp-trust span{display:inline-flex;align-items:center;gap:5px;font-weight:800;font-size:12px;color:var(--good-deep);background:var(--good-bg);border-radius:999px;padding:5px 11px}
+  .lp-trust svg{flex:none}
   .lp-sec{padding:34px 4px 0;margin-top:34px;border-top:1px solid var(--line)}
-  .lp-sec h2{font-family:'Fredoka';font-weight:600;font-size:26px;letter-spacing:-.4px;margin:0 0 6px;text-align:center}
+  .lp-sec h2{font-family:'Manrope';font-weight:600;font-size:26px;letter-spacing:-.4px;margin:0 0 6px;text-align:center}
   .lp-sec .lead{color:var(--muted);font-weight:700;font-size:14px;max-width:420px;margin:0 auto 20px;text-align:center;line-height:1.45}
   .lp-cards{display:grid;grid-template-columns:1fr;gap:12px}
   @media(min-width:540px){.lp-cards{grid-template-columns:1fr 1fr}}
   .lp-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px}
   .lp-card .ic{font-size:25px;line-height:1}
-  .lp-card h3{font-family:'Fredoka';font-weight:600;font-size:15px;margin:9px 0 4px}
+  .lp-card h3{font-family:'Manrope';font-weight:600;font-size:15px;margin:9px 0 4px}
   .lp-card p{color:var(--muted);font-weight:700;font-size:13px;margin:0;line-height:1.45}
   .lp-steps{counter-reset:step;display:flex;flex-direction:column;gap:12px;max-width:460px;margin:0 auto}
   .lp-step{display:block;background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px 20px}
-  .lp-step .n{counter-increment:step;flex:none;width:30px;height:30px;border-radius:50%;background:#eaf2fc;color:var(--accent-deep);font-family:'Fredoka';font-weight:600;font-size:15px;display:grid;place-items:center}
+  .lp-step .n{counter-increment:step;flex:none;width:30px;height:30px;border-radius:50%;background:#eaf2fc;color:var(--accent-deep);font-family:'Manrope';font-weight:600;font-size:15px;display:grid;place-items:center}
   .lp-step .n::before{content:counter(step)}
-  .lp-step h3{font-family:'Fredoka';font-weight:600;font-size:15px;margin:3px 0 3px}
+  .lp-step h3{font-family:'Manrope';font-weight:600;font-size:15px;margin:3px 0 3px}
   .lp-step p{color:var(--muted);font-weight:700;font-size:13px;margin:0;line-height:1.45}
   .lp-why{background:#fff;border:1px solid var(--line);border-radius:24px;padding:34px 30px;max-width:560px;margin:0 auto;text-align:center;box-shadow:0 20px 48px -34px rgba(33,48,74,.5)}
   .lp-faq{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
   .lp-faq details{background:#fff;border:1px solid var(--line);border-radius:14px;padding:0 15px}
-  .lp-faq summary{font-family:'Fredoka';font-weight:600;font-size:14px;cursor:pointer;padding:13px 0;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .lp-faq summary{font-family:'Manrope';font-weight:600;font-size:14px;cursor:pointer;padding:13px 0;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
   .lp-faq summary::-webkit-details-marker{display:none}
-  .lp-faq summary::after{content:'+';color:var(--accent);font-weight:800;font-size:20px;line-height:1;transition:transform .2s ease}
-  .lp-faq details[open] summary::after{transform:rotate(45deg)}
+  .lp-faq summary svg{color:var(--accent);flex:none;transition:transform .2s ease}
+  .lp-faq details[open] summary svg{transform:rotate(180deg)}
   .lp-faq details p{color:var(--muted);font-weight:700;font-size:13px;margin:0 0 13px;line-height:1.5}
   .lp-final{text-align:center}
   .lp-foot{padding:24px 4px 6px;border-top:1px solid var(--line);margin-top:34px;text-align:center}
@@ -270,6 +284,7 @@
   .lp-foot .links a{color:var(--accent-deep);font-weight:800;font-size:13px;cursor:pointer;text-decoration:none}
   .lp-foot .copy{color:var(--muted);font-weight:700;font-size:12px}
   /* Wider marketing canvas — the app itself stays 720px; only the landing breaks out. */
+  body.landing{background:#FFFFFF}
   body.landing .wrap{max-width:1180px}
   .lp{max-width:none}
   .lp-hero-copy{max-width:600px;margin:0 auto}
@@ -277,20 +292,23 @@
   /* Showcase band — two device mockups (with room between for a mascot later) */
   .lp-showcase{display:flex;justify-content:center;align-items:flex-start;gap:38px;flex-wrap:wrap;margin-top:26px}
   .lp-dev{display:flex;flex-direction:column;align-items:center;gap:11px}
-  .lp-tag{font-family:'Fredoka';font-weight:600;font-size:12px;color:var(--accent-deep);background:#eaf2fc;border-radius:999px;padding:5px 13px}
+  .lp-tag{display:inline-flex;align-items:center;gap:5px;font-family:'Manrope';font-weight:600;font-size:12px;color:var(--accent-deep);background:#eaf2fc;border-radius:999px;padding:5px 13px}
+  .lp-tag svg{flex:none}
   /* Phone-frame mockup */
-  .lp-phone{width:262px;max-width:80vw;margin:0 auto;background:#1d2b3a;border-radius:34px;padding:11px;box-shadow:0 26px 50px -20px rgba(29,43,58,.55)}
-  .lp-phone .scr{background:var(--bg);border-radius:25px;padding:13px 12px}
+  .lp-phone{position:relative;width:262px;max-width:80vw;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:40px;padding:11px;box-shadow:0 26px 50px -20px rgba(33,48,74,.3)}
+  .lp-phone::before{content:'';position:absolute;top:9px;left:50%;transform:translateX(-50%);width:52px;height:5px;border-radius:999px;background:var(--line)}
+  .lp-phone::after{content:'';position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:64px;height:4px;border-radius:999px;background:var(--line)}
+  .lp-phone .scr{background:var(--surface);border-radius:29px;padding:20px 12px 16px}
   /* Kid board */
   .lp-bm-head{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--line);border-radius:16px;padding:11px 13px;margin-bottom:6px}
-  .lp-bm-head .who{font-family:'Fredoka';font-weight:600;font-size:15px}
+  .lp-bm-head .who{font-family:'Manrope';font-weight:600;font-size:15px}
   .lp-bm-head .pts{text-align:right;line-height:1}
-  .lp-bm-head .pts b{font-family:'Fredoka';font-size:21px;color:var(--accent-deep);display:block}
+  .lp-bm-head .pts b{font-family:'Manrope';font-size:21px;color:var(--accent-deep);display:block}
   .lp-bm-head .pts span{font-size:9px;font-weight:800;letter-spacing:1px;color:var(--muted)}
-  .lp-bm-sec{font-family:'Fredoka';font-weight:600;font-size:12px;color:var(--ink);margin:9px 2px 5px;display:flex;align-items:center;gap:6px}
+  .lp-bm-sec{font-family:'Manrope';font-weight:600;font-size:12px;color:var(--ink);margin:9px 2px 5px;display:flex;align-items:center;gap:6px}
   .lp-bm-row{display:flex;align-items:center;gap:9px;background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:6px}
   .lp-bm-row .e{font-size:17px}
-  .lp-bm-row .t{flex:1;font-family:'Fredoka';font-weight:600;font-size:12.5px}
+  .lp-bm-row .t{flex:1;font-family:'Manrope';font-weight:600;font-size:12.5px}
   .lp-bm-row .ck{font-weight:800;font-size:11px;color:var(--gold);white-space:nowrap}
   .lp-bm-row .ck.care{color:var(--accent-deep);font-size:10px}
   .lp-bm-row .ck.penalty{color:var(--bad)}
@@ -298,27 +316,27 @@
   .lp-bm-row.done .ck{width:19px;height:19px;border-radius:50%;background:var(--good);color:#fff;display:grid;place-items:center;font-size:11px}
   /* Parent setup view (second device) */
   .lp-pm-head{display:flex;align-items:center;justify-content:space-between;padding:4px 3px 9px}
-  .lp-pm-head b{font-family:'Fredoka';font-weight:600;font-size:14px}
-  .lp-pm-head .add{background:var(--accent);color:#fff;font-family:'Fredoka';font-weight:600;font-size:10px;border-radius:9px;padding:5px 9px}
+  .lp-pm-head b{font-family:'Manrope';font-weight:600;font-size:14px}
+  .lp-pm-head .add{background:var(--accent);color:#fff;font-family:'Manrope';font-weight:600;font-size:10px;border-radius:9px;padding:5px 9px}
   .lp-pm-row{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:7px}
   .lp-pm-row .e{font-size:16px}
-  .lp-pm-row .t{flex:1;font-family:'Fredoka';font-weight:600;font-size:12px;line-height:1.15}
+  .lp-pm-row .t{flex:1;font-family:'Manrope';font-weight:600;font-size:12px;line-height:1.15}
   .lp-pm-row .t small{display:block;font-family:'Nunito';font-weight:700;font-size:10px;color:var(--muted)}
   .lp-pm-row .pt{font-weight:800;font-size:10.5px;color:var(--gold);white-space:nowrap}
   .lp-pm-row .pt.care{color:var(--accent-deep)}
   .lp-pm-row .pt.penalty{color:var(--bad)}
-  .lp-pm-addhd{font-family:'Fredoka';font-weight:600;font-size:11px;color:var(--muted);margin:11px 0 7px;padding-top:11px;border-top:1px dashed var(--line)}
+  .lp-pm-addhd{font-family:'Manrope';font-weight:600;font-size:11px;color:var(--muted);margin:11px 0 7px;padding-top:11px;border-top:1px dashed var(--line)}
   .lp-pm-scoresel{display:flex;gap:6px;flex-wrap:wrap}
   .lp-pm-scoresel .sel{font-weight:700;font-size:10px;padding:6px 9px;border-radius:9px;border:1.5px solid var(--line);color:var(--muted);background:#fff}
   .lp-pm-scoresel .sel.on{background:var(--accent);color:#fff;border-color:var(--accent)}
   /* Family board mockup, part of the showcase row */
-  .lp-famframe{width:280px;max-width:86vw;margin:0 auto;background:#1d2b3a;border-radius:26px;padding:11px;box-shadow:0 26px 50px -20px rgba(29,43,58,.55)}
-  .lp-famscr{background:var(--bg);border-radius:18px;padding:13px 12px}
-  .lp-famhd{font-family:'Fredoka';font-weight:600;font-size:13px;color:var(--ink);margin:1px 2px 10px;display:flex;align-items:center;gap:6px}
+  .lp-famframe{width:280px;max-width:86vw;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:30px;padding:11px;box-shadow:0 26px 50px -20px rgba(33,48,74,.3)}
+  .lp-famscr{background:var(--surface);border-radius:20px;padding:13px 12px}
+  .lp-famhd{font-family:'Manrope';font-weight:600;font-size:13px;color:var(--ink);margin:1px 2px 10px;display:flex;align-items:center;gap:6px}
   .lp-kcard{background:#fff;border:2px solid var(--line);border-radius:15px;padding:11px 12px;margin-bottom:10px}
   .lp-kcard:last-child{margin-bottom:0}
   .lp-kcard .top{display:flex;align-items:center;justify-content:space-between}
-  .lp-kcard .nm{font-family:'Fredoka';font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px}
+  .lp-kcard .nm{font-family:'Manrope';font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px}
   .lp-kcard .mt{font-weight:800;font-size:10.5px;color:var(--muted);display:flex;gap:9px}
   .lp-kbar{height:9px;border-radius:999px;background:var(--bg);overflow:hidden;margin:9px 0 7px}
   .lp-kfill{height:100%;border-radius:999px}
@@ -341,7 +359,7 @@
   .lp-hero2{position:relative;display:grid;grid-template-columns:1fr;gap:24px;align-items:center;padding:22px 2px 6px}
   .lp-eyebrow{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 7px;font-weight:800;font-size:12.5px;color:var(--accent);box-shadow:0 6px 16px -10px rgba(33,48,74,.35)}
   .lp-eyebrow .sun{width:21px;height:21px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#FFE38C,#FFC83D);display:grid;place-items:center;font-size:12px}
-  .lp-hero2 h1{font-family:'Fredoka';font-weight:600;font-size:37px;line-height:1.03;letter-spacing:-.9px;margin:15px 0 0}
+  .lp-hero2 h1{font-family:'Manrope';font-weight:600;font-size:37px;line-height:1.03;letter-spacing:-.9px;margin:15px 0 0}
   .lp-hl{position:relative;white-space:nowrap}
   .lp-hl>span{position:relative;z-index:1}
   .lp-hl:after{content:"";position:absolute;left:-5px;right:-5px;bottom:4px;height:30%;background:#FFD24A;border-radius:6px;z-index:0;transform:rotate(-1.2deg)}
@@ -357,9 +375,9 @@
   .lp-toast{position:absolute;left:-6px;bottom:54px;background:#fff;border-radius:15px;box-shadow:0 22px 44px -16px rgba(33,48,74,.45);padding:10px 15px 10px 10px;display:flex;align-items:center;gap:10px;z-index:5}
   .lp-toast .st{width:34px;height:34px;border-radius:10px;background:#FFF6DC;display:grid;place-items:center;flex:none}
   .lp-toast .tx{display:flex;flex-direction:column;line-height:1.2}
-  .lp-toast .tx b{font-family:'Fredoka';font-weight:600;font-size:14px;color:var(--ink)}
+  .lp-toast .tx b{font-family:'Manrope';font-weight:600;font-size:14px;color:var(--ink)}
   .lp-toast .tx span{font-weight:800;font-size:11.5px;color:var(--muted)}
-  .lp-pill{position:absolute;right:8px;bottom:-12px;z-index:5;background:#fff;border-radius:999px;padding:8px 15px 8px 10px;display:flex;align-items:center;gap:9px;box-shadow:0 18px 36px -16px rgba(33,48,74,.45);font-family:'Fredoka';font-weight:500;font-size:13.5px;color:var(--ink)}
+  .lp-pill{position:absolute;right:8px;bottom:-12px;z-index:5;background:#fff;border-radius:999px;padding:8px 15px 8px 10px;display:flex;align-items:center;gap:9px;box-shadow:0 18px 36px -16px rgba(33,48,74,.45);font-family:'Manrope';font-weight:500;font-size:13.5px;color:var(--ink)}
   .lp-pill .pop{width:25px;height:25px;border-radius:8px;background:#FFF2D6;display:grid;place-items:center;font-size:14px}
   /* ── Hero motion (respects reduced-motion) ── */
   /* Hero motion — the brief's three looping keyframes (7s), reduced-motion safe. */
@@ -400,31 +418,36 @@
   /* feature cards with per-feature tinted icon tiles */
   .lp-card{transition:transform .18s ease,box-shadow .18s ease}
   .lp-card:hover{transform:translateY(-4px);box-shadow:0 28px 52px -28px rgba(33,48,74,.5)}
-  .lp-card .ic{display:inline-grid;place-items:center;width:52px;height:52px;border-radius:15px;background:#eef2f8;font-size:26px;margin-bottom:4px}
-  .tile-blue{background:#E7F1FC!important}.tile-gold{background:#FFF3D6!important}.tile-green{background:#E4F6EE!important}
+  .lp-card .ic{display:inline-grid;place-items:center;width:52px;height:52px;border-radius:15px;background:#eef2f8;margin-bottom:4px}
+  .tile-blue{background:#E7F1FC!important;color:var(--accent)}
+  .tile-gold{background:#FFF3D6!important;color:#C88A1F}
+  .tile-green{background:#E4F6EE!important;color:var(--good-deep)}
+  .tile-purple{background:var(--purple-bg)!important;color:var(--purple)}
+  .tile-orange{background:#FDEEE0!important;color:#E0793C}
+  .tile-teal{background:#DFF5F3!important;color:#2B9C93}
   /* purple label pill for the "parents set up" view */
   .lp-tag.par{color:#6D51C4;background:#EEE8FB}
   .lp-tag.fam{color:#1b7d80;background:#DCF4F4}
   /* how-it-works: colored number badge + emoji */
   .lp-step .step-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-  .lp-step .step-num{font-family:'Fredoka';font-weight:600;font-size:18px;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;color:#fff}
+  .lp-step .step-num{font-family:'Manrope';font-weight:600;font-size:18px;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;color:#fff}
   .lp-step .n-blue{background:var(--accent)}.lp-step .n-gold{background:var(--gold)}.lp-step .n-green{background:var(--good)}
-  .lp-step .step-ic{font-size:28px;line-height:1}
+  .lp-step .step-ic{color:var(--muted);line-height:1}
   /* why it's free: cheer-star + reassurance chips */
   .lp-why .why-star{width:52px;height:52px;display:block;margin:0 auto 6px}
   .lp-why .why-body{color:var(--muted);font-weight:700;font-size:14.5px;line-height:1.6;margin:0 auto;max-width:460px}
   .why-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:18px 0 16px}
   .why-chip{display:inline-flex;align-items:center;gap:7px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-weight:700;font-size:13px;color:var(--ink)}
   .why-chip .d{width:7px;height:7px;border-radius:50%;background:var(--good)}
-  .why-link{font-family:'Fredoka';font-weight:500;font-size:15px;color:var(--accent-deep);text-decoration:none}
+  .why-link{font-family:'Manrope';font-weight:500;font-size:15px;color:var(--accent-deep);text-decoration:none}
   .why-link:hover{text-decoration:underline}
   /* final CTA — blue gradient band */
-  .lp-sec.lp-ctaband{border-top:none;background:linear-gradient(155deg,#4090E1,#2C74C9);border-radius:26px;margin-top:30px;padding:44px 26px 46px}
-  .lp-ctaband .cta-star{width:60px;height:60px;display:block;margin:0 auto 16px;filter:drop-shadow(0 12px 20px rgba(0,0,0,.18))}
-  .lp-ctaband h2{color:#fff}
-  .lp-ctaband h2 .hlw:after{display:none}
-  .lp-ctaband .lead{color:rgba(255,255,255,.9)}
-  .ctaband-btn{font-family:'Fredoka';font-weight:500;font-size:17px;background:#fff;color:var(--accent-deep);border:none;border-radius:15px;padding:15px 32px;cursor:pointer;box-shadow:0 16px 30px -12px rgba(0,0,0,.3);transition:background .15s,color .15s}
+  .lp-sec.lp-ctaband{border-top:none;background:transparent;margin-top:30px;padding:44px 26px 46px;text-align:center}
+  .lp-ctaband .cta-star{width:52px;height:52px;display:block;margin:0 auto 16px}
+  .lp-ctaband h2{color:var(--ink)}
+  .lp-ctaband .lead{color:var(--muted)}
+  .ctaband-btn{font-family:'Manrope';font-weight:700;font-size:17px;background:var(--accent);color:#fff;border:none;border-radius:15px;padding:15px 32px;cursor:pointer;box-shadow:0 16px 30px -12px rgba(46,111,203,.4);transition:background .15s,color .15s}
+  .ctaband-btn:hover{background:var(--accent-deep)}
   .ctaband-btn:hover{background:var(--gold-mark);color:var(--ink)}
   /* testimonials */
   .lp-quotes{display:grid;grid-template-columns:1fr;gap:14px;max-width:900px;margin:0 auto}
@@ -433,7 +456,7 @@
   .lp-quote{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px 22px 18px;margin:0;box-shadow:0 18px 40px -32px rgba(33,48,74,.5)}
   .lp-quote .q{font-size:15px;line-height:1.55;color:var(--ink);font-weight:700;margin:0 0 14px}
   .lp-quote .who{display:flex;flex-direction:column;line-height:1.3}
-  .lp-quote .who b{font-family:'Fredoka';font-weight:600;font-size:14px;color:var(--ink)}
+  .lp-quote .who b{font-family:'Manrope';font-weight:600;font-size:14px;color:var(--ink)}
   .lp-quote .who span{font-weight:700;font-size:12px;color:var(--muted)}
   .fbta{border:2px solid var(--line);border-radius:12px;padding:12px;font-size:15px;font-family:'Nunito';font-weight:700;width:100%;resize:vertical;color:var(--ink)}
   .fbta:focus{outline:none;border-color:var(--accent)}
@@ -445,7 +468,7 @@
   .reassure{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:12px}
   .reassure span{font-weight:800;font-size:11px;color:var(--good-deep);background:var(--good-bg);border-radius:999px;padding:5px 10px}
   /* ── Continue with Google ── */
-  .gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#fff;border:2px solid var(--line);border-radius:14px;padding:13px;font-family:'Fredoka';font-weight:500;font-size:16px;color:var(--ink);cursor:pointer;transition:background .15s,border-color .15s}
+  .gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#fff;border:2px solid var(--line);border-radius:14px;padding:13px;font-family:'Manrope';font-weight:500;font-size:16px;color:var(--ink);cursor:pointer;transition:background .15s,border-color .15s}
   .gbtn:hover{background:#F7F9FC;border-color:#D7DEEA}
   .gbtn:disabled{opacity:.6;cursor:default}
   .gbtn .g{width:18px;height:18px;flex:none}
@@ -896,6 +919,31 @@ async function loadProfiles(){
 }
 
 // ── Landing (signed out) ──────────────────────────────────────────────────────
+// Line-icon set for landing UI chrome (2026-07 redesign): the design system
+// reserves emoji for actual chore/reward/avatar content only - decorative UI
+// (feature tiles, step badges, tags, trust chips, FAQ toggle) uses simple
+// stroke icons instead. 24x24 viewBox, currentColor stroke, matches spec.
+const LP_ICONS={
+  calendar:'<rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+  star:'<polygon points="12,2 15,9 22,9 16.5,13.5 18.5,21 12,17 5.5,21 7.5,13.5 2,9 9,9"/>',
+  target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/>',
+  camera:'<path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.4"/>',
+  sliders:'<line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2" fill="currentColor"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2" fill="currentColor"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="11" cy="18" r="2" fill="currentColor"/>',
+  monitor:'<rect x="3" y="4" width="18" height="12" rx="2"/><line x1="8" y1="20" x2="16" y2="20"/><line x1="12" y1="16" x2="12" y2="20"/>',
+  gift:'<rect x="3" y="9" width="18" height="12" rx="1.5"/><line x1="12" y1="9" x2="12" y2="21"/><rect x="3" y="6" width="18" height="4" rx="1"/><path d="M12 6c0-2.2-1.8-3.5-3.4-3.5S6.8 3.8 8.5 6"/><path d="M12 6c0-2.2 1.8-3.5 3.4-3.5S17.2 3.8 15.5 6"/>',
+  check:'<polyline points="4,12.5 9,17.5 20,6.5"/>',
+  lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  search:'<circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/>',
+  person:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M3 12h3M18 12h3M4.9 19.1l2.1-2.1M17 7l2.1-2.1"/>',
+  chevron:'<polyline points="6,9 12,15 18,9"/>',
+  speed:'<polygon points="13,2 4,14 11,14 9,22 20,10 13,10" fill="currentColor" stroke="none"/>'
+};
+function lpIcon(name,size){
+  size=size||24;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${LP_ICONS[name]||''}</svg>`;
+}
+
 // Self-hosted Twemoji swap for the landing page only: raw OS emoji render
 // differently per platform (Windows/Apple/Android glyphs all differ), which
 // makes the page look inconsistent depending on who's viewing it. Swapping
@@ -944,21 +992,21 @@ function renderLanding(){
         <button class="navlink" data-scroll="lpHow">How it works</button>
         <button class="navlink" data-scroll="lpFeat">Features</button>
         <button class="linkbtn" id="navLogin">Log in</button>
-        <button class="bigbtn navcta" data-start>Sign up free</button>
+        <button class="bigbtn navcta" data-start>Get started free</button>
       </div>
     </nav>
 
     <section class="lp-hero2">
       <div class="lp-hero-copy">
-        <div class="lp-eyebrow"><span class="sun">⭐</span> Every star is a little “well done”</div>
+        <div class="lp-eyebrow"><span class="sun">⭐</span> Small chores. Big Kudos</div>
         <h1>Less nagging. More <span class="lp-hl"><span>“I did it.”</span></span></h1>
-        <p class="lede">The good feeling of getting it done, <b>made visible.</b> Kids finish a chore, earn a star, and watch the “well done” add up.</p>
+        <p class="lede">Kids earn stars for completed chores and unlock rewards they actually care about. Less reminding for you. More “I did it.” for them.</p>
         <div class="cta">
-          <button class="bigbtn" data-start>Sign up free</button>
+          <button class="bigbtn" data-start>Get started free</button>
           <button class="seehow" data-scroll="lpHow">See how it works →</button>
         </div>
         <div class="lp-trust">
-          <span>✓ Free forever</span><span>✓ No credit card</span><span>✓ Set up in 2 min</span><span>✓ No ads, ever</span>
+          <span>${lpIcon('check',14)} Free forever</span><span>${lpIcon('lock',14)} Private by design</span><span>${lpIcon('speed',14)} Ready in 2 min</span>
         </div>
       </div>
 
@@ -983,15 +1031,15 @@ function renderLanding(){
             <g><rect x="640" y="56" width="40" height="30" rx="8" fill="#D98C5A"></rect><path d="M648 86 q-14 40 -6 72 M660 86 q4 46 -2 78 M672 86 q16 40 6 70" stroke="#69B36B" stroke-width="7" fill="none" stroke-linecap="round"></path></g>
             <!-- TV / WallBoard -->
             <g><rect x="250" y="70" width="300" height="208" rx="18" fill="#26344A"></rect><rect x="262" y="82" width="276" height="184" rx="11" fill="url(#ktv)"></rect>
-              <g transform="translate(278 95)"><rect x="0" y="0" width="18" height="18" rx="5" fill="#378ADD"></rect><path d="M9 2.5 L11.1 6.8 L15.8 7.3 L12.3 10.4 L13.2 15 L9 12.7 L4.8 15 L5.7 10.4 L2.2 7.3 L6.9 6.8 Z" fill="#FFD24A"></path><text x="24" y="13.5" font-family="Fredoka,sans-serif" font-size="13" font-weight="600" fill="#21304A">Kudos</text><rect x="198" y="0" width="46" height="18" rx="9" fill="#EAF2FC"></rect><text x="221" y="13" font-family="Fredoka,sans-serif" font-size="10" font-weight="600" fill="#378ADD" text-anchor="middle">Today</text></g>
-              <g transform="translate(278 121)"><rect width="116" height="22" rx="8" fill="#EAF2FC"></rect><circle cx="14" cy="11" r="6" fill="#378ADD"></circle><text x="25" y="15" font-family="Fredoka,sans-serif" font-size="11" font-weight="600" fill="#21304A">Maya</text><text x="110" y="15" font-family="Fredoka,sans-serif" font-size="10" font-weight="600" fill="#378ADD" text-anchor="end">120★</text></g>
-              <g transform="translate(406 121)"><rect width="116" height="22" rx="8" fill="#E4F6EE"></rect><circle cx="14" cy="11" r="6" fill="#45C48A"></circle><text x="25" y="15" font-family="Fredoka,sans-serif" font-size="11" font-weight="600" fill="#21304A">Leo</text><text x="110" y="15" font-family="Fredoka,sans-serif" font-size="10" font-weight="600" fill="#2C8A5E" text-anchor="end">85★</text></g>
+              <g transform="translate(278 95)"><rect x="0" y="0" width="18" height="18" rx="5" fill="#378ADD"></rect><path d="M9 2.5 L11.1 6.8 L15.8 7.3 L12.3 10.4 L13.2 15 L9 12.7 L4.8 15 L5.7 10.4 L2.2 7.3 L6.9 6.8 Z" fill="#FFD24A"></path><text x="24" y="13.5" font-family="Manrope,sans-serif" font-size="13" font-weight="600" fill="#21304A">Kudos</text><rect x="198" y="0" width="46" height="18" rx="9" fill="#EAF2FC"></rect><text x="221" y="13" font-family="Manrope,sans-serif" font-size="10" font-weight="600" fill="#378ADD" text-anchor="middle">Today</text></g>
+              <g transform="translate(278 121)"><rect width="116" height="22" rx="8" fill="#EAF2FC"></rect><circle cx="14" cy="11" r="6" fill="#378ADD"></circle><text x="25" y="15" font-family="Manrope,sans-serif" font-size="11" font-weight="600" fill="#21304A">Maya</text><text x="110" y="15" font-family="Manrope,sans-serif" font-size="10" font-weight="600" fill="#378ADD" text-anchor="end">120★</text></g>
+              <g transform="translate(406 121)"><rect width="116" height="22" rx="8" fill="#E4F6EE"></rect><circle cx="14" cy="11" r="6" fill="#45C48A"></circle><text x="25" y="15" font-family="Manrope,sans-serif" font-size="11" font-weight="600" fill="#21304A">Leo</text><text x="110" y="15" font-family="Manrope,sans-serif" font-size="10" font-weight="600" fill="#2C8A5E" text-anchor="end">85★</text></g>
               <g transform="translate(278 149)"><rect width="116" height="24" rx="7" fill="#E9F8F0"></rect><text x="11" y="16" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#2C8A5E">Make bed</text><circle cx="104" cy="12" r="7" fill="#45C48A"></circle><path d="M100.5 12 l2.5 2.5 l4 -5" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></g>
               <g transform="translate(278 177)"><rect width="116" height="24" rx="7" fill="#E9F8F0"></rect><text x="11" y="16" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#2C8A5E">Brush teeth</text><circle cx="104" cy="12" r="7" fill="#45C48A"></circle><path d="M100.5 12 l2.5 2.5 l4 -5" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></g>
-              <g transform="translate(278 205)"><rect width="116" height="24" rx="7" fill="#F4F6FB"></rect><text x="11" y="16" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#21304A">Tidy toys</text><text x="108" y="16" font-family="Fredoka,sans-serif" font-size="10" font-weight="600" fill="#F2B63C" text-anchor="end">+5★</text></g>
+              <g transform="translate(278 205)"><rect width="116" height="24" rx="7" fill="#F4F6FB"></rect><text x="11" y="16" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#21304A">Tidy toys</text><text x="108" y="16" font-family="Manrope,sans-serif" font-size="10" font-weight="600" fill="#F2B63C" text-anchor="end">+5★</text></g>
               <g transform="translate(406 149)"><rect width="116" height="24" rx="7" fill="#E9F8F0"></rect><text x="11" y="16" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#2C8A5E">Feed dog</text><circle cx="104" cy="12" r="7" fill="#45C48A"></circle><path d="M100.5 12 l2.5 2.5 l4 -5" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></g>
-              <g transform="translate(406 177)"><rect width="116" height="24" rx="7" fill="#F4F6FB"></rect><text x="11" y="16" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#21304A">Homework</text><text x="108" y="16" font-family="Fredoka,sans-serif" font-size="10" font-weight="600" fill="#F2B63C" text-anchor="end">+10★</text></g>
-              <g transform="translate(406 205)"><rect width="116" height="24" rx="7" fill="#F4F6FB"></rect><text x="11" y="16" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#21304A">Water plants</text><text x="108" y="16" font-family="Fredoka,sans-serif" font-size="10" font-weight="600" fill="#F2B63C" text-anchor="end">+5★</text></g>
+              <g transform="translate(406 177)"><rect width="116" height="24" rx="7" fill="#F4F6FB"></rect><text x="11" y="16" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#21304A">Homework</text><text x="108" y="16" font-family="Manrope,sans-serif" font-size="10" font-weight="600" fill="#F2B63C" text-anchor="end">+10★</text></g>
+              <g transform="translate(406 205)"><rect width="116" height="24" rx="7" fill="#F4F6FB"></rect><text x="11" y="16" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#21304A">Water plants</text><text x="108" y="16" font-family="Manrope,sans-serif" font-size="10" font-weight="600" fill="#F2B63C" text-anchor="end">+5★</text></g>
             </g>
             <!-- island -->
             <path d="M150 470 q0 -16 16 -16 h428 q16 0 16 16 v130 h-460 Z" fill="#FFFFFF"></path><ellipse cx="380" cy="470" rx="232" ry="16" fill="#F1F3F7"></ellipse><rect x="150" y="556" width="460" height="44" fill="#EFF1F6"></rect>
@@ -1016,10 +1064,10 @@ function renderLanding(){
 
     <!-- Real-app proof: kid board, parent setup, and family board, all the actual Kudos UI in code. -->
     <section class="lp-sec">
-      <h2 style="margin-bottom:24px">Small jobs. Real pride. Stars to show for it.</h2>
+      <h2 style="margin-bottom:24px">Tiny wins every day become confidence that lasts.</h2>
       <div class="lp-showcase">
         <div class="lp-dev">
-          <div class="lp-tag">👧 What kids see</div>
+          <div class="lp-tag">${lpIcon('person',15)} What kids see</div>
           <div class="lp-phone"><div class="scr">
             <div class="lp-bm-head"><div class="who">🦄 Maya</div><div class="pts"><b>120</b><span>STARS</span></div></div>
             <div class="lp-bm-sec">☀️ Morning</div>
@@ -1036,7 +1084,7 @@ function renderLanding(){
         </div>
 
         <div class="lp-dev">
-          <div class="lp-tag par">🛠️ What parents set up</div>
+          <div class="lp-tag par">${lpIcon('gear',15)} What parents set up</div>
           <div class="lp-phone"><div class="scr">
             <div class="lp-pm-head"><b>Manage chores</b><span class="add">＋ Add</span></div>
             <div class="lp-pm-row"><span class="e">🛏️</span><span class="t">Make bed<small>Morning · daily</small></span><span class="pt">+3 ⭐</span></div>
@@ -1051,7 +1099,7 @@ function renderLanding(){
         </div>
 
         <div class="lp-dev">
-          <div class="lp-tag fam">📺 What everyone sees</div>
+          <div class="lp-tag fam">${lpIcon('monitor',15)} What everyone sees</div>
           <div class="lp-famframe"><div class="lp-famscr">
             <div class="lp-famhd">📺 Family board · Today</div>
             <div class="lp-kcard">
@@ -1070,32 +1118,34 @@ function renderLanding(){
     </section>
 
     <section class="lp-sec lp-warm" id="lpHow">
-      <h2 style="margin-bottom:24px">How it works</h2>
+      <h2 style="margin-bottom:6px">How it works</h2>
+      <p class="lead">Three steps from "who's doing the dishes?" to a board that runs itself.</p>
       <div class="lp-steps">
-        <div class="lp-step"><div class="step-top"><span class="step-num n-blue">1</span><span class="step-ic">🧩</span></div><h3>Set up the board</h3><p>Add your kids (ages 4 to teen) and pick starter chores tuned to their age. No app to install.</p></div>
-        <div class="lp-step"><div class="step-top"><span class="step-num n-gold">2</span><span class="step-ic">⭐</span></div><h3>Kids earn stars</h3><p>They tap off chores as they go and watch their star balance climb.</p></div>
-        <div class="lp-step"><div class="step-top"><span class="step-num n-green">3</span><span class="step-ic">🎁</span></div><h3>Cash in rewards</h3><p>Stars buy rewards you choose: screen time, a treat, or a big saved-up goal.</p></div>
+        <div class="lp-step"><div class="step-top"><span class="step-num n-blue">1</span><span class="step-ic">${lpIcon('sliders',20)}</span></div><h3>Create your family's chore board</h3><p>Add your kids, choose their chores, and pick rewards that motivate them. You're ready in about two minutes.</p></div>
+        <div class="lp-step"><div class="step-top"><span class="step-num n-gold">2</span><span class="step-ic">${lpIcon('star',20)}</span></div><h3>Kids complete chores and earn stars</h3><p>Kids check off completed chores and watch their stars grow. Every task feels like progress instead of another reminder.</p></div>
+        <div class="lp-step"><div class="step-top"><span class="step-num n-green">3</span><span class="step-ic">${lpIcon('gift',20)}</span></div><h3>Turn stars into rewards they'll love</h3><p>Stars unlock rewards you choose, from extra screen time to saving for something big. They learn that consistency pays off.</p></div>
       </div>
     </section>
 
     <section class="lp-sec" id="lpFeat">
-      <h2 style="margin-bottom:24px">Everything you need</h2>
+      <h2 style="margin-bottom:24px">Built for real family routines</h2>
+      <p class="lead">Built for real households: multiple kids, different ages, one shared screen.</p>
       <div class="lp-cards">
-        <div class="lp-card"><div class="ic tile-blue">🗓️</div><h3>Chores by time of day</h3><p>Morning, afternoon, and evening groups.</p></div>
-        <div class="lp-card"><div class="ic tile-gold">⭐</div><h3>Stars &amp; rewards</h3><p>Instant, weekly, or monthly. Shared or per kid.</p></div>
-        <div class="lp-card"><div class="ic tile-green">🎯</div><h3>Goals &amp; streaks</h3><p>Pin a goal, keep a streak, one freeze a month.</p></div>
-        <div class="lp-card"><div class="ic tile-blue">📷</div><h3>Photo proof</h3><p>Optional, set per chore.</p></div>
-        <div class="lp-card"><div class="ic tile-gold">🎚️</div><h3>Score it your way</h3><p>Stars, daily care, or a small penalty. Undo anytime.</p></div>
-        <div class="lp-card"><div class="ic tile-green">📺</div><h3>WallBoard mode</h3><p>Everyone's progress, fridge-ready.</p></div>
+        <div class="lp-card"><div class="ic tile-blue">${lpIcon('calendar')}</div><h3>Morning to bedtime routines</h3><p>Morning, afternoon, and evening groups so kids always know what's next.</p></div>
+        <div class="lp-card"><div class="ic tile-gold">${lpIcon('star')}</div><h3>Motivation that actually sticks</h3><p>Tiered rewards, instant, weekly, or monthly. Shared across the family or set per kid.</p></div>
+        <div class="lp-card"><div class="ic tile-green">${lpIcon('target')}</div><h3>Big goals worth working toward</h3><p>Pin a savings goal and keep daily streaks alive, with one monthly streak-freeze.</p></div>
+        <div class="lp-card"><div class="ic tile-purple">${lpIcon('camera')}</div><h3>Photo check-ins when you need them</h3><p>Ask for a photo on the chores that need it. Optional, and set per chore.</p></div>
+        <div class="lp-card"><div class="ic tile-orange">${lpIcon('lock')}</div><h3>Reward good habits your way</h3><p>A parent PIN locks setup. Each kid taps their own profile to check in.</p></div>
+        <div class="lp-card"><div class="ic tile-teal">${lpIcon('monitor')}</div><h3>See everyone's progress at a glance</h3><p>A shared family screen showing everyone's progress at a glance. Fridge-ready.</p></div>
       </div>
     </section>
 
     <section class="lp-sec lp-warm">
       <div class="lp-why">
         <svg class="why-star" viewBox="0 0 100 100" aria-hidden="true"><path d="M50,12 L61.17,34.63 L86.14,38.26 L68.07,55.87 L72.34,80.74 L50,69 L27.66,80.74 L31.93,55.87 L13.86,38.26 L38.83,34.63 Z" fill="#FFD24A" stroke="#FFD24A" stroke-width="9" stroke-linejoin="round"></path><circle cx="41" cy="46" r="4" fill="#378ADD"></circle><circle cx="59" cy="46" r="4" fill="#378ADD"></circle><path d="M41,56 Q50,64 59,56" stroke="#378ADD" stroke-width="4.6" fill="none" stroke-linecap="round"></path></svg>
-        <h2 style="margin:0 0 14px">Why it's <span class="hlw"><span>free</span></span></h2>
-        <p class="why-body">It's a craft project built by a PM and mom of two who wanted a chore app that respects families and their data.</p>
-        <div class="why-chips"><span class="why-chip"><span class="d"></span>No trackers</span><span class="why-chip"><span class="d"></span>Private by design</span></div>
+        <h2 style="margin:0 0 14px">Built because I needed it too</h2>
+        <p class="why-body">I'm a product manager and a mom of two. I couldn't find a chore app that was simple, private, and actually motivated my kids. So I built one.</p>
+        <div class="why-chips"><span class="why-chip"><span class="d"></span>Free forever</span><span class="why-chip"><span class="d"></span>Private by design</span><span class="why-chip"><span class="d"></span>No ads or trackers</span></div>
         <a class="why-link" data-legal="privacy" style="cursor:pointer">Read the privacy note →</a>
       </div>
     </section>
@@ -1103,10 +1153,11 @@ function renderLanding(){
     <section class="lp-sec">
       <h2>Questions</h2>
       <div class="lp-faq">
-        <details open><summary>Is it really free?</summary><p>Yes. No paid tiers, no credit card, no ads. It's built to stay that way.</p></details>
-        <details><summary>Do my kids need their own logins?</summary><p>No. One shared device runs the whole household, no phone needed for each kid. You sign up once, then everyone taps their own profile; older kids can add an optional PIN.</p></details>
-        <details><summary>Is my kids' data safe?</summary><p>Yes. Everything is private to your account and protected row-by-row in the database, so no other family can ever see your board. See the privacy note for what's stored.</p></details>
-        <details><summary>What devices does it work on?</summary><p>Any modern browser: phone, tablet, or computer. Add it to your home screen for an app-like experience.</p></details>
+        <details open><summary><span>Is it really free?</span>${lpIcon('chevron',18)}</summary><p>Yes. No paid tiers, no credit card, no ads. It's built to stay that way.</p></details>
+        <details><summary><span>Do my kids need their own logins?</span>${lpIcon('chevron',18)}</summary><p>No. One shared device runs the whole household, no phone needed for each kid. You sign up once, then everyone taps their own profile; older kids can add an optional PIN.</p></details>
+        <details><summary><span>Is my kids' data safe?</span>${lpIcon('chevron',18)}</summary><p>Yes. Everything is private to your account and protected row-by-row in the database, so no other family can ever see your board. See the privacy note for what's stored.</p></details>
+        <details><summary><span>What devices does it work on?</span>${lpIcon('chevron',18)}</summary><p>Any modern browser: phone, tablet, or computer. Add it to your home screen for an app-like experience.</p></details>
+        <details><summary><span>What age is Kudos best for?</span>${lpIcon('chevron',18)}</summary><p>Kudos works well from about age 4 through the teen years — chores, rewards, and daily-care tasks are all simple to tune per kid, from toddler basics to teen responsibilities.</p></details>
       </div>
     </section>
 
@@ -1119,8 +1170,8 @@ function renderLanding(){
     <section class="lp-sec lp-final lp-ctaband">
       <svg class="cta-star" viewBox="0 0 100 100" aria-hidden="true"><path d="M50,12 L61.17,34.63 L86.14,38.26 L68.07,55.87 L72.34,80.74 L50,69 L27.66,80.74 L31.93,55.87 L13.86,38.26 L38.83,34.63 Z" fill="#FFD24A" stroke="#FFD24A" stroke-width="9" stroke-linejoin="round"></path><circle cx="41" cy="46" r="4" fill="#2C74C9"></circle><circle cx="59" cy="46" r="4" fill="#2C74C9"></circle><path d="M41,56 Q50,64 59,56" stroke="#2C74C9" stroke-width="4.6" fill="none" stroke-linecap="round"></path></svg>
       <h2>Ready to give kids the kudos they deserve?</h2>
-      <p class="lead">Free, private, and ready in two minutes.</p>
-      <button class="ctaband-btn" data-start>Sign up free</button>
+      <p class="lead">Set up your family's first chore board in about two minutes. It's free, private, and always ad free.</p>
+      <button class="ctaband-btn" data-start>Get started free</button>
     </section>
 
     <footer class="lp-foot">
