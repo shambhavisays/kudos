@@ -25,57 +25,60 @@
 <link rel="apple-touch-startup-image" href="./icons/icon-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#F4F6FB; --card:#ffffff; --ink:#1d2b3a; --muted:#5c6d87;
-    --accent:#378ADD; --accent-deep:#185FA5; --good:#1f9d57; --good-deep:#147a42; --good-bg:#E6F7ED;
-    --bad:#A32D2D; --bad-bg:#FCEBEB; --line:#E6EAF2; --gold:#BA7517;
-    --cream:#FBF4E9; --cream-line:#EFE3CE; --gold-mark:#FFD24A;
-    --k1:#378ADD;
+    /* Design-system tokens (2026-07 redesign), now global - the app screens
+       are being redesigned to match the landing page's earlier pass. */
+    --bg:#FFFFFF; --card:#ffffff; --ink:#21304A; --muted:#78716A;
+    --accent:#2E6FCB; --accent-deep:#1F4E96; --good:#45C48A; --good-deep:#2E9A6B; --good-bg:#E7F8F0;
+    --bad:#A32D2D; --bad-bg:#FCEBEB; --line:#EAE3D6; --gold:#F2B63C;
+    --cream:#FBF4E9; --cream-line:#EAE3D6; --gold-mark:#FFD24A;
+    --surface:#F5F3F0; --purple:#9B7BE8; --purple-bg:#EFE9FC;
+    --k1:#2E6FCB;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   @media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}}
   html,body{margin:0;height:100%}
-  body{font-family:'Nunito',system-ui,sans-serif;color:var(--ink);background:var(--bg);min-height:100%}
+  body{font-family:'Manrope',system-ui,sans-serif;color:var(--ink);background:var(--bg);min-height:100%}
   .wrap{max-width:720px;margin:0 auto;padding:14px 14px 120px}
   header.top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 4px 12px}
   .brand{display:flex;align-items:center;gap:9px;color:var(--ink)}
   .brand .logo{width:34px;height:34px;border-radius:9px;display:block;flex:none}
-  .brand h1{font-family:'Fredoka';font-weight:600;font-size:20px;margin:0}
+  .brand h1{font-family:'Manrope';font-weight:600;font-size:20px;margin:0}
   .brand .dateline{font-size:11px;font-weight:800;color:var(--muted);margin-top:1px}
   .gear,.logout{appearance:none;border:none;background:#fff;border:1px solid var(--line);color:var(--ink);width:40px;height:40px;border-radius:13px;font-size:18px;cursor:pointer}
   .gear:active,.logout:active{transform:scale(.92)}
   .center{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;text-align:center}
-  .center h2{font-family:'Fredoka';font-size:22px;margin:0}
-  .center input{border:2px solid var(--line);border-radius:14px;padding:14px;font-size:18px;text-align:center;width:240px;font-family:'Nunito';font-weight:700;letter-spacing:2px}
+  .center h2{font-family:'Manrope';font-size:22px;margin:0}
+  .center input{border:2px solid var(--line);border-radius:14px;padding:14px;font-size:18px;text-align:center;width:240px;font-family:'Manrope';font-weight:700;letter-spacing:2px}
   .center input:focus{outline:none;border-color:var(--accent)}
-  .bigbtn{appearance:none;border:none;background:var(--accent);color:#fff;border-radius:14px;padding:13px 22px;font-family:'Fredoka';font-weight:600;font-size:16px;cursor:pointer}
+  .bigbtn{appearance:none;border:none;background:var(--accent);color:#fff;border-radius:14px;padding:13px 22px;font-family:'Manrope';font-weight:600;font-size:16px;cursor:pointer}
   .bigbtn:active{transform:scale(.97)}
   .bigbtn:disabled{background:var(--line);color:var(--muted)}
-  .ghostbtn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--accent-deep);border-radius:14px;padding:12px 20px;font-family:'Fredoka';font-weight:600;font-size:15px;cursor:pointer}
-  .linkbtn{appearance:none;border:none;background:transparent;color:var(--accent-deep);font-family:'Nunito';font-weight:800;font-size:13px;cursor:pointer;text-decoration:underline}
+  .ghostbtn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--accent-deep);border-radius:14px;padding:12px 20px;font-family:'Manrope';font-weight:600;font-size:15px;cursor:pointer}
+  .linkbtn{appearance:none;border:none;background:transparent;color:var(--accent-deep);font-family:'Manrope';font-weight:800;font-size:13px;cursor:pointer;text-decoration:underline}
   .profiles{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:420px}
   .profile{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer}
   .profile .av{font-size:38px}
-  .profile .nm{font-family:'Fredoka';font-weight:600;font-size:16px}
+  .profile .nm{font-family:'Manrope';font-weight:600;font-size:16px}
   /* ── Auth + onboarding ── */
   .authcard{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px;width:100%;max-width:360px;text-align:left;display:flex;flex-direction:column;gap:11px}
   .authcard label{font-weight:800;font-size:12px;color:var(--muted);margin-bottom:-5px}
-  .authcard input{border:2px solid var(--line);border-radius:12px;padding:12px;font-size:15px;font-family:'Nunito';font-weight:700;text-align:left;letter-spacing:normal;width:100%}
+  .authcard input{border:2px solid var(--line);border-radius:12px;padding:12px;font-size:15px;font-family:'Manrope';font-weight:700;text-align:left;letter-spacing:normal;width:100%}
   .authcard input:focus{outline:none;border-color:var(--accent)}
   .tagline{color:var(--muted);font-weight:700;font-size:14px;max-width:320px}
   .wizard{width:100%;max-width:460px;text-align:left}
   .wizard .steplab{font-weight:800;font-size:12px;letter-spacing:1px;color:var(--accent-deep);text-transform:uppercase}
-  .wizard h2{font-family:'Fredoka';font-size:21px;margin:4px 0 2px}
+  .wizard h2{font-family:'Manrope';font-size:21px;margin:4px 0 2px}
   .wizard .sub{color:var(--muted);font-weight:700;font-size:13px;margin-bottom:12px}
   .agepills{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
-  .agepill{border:2px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-family:'Fredoka';font-weight:600;font-size:13px;cursor:pointer;color:var(--ink)}
+  .agepill{border:2px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-family:'Manrope';font-weight:600;font-size:13px;cursor:pointer;color:var(--ink)}
   .agepill.on{border-color:var(--accent);background:#eaf2fc;color:var(--accent-deep)}
   .choregrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:8px}
   .choreToggle{position:relative;border:2px solid var(--line);background:#fff;border-radius:16px;padding:12px;cursor:pointer;min-height:84px;display:flex;flex-direction:column;justify-content:space-between}
   .choreToggle .emo{font-size:24px}
-  .choreToggle .nm{font-family:'Fredoka';font-weight:600;font-size:13px;margin-top:4px}
+  .choreToggle .nm{font-family:'Manrope';font-weight:600;font-size:13px;margin-top:4px}
   .choreToggle .pp{font-weight:800;font-size:11px;color:var(--good-deep);background:var(--good-bg);border-radius:999px;padding:3px 8px;align-self:flex-start;cursor:pointer;border:1px solid transparent}
   .choreToggle .pp:hover{border-color:currentColor}
   .choreToggle .pp.care{color:var(--accent-deep);background:#eaf2fc}
@@ -86,19 +89,19 @@
   .wizrow .bigbtn,.wizrow .ghostbtn{flex:1}
   .miniform{display:grid;grid-template-columns:54px 1fr;gap:8px;margin:4px 0}
   .miniform.three{grid-template-columns:54px 1fr 80px}
-  .miniform input{border:2px solid var(--line);border-radius:12px;padding:11px;font-weight:700;font-size:14px;width:100%;font-family:'Nunito'}
+  .miniform input{border:2px solid var(--line);border-radius:12px;padding:11px;font-weight:700;font-size:14px;width:100%;font-family:'Manrope'}
   .miniform input:focus{outline:none;border-color:var(--accent)}
   .toggle{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px;color:var(--ink);margin:8px 0}
   .kidpill{display:inline-flex;align-items:center;gap:6px;background:#eaf2fc;color:var(--accent-deep);border-radius:999px;padding:6px 12px;font-weight:800;font-size:13px;margin:0 6px 6px 0}
   .kids{display:flex;gap:10px;margin-bottom:14px}
-  .kidtab{flex:1;border:none;cursor:pointer;border-radius:16px;padding:11px 10px;display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);color:var(--ink);font-family:'Fredoka';font-weight:600;font-size:15px}
+  .kidtab{flex:1;border:none;cursor:pointer;border-radius:16px;padding:11px 10px;display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);color:var(--ink);font-family:'Manrope';font-weight:600;font-size:15px}
   .kidtab .av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:17px;background:var(--bg);flex:none}
   .kidtab.active{background:var(--k1);border-color:var(--k1);color:#fff}
   .hero{background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px 20px}
   .hero .row1{display:flex;align-items:flex-start;justify-content:space-between}
-  .hero .who{font-family:'Fredoka';font-weight:600;font-size:20px;display:flex;align-items:center;gap:8px}
+  .hero .who{font-family:'Manrope';font-weight:600;font-size:20px;display:flex;align-items:center;gap:8px}
   .hero .pts{text-align:right;line-height:1}
-  .hero .pts b{font-family:'Fredoka';font-size:32px;display:block;color:var(--accent-deep)}
+  .hero .pts b{font-family:'Manrope';font-size:32px;display:block;color:var(--accent-deep)}
   .hero .pts span{font-size:11px;font-weight:800;letter-spacing:.4px;color:var(--muted);text-transform:uppercase;white-space:nowrap}
   .meta{display:flex;gap:10px;margin-top:10px;font-weight:800;font-size:12px;flex-wrap:wrap}
   .meta .chip{background:var(--bg);padding:5px 11px;border-radius:999px}
@@ -109,9 +112,9 @@
   .power .fill{height:100%;border-radius:999px;background:var(--accent);width:0;transition:width .5s}
   .power .lab{display:flex;justify-content:space-between;font-size:11px;font-weight:800;margin-top:6px;color:var(--muted)}
   .recap{background:#fff;border:1px solid var(--line);border-radius:18px;padding:13px 16px;margin-top:12px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-  .recap .title{font-family:'Fredoka';font-weight:600;font-size:13px;color:var(--ink);width:100%;margin-bottom:-2px}
+  .recap .title{font-family:'Manrope';font-weight:600;font-size:13px;color:var(--ink);width:100%;margin-bottom:-2px}
   .recap .stat{display:flex;flex-direction:column;line-height:1.05}
-  .recap .stat b{font-family:'Fredoka';font-size:20px}
+  .recap .stat b{font-family:'Manrope';font-size:20px}
   .recap .stat span{font-size:10px;font-weight:800;letter-spacing:.4px;color:var(--muted);text-transform:uppercase;margin-top:2px}
   .recap .spark{display:flex;align-items:flex-end;gap:5px;height:40px;margin-left:auto}
   .recap .spark .col{display:flex;flex-direction:column;align-items:center;gap:3px}
@@ -119,10 +122,10 @@
   .recap .spark .d{font-size:9px;font-weight:800;color:var(--muted)}
   .goalstrip{background:#fff;border:2px solid var(--line);border-radius:18px;padding:13px 16px;margin-top:12px;cursor:default}
   .goalstrip.ready{cursor:pointer}
-  .goalstrip .gtop{display:flex;align-items:center;gap:9px;font-family:'Fredoka';font-weight:600;font-size:15px}
+  .goalstrip .gtop{display:flex;align-items:center;gap:9px;font-family:'Manrope';font-weight:600;font-size:15px}
   .goalstrip .gtop .emo{font-size:22px}
   .goalstrip .gtop .lab{flex:1}
-  .goalstrip .gtop .lab small{display:block;font-family:'Nunito';font-weight:800;font-size:11px;color:var(--muted)}
+  .goalstrip .gtop .lab small{display:block;font-family:'Manrope';font-weight:800;font-size:11px;color:var(--muted)}
   .goalstrip .gbar{height:12px;border-radius:999px;background:var(--bg);overflow:hidden;margin-top:10px}
   .goalstrip .gfill{height:100%;border-radius:999px;transition:width .5s}
   .goalstrip .gnum{font-weight:800;font-size:11px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between}
@@ -130,15 +133,15 @@
   .reward .pin.on{opacity:1}
   .reward{position:relative}
   .wallhead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 4px 14px}
-  .wallhead h2{font-family:'Fredoka';font-weight:600;font-size:20px;margin:0}
+  .wallhead h2{font-family:'Manrope';font-weight:600;font-size:20px;margin:0}
   .wallhead .sub{font-size:11px;font-weight:800;color:var(--muted)}
   .wallgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
   .wallcard{background:#fff;border:2px solid var(--line);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:7px}
-  .wallcard .wname{font-family:'Fredoka';font-weight:600;font-size:18px;display:flex;align-items:center;gap:8px}
+  .wallcard .wname{font-family:'Manrope';font-weight:600;font-size:18px;display:flex;align-items:center;gap:8px}
   .wallcard .wmeta{display:flex;gap:12px;font-weight:800;font-size:12px;color:var(--muted)}
   .wallcard .wbar{height:12px;border-radius:999px;background:var(--bg);overflow:hidden;margin-top:3px}
   .wallcard .wfill{height:100%;border-radius:999px;transition:width .5s}
-  .wallcard .wmsg{font-family:'Fredoka';font-weight:600;font-size:13px}
+  .wallcard .wmsg{font-family:'Manrope';font-weight:600;font-size:13px}
   .wallcard .wdots{display:flex;flex-wrap:wrap;gap:6px;margin-top:3px}
   .wallcard .wdot{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:18px;background:var(--bg);border:2px solid var(--line);opacity:.4}
   .wallcard .wdot.done{opacity:1}
@@ -150,22 +153,22 @@
   #lightbox.open{display:flex}
   #lightbox img{max-width:100%;max-height:90vh;border-radius:14px}
   .sectionhd{display:flex;align-items:center;justify-content:space-between;margin:20px 4px 10px}
-  .sectionhd h2{font-family:'Fredoka';font-weight:600;font-size:17px;margin:0}
+  .sectionhd h2{font-family:'Manrope';font-weight:600;font-size:17px;margin:0}
   .sectionhd .hint{font-size:12px;font-weight:700;color:var(--muted)}
   .periodgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;margin-bottom:4px}
   @media(min-width:560px){.periodgrid{grid-template-columns:repeat(3,1fr)}}
-  .periodlab{display:flex;align-items:center;gap:8px;font-family:'Fredoka';font-weight:600;font-size:14px;color:var(--ink);margin:14px 4px 8px}
+  .periodlab{display:flex;align-items:center;gap:8px;font-family:'Manrope';font-weight:600;font-size:14px;color:var(--ink);margin:14px 4px 8px}
   .periodlab::after{content:'';flex:1;height:1px;background:var(--line)}
   .periodlab:first-child{margin-top:0}
   .chore{background:#fff;border-radius:18px;padding:14px 13px;box-shadow:none;border:2px solid var(--line);cursor:pointer;position:relative;min-height:108px;display:flex;flex-direction:column;justify-content:space-between}
   .chore:active{transform:scale(.96)}
   .chore .emo{font-size:34px;line-height:1}
-  .chore .nm{font-family:'Fredoka';font-weight:600;font-size:15px;margin-top:7px}
+  .chore .nm{font-family:'Manrope';font-weight:600;font-size:15px;margin-top:7px}
   .chore .pp{font-weight:800;font-size:12px;color:var(--good);margin-top:2px}
   .chore.neg .pp{color:var(--bad)}
   .chore.care .pp{color:var(--muted)}
   .stretchtag{display:inline-block;font-size:10px;font-weight:700;color:#7c5cff;background:#7c5cff1a;border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:middle}
-  .proposeBtn{appearance:none;border:1px dashed var(--accent);background:#fff;color:var(--accent-deep);border-radius:13px;padding:10px;font-family:'Fredoka';font-weight:600;font-size:13px;cursor:pointer;width:100%;margin:6px 0 0}
+  .proposeBtn{appearance:none;border:1px dashed var(--accent);background:#fff;color:var(--accent-deep);border-radius:13px;padding:10px;font-family:'Manrope';font-weight:600;font-size:13px;cursor:pointer;width:100%;margin:6px 0 0}
   .chore .tick{position:absolute;top:9px;right:9px;width:24px;height:24px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:13px;color:#fff;background:#fff}
   .chore.done{border-color:var(--good);background:var(--good-bg)}
   .chore.done .tick{background:var(--good);border-color:var(--good)}
@@ -176,11 +179,11 @@
   .rewards{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:11px;padding:4px 2px 6px}
   .reward{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:6px;min-width:0}
   .reward .emo{font-size:26px}
-  .reward .nm{font-family:'Fredoka';font-weight:600;font-size:14px;line-height:1.15}
+  .reward .nm{font-family:'Manrope';font-weight:600;font-size:14px;line-height:1.15}
   .reward .cost{font-weight:800;font-size:12px;color:var(--gold)}
-  .reward button{margin-top:auto;border:none;border-radius:11px;padding:9px;font-family:'Fredoka';font-weight:600;font-size:13px;cursor:pointer;background:var(--accent);color:#fff}
+  .reward button{margin-top:auto;border:none;border-radius:11px;padding:9px;font-family:'Manrope';font-weight:600;font-size:13px;cursor:pointer;background:var(--accent);color:#fff}
   .reward button:disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
-  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(40px);background:var(--ink);color:#fff;padding:13px 20px;border-radius:14px;font-family:'Fredoka';font-weight:600;opacity:0;transition:.3s;z-index:70;max-width:90%;text-align:center}
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(40px);background:var(--ink);color:#fff;padding:13px 20px;border-radius:14px;font-family:'Manrope';font-weight:600;opacity:0;transition:.3s;z-index:70;max-width:90%;text-align:center}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   .fab{position:fixed;right:18px;bottom:26px;width:56px;height:56px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:26px;box-shadow:0 6px 18px rgba(20,30,45,.25);cursor:pointer;z-index:60;display:grid;place-items:center}
   .fab:active{transform:scale(.94)}
@@ -189,14 +192,14 @@
   .modal{position:fixed;inset:0;background:rgba(20,30,45,.45);z-index:80;display:none;align-items:flex-end;justify-content:center}
   .modal.open{display:flex}
   .sheet{background:#fff;width:100%;max-width:720px;max-height:88vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:18px 16px 30px}
-  .sheet h3{font-family:'Fredoka';font-size:19px;margin:4px 4px 14px;display:flex;align-items:center;justify-content:space-between}
+  .sheet h3{font-family:'Manrope';font-size:19px;margin:4px 4px 14px;display:flex;align-items:center;justify-content:space-between}
   .sheet h3 .x{border:none;background:var(--bg);border-radius:10px;width:32px;height:32px;font-size:16px;cursor:pointer}
   .legalbody{font-size:13px;line-height:1.5;color:var(--ink);padding:0 4px}
-  .legalbody h4{font-family:'Fredoka';font-weight:600;font-size:15px;margin:14px 0 4px;color:var(--ink)}
+  .legalbody h4{font-family:'Manrope';font-weight:600;font-size:15px;margin:14px 0 4px;color:var(--ink)}
   .legalbody p{margin:0 0 8px;color:var(--muted)}
   .legalbody b{color:var(--ink)}
   .tabbar{display:flex;gap:6px;background:var(--bg);padding:5px;border-radius:13px;margin:0 4px 14px;flex-wrap:wrap}
-  .tabbar button{flex:1;border:none;background:transparent;padding:9px;border-radius:9px;font-family:'Fredoka';font-weight:600;font-size:13px;cursor:pointer;color:var(--muted);min-width:72px}
+  .tabbar button{flex:1;border:none;background:transparent;padding:9px;border-radius:9px;font-family:'Manrope';font-weight:600;font-size:13px;cursor:pointer;color:var(--muted);min-width:72px}
   .tabbar button.on{background:#fff;color:var(--ink)}
   .panel{display:none}.panel.on{display:block}
   .item{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:13px;padding:10px 12px;margin:0 4px 9px}
@@ -208,10 +211,10 @@
   .addform input{border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;width:100%}
   .addform.four{grid-template-columns:50px 1fr 56px 64px}
   .rewardopts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:6px 4px 4px}
-  .addform select,.rewardopts select{border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;width:100%;background:#fff;font-family:'Nunito';color:var(--ink)}
-  .addbtn{grid-column:1/-1;border:none;background:var(--accent);color:#fff;border-radius:12px;padding:11px;font-family:'Fredoka';font-weight:600;font-size:14px;cursor:pointer;margin-top:2px}
+  .addform select,.rewardopts select{border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;width:100%;background:#fff;font-family:'Manrope';color:var(--ink)}
+  .addbtn{grid-column:1/-1;border:none;background:var(--accent);color:#fff;border-radius:12px;padding:11px;font-family:'Manrope';font-weight:600;font-size:14px;cursor:pointer;margin-top:2px}
   .rowbtns{display:flex;gap:8px;margin:10px 4px 0;flex-wrap:wrap}
-  .rowbtns button{flex:1;min-width:130px;border:none;border-radius:13px;padding:11px;font-family:'Fredoka';font-weight:600;font-size:13px;cursor:pointer;background:var(--bg);color:var(--ink)}
+  .rowbtns button{flex:1;min-width:130px;border:none;border-radius:13px;padding:11px;font-family:'Manrope';font-weight:600;font-size:13px;cursor:pointer;background:var(--bg);color:var(--ink)}
   .rowbtns button.danger{background:var(--bad-bg);color:var(--bad)}
   .note{color:var(--muted);font-size:12px;font-weight:700;margin:2px 6px 12px;line-height:1.4}
   .empty{color:var(--muted);text-align:center;padding:20px;font-weight:700}
@@ -222,24 +225,12 @@
   #emojiPick{position:fixed;inset:0;background:rgba(20,30,45,.45);z-index:95;display:none;align-items:center;justify-content:center;padding:20px}
   #emojiPick.open{display:flex}
   .emojisheet{background:#fff;border-radius:20px;padding:16px;width:100%;max-width:340px;max-height:70vh;overflow-y:auto}
-  .emojisheet h4{font-family:'Fredoka';font-weight:600;font-size:15px;margin:2px 2px 12px}
+  .emojisheet h4{font-family:'Manrope';font-weight:600;font-size:15px;margin:2px 2px 12px}
   .emojigrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
   .emojibtn{border:none;background:var(--bg);border-radius:12px;font-size:24px;padding:8px 0;cursor:pointer;line-height:1}
   .emojibtn:active{transform:scale(.9)}
   /* ── Landing / marketing page ── */
-  /* Design-system tokens (2026-07 redesign), scoped to .lp only — the app
-     screens haven't been redesigned yet, so these must not leak globally. */
-  .lp{
-    max-width:680px;margin:0 auto;
-    --accent:#2E6FCB; --accent-deep:#1F4E96;
-    --gold-mark:#FFD24A; --gold:#F2B63C;
-    --ink:#21304A; --muted:#78716A;
-    --bg:#FFFFFF; --surface:#F5F3F0; --cream:#FBF4E9; --cream-line:#EAE3D6; --line:#EAE3D6;
-    --good:#45C48A; --good-bg:#E7F8F0; --good-deep:#2E9A6B;
-    --purple:#9B7BE8; --purple-bg:#EFE9FC;
-    font-family:'Manrope',system-ui,sans-serif;
-    color:var(--ink);
-  }
+  .lp{max-width:680px;margin:0 auto;font-family:'Manrope',system-ui,sans-serif;color:var(--ink)}
   .lp h1,.lp h2,.lp h3,.lp .lp-nav .b b{font-family:'Manrope',system-ui,sans-serif}
   .twemoji{height:1em;width:1em;margin:0 .05em;vertical-align:-.15em}
   .lp-nav{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 0}
@@ -321,7 +312,7 @@
   .lp-pm-row{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:7px}
   .lp-pm-row .e{font-size:16px}
   .lp-pm-row .t{flex:1;font-family:'Manrope';font-weight:600;font-size:12px;line-height:1.15}
-  .lp-pm-row .t small{display:block;font-family:'Nunito';font-weight:700;font-size:10px;color:var(--muted)}
+  .lp-pm-row .t small{display:block;font-family:'Manrope';font-weight:700;font-size:10px;color:var(--muted)}
   .lp-pm-row .pt{font-weight:800;font-size:10.5px;color:var(--gold);white-space:nowrap}
   .lp-pm-row .pt.care{color:var(--accent-deep)}
   .lp-pm-row .pt.penalty{color:var(--bad)}
@@ -353,7 +344,7 @@
   }
   /* ── Illustrated hero (redesign) ── */
   .lp-navright{display:flex;align-items:center;gap:15px}
-  .lp-navright .navlink{display:none;background:none;border:none;font-family:'Nunito';font-weight:800;font-size:14px;color:var(--ink);opacity:.82;cursor:pointer}
+  .lp-navright .navlink{display:none;background:none;border:none;font-family:'Manrope';font-weight:800;font-size:14px;color:var(--ink);opacity:.82;cursor:pointer}
   .lp-navright .navlink:hover{opacity:1}
   .lp-navright .navcta{display:none;font-size:14px;padding:10px 18px}
   .lp-hero2{position:relative;display:grid;grid-template-columns:1fr;gap:24px;align-items:center;padding:22px 2px 6px}
@@ -367,7 +358,7 @@
   .lp-hero2 .lede b{color:var(--ink);font-weight:800}
   .lp-hero2 .cta{display:flex;align-items:center;gap:16px;margin-top:22px;flex-wrap:wrap}
   .lp-hero2 .cta .bigbtn{font-size:17px;padding:15px 28px}
-  .lp-hero2 .cta .seehow{font-family:'Nunito';font-weight:800;font-size:14.5px;color:var(--accent);background:none;border:none;cursor:pointer}
+  .lp-hero2 .cta .seehow{font-family:'Manrope';font-weight:800;font-size:14.5px;color:var(--accent);background:none;border:none;cursor:pointer}
   .lp-scene{position:relative;margin-top:6px}
   .lp-scene .card{position:relative;border-radius:28px;overflow:hidden;box-shadow:0 40px 80px -36px rgba(33,48,74,.5);border:1px solid rgba(255,255,255,.7)}
   .lp-scene .card svg{display:block;width:100%;height:auto}
@@ -458,7 +449,7 @@
   .lp-quote .who{display:flex;flex-direction:column;line-height:1.3}
   .lp-quote .who b{font-family:'Manrope';font-weight:600;font-size:14px;color:var(--ink)}
   .lp-quote .who span{font-weight:700;font-size:12px;color:var(--muted)}
-  .fbta{border:2px solid var(--line);border-radius:12px;padding:12px;font-size:15px;font-family:'Nunito';font-weight:700;width:100%;resize:vertical;color:var(--ink)}
+  .fbta{border:2px solid var(--line);border-radius:12px;padding:12px;font-size:15px;font-family:'Manrope';font-weight:700;width:100%;resize:vertical;color:var(--ink)}
   .fbta:focus{outline:none;border-color:var(--accent)}
   /* ── Signup reassurance + password strength ── */
   .pwmeter{display:flex;flex-direction:column;gap:5px;margin-top:-5px}
@@ -1034,12 +1025,12 @@ function renderLanding(){
               <g transform="translate(278 95)"><rect x="0" y="0" width="18" height="18" rx="5" fill="#378ADD"></rect><path d="M9 2.5 L11.1 6.8 L15.8 7.3 L12.3 10.4 L13.2 15 L9 12.7 L4.8 15 L5.7 10.4 L2.2 7.3 L6.9 6.8 Z" fill="#FFD24A"></path><text x="24" y="13.5" font-family="Manrope,sans-serif" font-size="13" font-weight="600" fill="#21304A">Kudos</text><rect x="198" y="0" width="46" height="18" rx="9" fill="#EAF2FC"></rect><text x="221" y="13" font-family="Manrope,sans-serif" font-size="10" font-weight="600" fill="#378ADD" text-anchor="middle">Today</text></g>
               <g transform="translate(278 121)"><rect width="116" height="22" rx="8" fill="#EAF2FC"></rect><circle cx="14" cy="11" r="6" fill="#378ADD"></circle><text x="25" y="15" font-family="Manrope,sans-serif" font-size="11" font-weight="600" fill="#21304A">Maya</text><text x="110" y="15" font-family="Manrope,sans-serif" font-size="10" font-weight="600" fill="#378ADD" text-anchor="end">120★</text></g>
               <g transform="translate(406 121)"><rect width="116" height="22" rx="8" fill="#E4F6EE"></rect><circle cx="14" cy="11" r="6" fill="#45C48A"></circle><text x="25" y="15" font-family="Manrope,sans-serif" font-size="11" font-weight="600" fill="#21304A">Leo</text><text x="110" y="15" font-family="Manrope,sans-serif" font-size="10" font-weight="600" fill="#2C8A5E" text-anchor="end">85★</text></g>
-              <g transform="translate(278 149)"><rect width="116" height="24" rx="7" fill="#E9F8F0"></rect><text x="11" y="16" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#2C8A5E">Make bed</text><circle cx="104" cy="12" r="7" fill="#45C48A"></circle><path d="M100.5 12 l2.5 2.5 l4 -5" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></g>
-              <g transform="translate(278 177)"><rect width="116" height="24" rx="7" fill="#E9F8F0"></rect><text x="11" y="16" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#2C8A5E">Brush teeth</text><circle cx="104" cy="12" r="7" fill="#45C48A"></circle><path d="M100.5 12 l2.5 2.5 l4 -5" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></g>
-              <g transform="translate(278 205)"><rect width="116" height="24" rx="7" fill="#F4F6FB"></rect><text x="11" y="16" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#21304A">Tidy toys</text><text x="108" y="16" font-family="Manrope,sans-serif" font-size="10" font-weight="600" fill="#F2B63C" text-anchor="end">+5★</text></g>
-              <g transform="translate(406 149)"><rect width="116" height="24" rx="7" fill="#E9F8F0"></rect><text x="11" y="16" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#2C8A5E">Feed dog</text><circle cx="104" cy="12" r="7" fill="#45C48A"></circle><path d="M100.5 12 l2.5 2.5 l4 -5" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></g>
-              <g transform="translate(406 177)"><rect width="116" height="24" rx="7" fill="#F4F6FB"></rect><text x="11" y="16" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#21304A">Homework</text><text x="108" y="16" font-family="Manrope,sans-serif" font-size="10" font-weight="600" fill="#F2B63C" text-anchor="end">+10★</text></g>
-              <g transform="translate(406 205)"><rect width="116" height="24" rx="7" fill="#F4F6FB"></rect><text x="11" y="16" font-family="Nunito,sans-serif" font-size="10.5" font-weight="700" fill="#21304A">Water plants</text><text x="108" y="16" font-family="Manrope,sans-serif" font-size="10" font-weight="600" fill="#F2B63C" text-anchor="end">+5★</text></g>
+              <g transform="translate(278 149)"><rect width="116" height="24" rx="7" fill="#E9F8F0"></rect><text x="11" y="16" font-family="Manrope,sans-serif" font-size="10.5" font-weight="700" fill="#2C8A5E">Make bed</text><circle cx="104" cy="12" r="7" fill="#45C48A"></circle><path d="M100.5 12 l2.5 2.5 l4 -5" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></g>
+              <g transform="translate(278 177)"><rect width="116" height="24" rx="7" fill="#E9F8F0"></rect><text x="11" y="16" font-family="Manrope,sans-serif" font-size="10.5" font-weight="700" fill="#2C8A5E">Brush teeth</text><circle cx="104" cy="12" r="7" fill="#45C48A"></circle><path d="M100.5 12 l2.5 2.5 l4 -5" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></g>
+              <g transform="translate(278 205)"><rect width="116" height="24" rx="7" fill="#F4F6FB"></rect><text x="11" y="16" font-family="Manrope,sans-serif" font-size="10.5" font-weight="700" fill="#21304A">Tidy toys</text><text x="108" y="16" font-family="Manrope,sans-serif" font-size="10" font-weight="600" fill="#F2B63C" text-anchor="end">+5★</text></g>
+              <g transform="translate(406 149)"><rect width="116" height="24" rx="7" fill="#E9F8F0"></rect><text x="11" y="16" font-family="Manrope,sans-serif" font-size="10.5" font-weight="700" fill="#2C8A5E">Feed dog</text><circle cx="104" cy="12" r="7" fill="#45C48A"></circle><path d="M100.5 12 l2.5 2.5 l4 -5" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></g>
+              <g transform="translate(406 177)"><rect width="116" height="24" rx="7" fill="#F4F6FB"></rect><text x="11" y="16" font-family="Manrope,sans-serif" font-size="10.5" font-weight="700" fill="#21304A">Homework</text><text x="108" y="16" font-family="Manrope,sans-serif" font-size="10" font-weight="600" fill="#F2B63C" text-anchor="end">+10★</text></g>
+              <g transform="translate(406 205)"><rect width="116" height="24" rx="7" fill="#F4F6FB"></rect><text x="11" y="16" font-family="Manrope,sans-serif" font-size="10.5" font-weight="700" fill="#21304A">Water plants</text><text x="108" y="16" font-family="Manrope,sans-serif" font-size="10" font-weight="600" fill="#F2B63C" text-anchor="end">+5★</text></g>
             </g>
             <!-- island -->
             <path d="M150 470 q0 -16 16 -16 h428 q16 0 16 16 v130 h-460 Z" fill="#FFFFFF"></path><ellipse cx="380" cy="470" rx="232" ry="16" fill="#F1F3F7"></ellipse><rect x="150" y="556" width="460" height="44" fill="#EFF1F6"></rect>
@@ -2543,17 +2534,17 @@ async function openAdmin(k,opts={}){
             <button class="del" style="background:var(--good-bg);color:var(--good)" data-grad="${c.id}">🎉</button></div>`).join('')}</div>`:''}
           <div class="rewardopts">
             ${kids.length>1?`<select id="choreKid">${kids.map(kk=>`<option value="${kk.id}" ${focusKid&&kk.id===focusKid.id?'selected':''}>${esc(kk.name)}</option>`).join('')}</select>`:'<div></div>'}
-            <input id="choreSearch" placeholder="🔍 Search chores" style="border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;font-family:'Nunito';color:var(--ink);width:100%">
+            <input id="choreSearch" placeholder="🔍 Search chores" style="border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;font-family:'Manrope';color:var(--ink);width:100%">
           </div>
           <div class="note">Editing chores for <b>${kidLabel}</b>.</div>
           <div id="choreList"></div>
           <div class="addform"><input id="cEmo" class="emoji-in" data-kind="chore" readonly placeholder="⭐" maxlength="2"><input id="cName" placeholder="Chore name"><input id="cPts" inputmode="numeric" placeholder="Stars, e.g. 5"></div>
-          <div style="margin:6px 4px 4px"><select id="cScore" style="width:100%;border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;background:#fff;font-family:'Nunito';color:var(--ink)">
+          <div style="margin:6px 4px 4px"><select id="cScore" style="width:100%;border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;background:#fff;font-family:'Manrope';color:var(--ink)">
             <option value="earn" selected>⭐ Earns stars</option>
             <option value="care">🩵 Daily care (no stars)</option>
             <option value="lose">📉 Loses stars (penalty)</option>
           </select></div>
-          <div style="margin:6px 4px 4px"><select id="cCadence" style="width:100%;border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;background:#fff;font-family:'Nunito';color:var(--ink)">
+          <div style="margin:6px 4px 4px"><select id="cCadence" style="width:100%;border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;background:#fff;font-family:'Manrope';color:var(--ink)">
             <option value="daily" selected>📅 Every day</option>
             <option value="weekday-include">🗓️ Specific days of the week</option>
             <option value="weekday-exclude">🚫 Every day except…</option>
@@ -2561,13 +2552,13 @@ async function openAdmin(k,opts={}){
             <option value="holiday">🎉 US federal holidays only</option>
           </select></div>
           <div id="cWeekdays" class="cWeekdays" style="display:none">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d,i)=>`<label><input type="checkbox" class="cWd" value="${i}"> ${d}</label>`).join('')}</div>
-          <div id="cOccursOn" style="display:none;margin:2px 4px 8px"><input type="date" id="cDate" style="width:100%;border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;font-family:'Nunito';color:var(--ink)"></div>
+          <div id="cOccursOn" style="display:none;margin:2px 4px 8px"><input type="date" id="cDate" style="width:100%;border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;font-family:'Manrope';color:var(--ink)"></div>
           <div class="note" style="margin:0 4px 4px;color:var(--muted)"><b>Earns stars</b>: enter how many. <b>Daily care</b>: tapped off, builds the streak, no stars. <b>Loses stars</b>: enter how many are taken away (a penalty like whining).</div>
           <label class="toggle" style="margin:2px 4px 4px"><input type="checkbox" id="cPhoto"> 📷 Require a photo to complete</label>
           <div id="cApplyFrom" style="display:none;margin:8px 4px;padding:10px;border:1px dashed var(--line);border-radius:12px">
             <label class="toggle" style="align-items:flex-start;font-size:12px;line-height:1.4;margin:0"><input type="checkbox" id="cBackfill" style="margin-top:2px;flex:none">
               <span>Also apply the new star value to completions <b>already logged</b>, from the date below onward. Their stars and the child's total are adjusted to match. Leave unticked and the change only affects future completions.</span></label>
-            <input type="date" id="cBackfillDate" min="${signupDate}" max="${today()}" value="${today()}" style="margin-top:8px;width:100%;border:2px solid var(--line);border-radius:11px;padding:9px;font-weight:700;font-size:14px;font-family:'Nunito';color:var(--ink)">
+            <input type="date" id="cBackfillDate" min="${signupDate}" max="${today()}" value="${today()}" style="margin-top:8px;width:100%;border:2px solid var(--line);border-radius:11px;padding:9px;font-weight:700;font-size:14px;font-family:'Manrope';color:var(--ink)">
           </div>
           <button class="addbtn" id="addChore">＋ Add chore</button>
           <button class="linkbtn" id="cancelEdit" style="display:none;margin-top:4px">Cancel edit</button>
@@ -2596,7 +2587,7 @@ async function openAdmin(k,opts={}){
         <div class="panel" id="panel-rewards">
           <div class="rewardopts">
             <select id="rewardKid"><option value="all" selected>All kids</option>${kids.map(kk=>`<option value="${kk.id}">${esc(kk.name)}</option>`).join('')}</select>
-            <input id="rewardSearch" placeholder="🔍 Search rewards" style="border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;font-family:'Nunito';color:var(--ink);width:100%">
+            <input id="rewardSearch" placeholder="🔍 Search rewards" style="border:2px solid var(--line);border-radius:11px;padding:10px;font-weight:700;font-size:14px;font-family:'Manrope';color:var(--ink);width:100%">
           </div>
           <div class="note">Rewards are shared across all kids unless tied to one.</div>
           <div id="rewardList"></div>
